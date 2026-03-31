@@ -1466,6 +1466,10 @@
         </div>
       </div>
       <a id="download-btn" class="download-btn" download>⬇ Descargar resultado</a>
+      <div id="svg-teaser" style="display:none;margin-top:1.5rem;text-align:center;padding:1rem;background:var(--card);border:1px solid var(--border);border-radius:10px;">
+        <p style="font-size:0.85rem;color:var(--text-mid);margin-bottom:0.25rem;">¿Necesitás mejor calidad?</p>
+        <p style="font-family:var(--mono);font-size:0.8rem;color:var(--accent);">Probá Vectorizar con IA (próximamente)</p>
+      </div>
     </div>
   </div>
 
@@ -1623,19 +1627,26 @@
         document.getElementById('tool-controls').style.display = 'block';
         document.getElementById('tool-controls').innerHTML =
           '<div class="controls-row">' +
-            '<div class="control-group">' +
-              '<label>Nivel de detalle</label>' +
-              '<select id="svg-detail">' +
-                '<option value="low">Bajo — más limpio</option>' +
-                '<option value="medium" selected>Medio — recomendado</option>' +
-                '<option value="high">Alto — más detalle</option>' +
-              '</select>' +
-            '</div>' +
-            '<div class="control-group" style="flex:1;min-width:140px">' +
+            '<div class="control-group" style="flex:1;min-width:160px">' +
               '<label>Threshold: <span id="svg-thresh-val">128</span></label>' +
               '<input type="range" id="svg-threshold" min="10" max="245" value="128" ' +
                 'style="width:100%;accent-color:var(--green);cursor:pointer;" ' +
                 'oninput="document.getElementById(\'svg-thresh-val\').textContent=this.value">' +
+            '</div>' +
+            '<div class="control-group">' +
+              '<label>Modo color</label>' +
+              '<select id="svg-color-mode">' +
+                '<option value="bw" selected>Blanco y negro</option>' +
+                '<option value="color">Preservar colores</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="control-group">' +
+              '<label>Suavizado</label>' +
+              '<select id="svg-smooth">' +
+                '<option value="low">Bajo — más detalle</option>' +
+                '<option value="medium" selected>Medio — recomendado</option>' +
+                '<option value="high">Alto — más limpio</option>' +
+              '</select>' +
             '</div>' +
           '</div>';
         document.getElementById('file-input').accept = 'image/*';
@@ -1898,227 +1909,294 @@
       img.src = URL.createObjectURL(currentFile);
     }
 
-    // SVG conversion
+    // ==========================================
+    // SVG VECTORIZER — Marching Squares + Bezier
+    // ==========================================
+
     function convertToSVG() {
       if (!currentFile) return;
 
-      var detailEl = document.getElementById('svg-detail');
       var threshEl = document.getElementById('svg-threshold');
-      var detail = detailEl ? detailEl.value : 'medium';
+      var colorEl = document.getElementById('svg-color-mode');
+      var smoothEl = document.getElementById('svg-smooth');
       var threshold = threshEl ? parseInt(threshEl.value) : 128;
+      var colorMode = colorEl ? colorEl.value : 'bw';
+      var smooth = smoothEl ? smoothEl.value : 'medium';
 
-      var maxSizes = { low: 400, medium: 600, high: 900 };
-      var simplifyTols = { low: 2.5, medium: 1.2, high: 0.5 };
-      var maxSize = maxSizes[detail];
-      var simplifyTol = simplifyTols[detail];
+      var smoothCfg = {
+        low:    { maxPx: 800, rdpTol: 0.6, tension: 0.2 },
+        medium: { maxPx: 700, rdpTol: 1.4, tension: 0.33 },
+        high:   { maxPx: 600, rdpTol: 2.8, tension: 0.45 }
+      };
+      var cfg = smoothCfg[smooth];
 
       var img = new Image();
       img.onload = function() {
-        var scale = Math.min(maxSize / Math.max(img.width, img.height), 1);
+        var scale = Math.min(cfg.maxPx / Math.max(img.width, img.height), 1);
         var w = Math.round(img.width * scale);
         var h = Math.round(img.height * scale);
-
         var canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
+        canvas.width = w; canvas.height = h;
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-
         var imageData = ctx.getImageData(0, 0, w, h);
-        var d = imageData.data;
+        var px = imageData.data;
 
-        // Build binary grid: 1 = dark (foreground), 0 = light (background)
-        var grid = new Uint8Array(w * h);
-        for (var i = 0; i < w * h; i++) {
-          var idx = i * 4;
-          var gray = d[idx] * 0.299 + d[idx+1] * 0.587 + d[idx+2] * 0.114;
-          grid[i] = gray < threshold ? 1 : 0;
+        var svg;
+        if (colorMode === 'color') {
+          svg = vectorizeColor(px, w, h, threshold, cfg);
+        } else {
+          svg = vectorizeBW(px, w, h, threshold, cfg);
         }
-
-        // Trace contours using marching squares
-        var contours = traceContours(grid, w, h);
-
-        // Simplify and convert to bezier paths
-        var paths = [];
-        for (var c = 0; c < contours.length; c++) {
-          var pts = simplifyPath(contours[c], simplifyTol);
-          if (pts.length < 3) continue;
-          paths.push(pointsToBezierPath(pts));
-        }
-
-        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h +
-          '" viewBox="0 0 ' + w + ' ' + h + '">' +
-          '<rect width="100%" height="100%" fill="#fff"/>';
-
-        for (var p = 0; p < paths.length; p++) {
-          svg += '<path d="' + paths[p] + '" fill="#000" fill-rule="evenodd"/>';
-        }
-        svg += '</svg>';
 
         var blob = new Blob([svg], { type: 'image/svg+xml' });
         var url = URL.createObjectURL(blob);
         var sizeKB = (blob.size / 1024).toFixed(1);
+        var pathCount = (svg.match(/<path/g) || []).length;
         document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
         document.getElementById('result-img').src = url;
         document.getElementById('download-btn').href = url;
         document.getElementById('download-btn').download = 'radiara-vector.svg';
         document.getElementById('result-label').textContent =
-          'Resultado — SVG vectorizado — ' + sizeKB + ' KB — ' + paths.length + ' paths';
+          'Resultado — SVG vectorizado — ' + sizeKB + ' KB — ' + pathCount + ' paths';
         document.getElementById('result-container').classList.add('active');
+        document.getElementById('svg-teaser').style.display = 'block';
       };
       img.src = URL.createObjectURL(currentFile);
     }
 
-    // ==================
-    // CONTOUR TRACING (marching squares)
-    // ==================
+    // ---- B/W vectorization ----
 
-    function traceContours(grid, w, h) {
-      var visited = new Uint8Array((w + 1) * (h + 1));
+    function vectorizeBW(px, w, h, threshold, cfg) {
+      var grid = buildGrid(px, w, h, threshold);
+      var contours = msTrace(grid, w, h);
+      var svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'];
+      svgParts.push('<rect width="100%" height="100%" fill="#fff"/>');
+      for (var i = 0; i < contours.length; i++) {
+        var s = rdp(contours[i], cfg.rdpTol);
+        if (s.length >= 3) svgParts.push('<path d="' + toBezier(s, cfg.tension) + '" fill="#000"/>');
+      }
+      svgParts.push('</svg>');
+      return svgParts.join('');
+    }
+
+    // ---- Color vectorization ----
+
+    function vectorizeColor(px, w, h, threshold, cfg) {
+      // Quantize to palette then trace each color layer
+      var bucketShift = 5; // 8 levels per channel = 512 possible colors
+      var colorMap = {};
+      for (var i = 0; i < w * h; i++) {
+        var idx = i * 4;
+        var a = px[idx+3];
+        if (a < 128) continue;
+        var qr = (px[idx] >> bucketShift) << bucketShift;
+        var qg = (px[idx+1] >> bucketShift) << bucketShift;
+        var qb = (px[idx+2] >> bucketShift) << bucketShift;
+        var key = qr + ',' + qg + ',' + qb;
+        if (!colorMap[key]) colorMap[key] = { r: qr, g: qg, b: qb, pixels: new Uint8Array(w * h) };
+        colorMap[key].pixels[i] = 1;
+      }
+
+      // Sort by pixel count descending (draw big areas first)
+      var layers = Object.values(colorMap);
+      layers.sort(function(a, b) {
+        var ca = 0, cb = 0;
+        for (var j = 0; j < a.pixels.length; j++) { ca += a.pixels[j]; cb += b.pixels[j]; }
+        return cb - ca;
+      });
+
+      // Keep top N layers to avoid huge SVG
+      if (layers.length > 24) layers = layers.slice(0, 24);
+
+      // Find background color (most pixels)
+      var bgLayer = layers[0];
+      var bgColor = 'rgb('+bgLayer.r+','+bgLayer.g+','+bgLayer.b+')';
+
+      var svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'];
+      svgParts.push('<rect width="100%" height="100%" fill="'+bgColor+'"/>');
+
+      for (var li = 1; li < layers.length; li++) {
+        var layer = layers[li];
+        var contours = msTrace(layer.pixels, w, h);
+        var fill = 'rgb('+layer.r+','+layer.g+','+layer.b+')';
+        for (var ci = 0; ci < contours.length; ci++) {
+          var s = rdp(contours[ci], cfg.rdpTol * 1.5);
+          if (s.length >= 3) svgParts.push('<path d="' + toBezier(s, cfg.tension) + '" fill="'+fill+'"/>');
+        }
+      }
+      svgParts.push('</svg>');
+      return svgParts.join('');
+    }
+
+    // ---- Binary grid from pixel data ----
+
+    function buildGrid(px, w, h, threshold) {
+      var grid = new Uint8Array(w * h);
+      for (var i = 0; i < w * h; i++) {
+        var idx = i * 4;
+        var gray = px[idx] * 0.299 + px[idx+1] * 0.587 + px[idx+2] * 0.114;
+        grid[i] = gray < threshold ? 1 : 0;
+      }
+      return grid;
+    }
+
+    // ==========================================
+    // MARCHING SQUARES contour tracer
+    // ==========================================
+
+    function msTrace(grid, w, h) {
+      // Use interpolated positions for smoother contours
+      var edgeVisited = {};
       var contours = [];
 
-      // Sample function: returns 1 if pixel at (x,y) is foreground
-      function sample(x, y) {
-        if (x < 0 || x >= w || y < 0 || y >= h) return 0;
-        return grid[y * w + x];
+      function s(x, y) { return (x >= 0 && x < w && y >= 0 && y < h) ? grid[y * w + x] : 0; }
+
+      function cellCase(cx, cy) {
+        return (s(cx, cy) << 0) | (s(cx+1, cy) << 1) | (s(cx+1, cy+1) << 2) | (s(cx, cy+1) << 3);
       }
 
-      // Get marching squares case for cell (cx, cy)
-      function getCase(cx, cy) {
-        return (sample(cx-1, cy-1) << 3) | (sample(cx, cy-1) << 2) |
-               (sample(cx, cy) << 1)     | (sample(cx-1, cy));
+      // Edge midpoint with linear interpolation
+      // Edges: 0=top, 1=right, 2=bottom, 3=left of cell (cx,cy)
+      function edgePt(cx, cy, edge) {
+        switch(edge) {
+          case 0: return [cx + 0.5, cy];
+          case 1: return [cx + 1, cy + 0.5];
+          case 2: return [cx + 0.5, cy + 1];
+          case 3: return [cx, cy + 0.5];
+        }
       }
 
-      // Direction vectors: 0=right, 1=down, 2=left, 3=up
-      var dx = [1, 0, -1, 0];
-      var dy = [0, 1, 0, -1];
+      function edgeKey(cx, cy, edge) {
+        // Normalize shared edges between adjacent cells
+        if (edge === 0 && cy > 0) return (cx)+','+(cy-1)+',2';
+        if (edge === 3 && cx > 0) return (cx-1)+','+(cy)+',1';
+        return cx+','+cy+','+edge;
+      }
 
-      for (var sy = 0; sy <= h; sy++) {
-        for (var sx = 0; sx <= w; sx++) {
-          var c = getCase(sx, sy);
-          if (c === 0 || c === 15) continue;
-          var key = sy * (w + 1) + sx;
-          if (visited[key]) continue;
+      // For each case, which edge pairs to connect [enter_edge, exit_edge]
+      var caseSegments = {
+        0:[], 1:[[3,0]], 2:[[0,1]], 3:[[3,1]], 4:[[1,2]], 5:[[3,0],[1,2]],
+        6:[[0,2]], 7:[[3,2]], 8:[[2,3]], 9:[[2,0]], 10:[[0,1],[2,3]],
+        11:[[2,1]], 12:[[1,3]], 13:[[1,0]], 14:[[0,3]], 15:[]
+      };
 
-          // Trace contour starting from this cell
-          var points = [];
-          var cx = sx, cy = sy;
-          var dir = 0; // start going right
-          var steps = 0;
-          var maxSteps = (w + h) * 4;
-
-          do {
-            var k = cy * (w + 1) + cx;
-            visited[k] = 1;
-            points.push([cx, cy]);
-
-            var cs = getCase(cx, cy);
-            // Determine next direction based on case and current direction
-            var nextDir;
-            switch (cs) {
-              case 1: nextDir = 0; break;
-              case 2: nextDir = 1; break;
-              case 3: nextDir = 0; break;
-              case 4: nextDir = 3; break;
-              case 5: nextDir = 3; break;
-              case 6: nextDir = (dir === 0) ? 1 : 3; break; // saddle
-              case 7: nextDir = 3; break;
-              case 8: nextDir = 2; break;
-              case 9: nextDir = (dir === 1) ? 0 : 2; break; // saddle
-              case 10: nextDir = 1; break;
-              case 11: nextDir = 0; break;
-              case 12: nextDir = 2; break;
-              case 13: nextDir = 2; break;
-              case 14: nextDir = 1; break;
-              default: nextDir = dir;
-            }
-
-            dir = nextDir;
-            cx += dx[dir];
-            cy += dy[dir];
-            steps++;
-          } while ((cx !== sx || cy !== sy) && steps < maxSteps);
-
-          if (points.length >= 4) {
-            contours.push(points);
+      // Collect all edge segments
+      var segments = []; // each: { from: [x,y], to: [x,y], fromKey, toKey }
+      for (var cy = -1; cy < h; cy++) {
+        for (var cx = -1; cx < w; cx++) {
+          var cc = cellCase(cx, cy);
+          var segs = caseSegments[cc];
+          if (!segs) continue;
+          for (var si = 0; si < segs.length; si++) {
+            var fromEdge = segs[si][0], toEdge = segs[si][1];
+            var fp = edgePt(cx, cy, fromEdge);
+            var tp = edgePt(cx, cy, toEdge);
+            var fk = edgeKey(cx, cy, fromEdge);
+            var tk = edgeKey(cx, cy, toEdge);
+            segments.push({ from: fp, to: tp, fk: fk, tk: tk });
           }
         }
+      }
+
+      // Build adjacency: endpoint key → [segment indices]
+      var adj = {};
+      for (var i = 0; i < segments.length; i++) {
+        var seg = segments[i];
+        if (!adj[seg.fk]) adj[seg.fk] = [];
+        adj[seg.fk].push(i);
+        if (!adj[seg.tk]) adj[seg.tk] = [];
+        adj[seg.tk].push(i);
+      }
+
+      // Chain segments into closed contours
+      var used = new Uint8Array(segments.length);
+      for (var i = 0; i < segments.length; i++) {
+        if (used[i]) continue;
+        var chain = [segments[i].from, segments[i].to];
+        used[i] = 1;
+        var endKey = segments[i].tk;
+        var startKey = segments[i].fk;
+
+        // Extend forward
+        for (var iter = 0; iter < segments.length; iter++) {
+          var nbrs = adj[endKey];
+          if (!nbrs) break;
+          var found = false;
+          for (var ni = 0; ni < nbrs.length; ni++) {
+            var nIdx = nbrs[ni];
+            if (used[nIdx]) continue;
+            var ns = segments[nIdx];
+            var nextPt, nextKey;
+            if (ns.fk === endKey) { nextPt = ns.to; nextKey = ns.tk; }
+            else { nextPt = ns.from; nextKey = ns.fk; }
+            chain.push(nextPt);
+            used[nIdx] = 1;
+            endKey = nextKey;
+            found = true;
+            break;
+          }
+          if (!found || endKey === startKey) break;
+        }
+
+        if (chain.length >= 4) contours.push(chain);
       }
       return contours;
     }
 
-    // ==================
-    // PATH SIMPLIFICATION (Ramer-Douglas-Peucker)
-    // ==================
+    // ==========================================
+    // Ramer-Douglas-Peucker path simplification
+    // ==========================================
 
-    function simplifyPath(points, tolerance) {
-      if (points.length <= 2) return points;
-
-      var maxDist = 0;
-      var maxIdx = 0;
-
-      var first = points[0];
-      var last = points[points.length - 1];
-
-      for (var i = 1; i < points.length - 1; i++) {
-        var dist = pointToLineDist(points[i], first, last);
-        if (dist > maxDist) {
-          maxDist = dist;
-          maxIdx = i;
-        }
+    function rdp(pts, tol) {
+      if (pts.length <= 2) return pts;
+      var maxD = 0, maxI = 0;
+      var a = pts[0], b = pts[pts.length - 1];
+      for (var i = 1; i < pts.length - 1; i++) {
+        var d = ptLineDist(pts[i], a, b);
+        if (d > maxD) { maxD = d; maxI = i; }
       }
-
-      if (maxDist > tolerance) {
-        var left = simplifyPath(points.slice(0, maxIdx + 1), tolerance);
-        var right = simplifyPath(points.slice(maxIdx), tolerance);
-        return left.slice(0, -1).concat(right);
+      if (maxD > tol) {
+        var l = rdp(pts.slice(0, maxI + 1), tol);
+        var r = rdp(pts.slice(maxI), tol);
+        return l.slice(0, -1).concat(r);
       }
-      return [first, last];
+      return [a, b];
     }
 
-    function pointToLineDist(p, a, b) {
-      var abx = b[0] - a[0], aby = b[1] - a[1];
-      var len2 = abx * abx + aby * aby;
-      if (len2 === 0) return Math.sqrt((p[0]-a[0])*(p[0]-a[0]) + (p[1]-a[1])*(p[1]-a[1]));
-      var t = ((p[0]-a[0])*abx + (p[1]-a[1])*aby) / len2;
-      t = Math.max(0, Math.min(1, t));
-      var px = a[0] + t * abx, py = a[1] + t * aby;
-      return Math.sqrt((p[0]-px)*(p[0]-px) + (p[1]-py)*(p[1]-py));
+    function ptLineDist(p, a, b) {
+      var dx = b[0]-a[0], dy = b[1]-a[1];
+      var len2 = dx*dx + dy*dy;
+      if (len2 === 0) return Math.hypot(p[0]-a[0], p[1]-a[1]);
+      var t = Math.max(0, Math.min(1, ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / len2));
+      return Math.hypot(p[0] - (a[0]+t*dx), p[1] - (a[1]+t*dy));
     }
 
-    // ==================
-    // BEZIER PATH GENERATION
-    // ==================
+    // ==========================================
+    // Catmull-Rom → Cubic Bezier path builder
+    // ==========================================
 
-    function pointsToBezierPath(pts) {
+    function toBezier(pts, tension) {
       if (pts.length < 2) return '';
-      var d = 'M' + pts[0][0] + ',' + pts[0][1];
+      var n = pts.length;
+      var d = 'M' + R(pts[0][0]) + ',' + R(pts[0][1]);
+      if (n === 2) return d + 'L' + R(pts[1][0]) + ',' + R(pts[1][1]) + 'Z';
 
-      if (pts.length === 2) {
-        d += 'L' + pts[1][0] + ',' + pts[1][1];
-        return d + 'Z';
-      }
-
-      // Generate smooth cubic bezier curves through simplified points
-      for (var i = 0; i < pts.length; i++) {
-        var p0 = pts[(i - 1 + pts.length) % pts.length];
+      for (var i = 0; i < n; i++) {
+        var p0 = pts[(i - 1 + n) % n];
         var p1 = pts[i];
-        var p2 = pts[(i + 1) % pts.length];
-        var p3 = pts[(i + 2) % pts.length];
-
-        // Catmull-Rom to cubic bezier control points
-        var tension = 0.35;
-        var cp1x = p1[0] + (p2[0] - p0[0]) * tension;
-        var cp1y = p1[1] + (p2[1] - p0[1]) * tension;
-        var cp2x = p2[0] - (p3[0] - p1[0]) * tension;
-        var cp2y = p2[1] - (p3[1] - p1[1]) * tension;
-
-        d += 'C' + r(cp1x) + ',' + r(cp1y) + ',' + r(cp2x) + ',' + r(cp2y) + ',' + r(p2[0]) + ',' + r(p2[1]);
+        var p2 = pts[(i + 1) % n];
+        var p3 = pts[(i + 2) % n];
+        var c1x = p1[0] + (p2[0] - p0[0]) * tension;
+        var c1y = p1[1] + (p2[1] - p0[1]) * tension;
+        var c2x = p2[0] - (p3[0] - p1[0]) * tension;
+        var c2y = p2[1] - (p3[1] - p1[1]) * tension;
+        d += 'C'+R(c1x)+','+R(c1y)+','+R(c2x)+','+R(c2y)+','+R(p2[0])+','+R(p2[1]);
       }
       return d + 'Z';
     }
 
-    function r(n) { return Math.round(n * 10) / 10; }
+    function R(n) { return Math.round(n * 100) / 100; }
 
     // ==================
     // AUTH (localStorage mock — se reemplaza con Supabase después)
