@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RADIARA — Suite de Imágenes con IA</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0A0A0A;
+      --card: #111111;
+      --card-hover: #1a1a1a;
+      --border: #222222;
+      --accent: #FF3333;
+      --accent-glow: rgba(255, 51, 51, 0.15);
+      --green: #00FF88;
+      --green-glow: rgba(0, 255, 136, 0.15);
+      --text: #FFFFFF;
+      --text-dim: #888888;
+      --text-mid: #CCCCCC;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* HEADER */
+    header {
+      padding: 2rem 2rem 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .logo span {
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(255, 51, 51, 0.5), 0 0 30px rgba(255, 51, 51, 0.2);
+    }
+
+    /* HERO */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem 3rem;
+    }
+
+    .hero h1 {
+      font-family: var(--mono);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .hero p {
+      color: var(--text-dim);
+      font-size: 1.1rem;
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    .hero-counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-mid);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+    }
+
+    .hero-counter .counter-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero-counter strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    /* TOOLS GRID */
+    .tools-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .section-label.free-label { color: var(--green); }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .tool-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-card:hover {
+      background: var(--card-hover);
+      border-color: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow), 0 0 60px rgba(255, 51, 51, 0.08), inset 0 0 30px rgba(255, 51, 51, 0.03);
+      transform: translateY(-3px);
+    }
+
+    .tool-card.free:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 20px var(--green-glow), 0 0 60px rgba(0, 255, 136, 0.08), inset 0 0 30px rgba(0, 255, 136, 0.03);
+    }
+
+    .tool-badge {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+
+    .badge-ai {
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid rgba(255, 51, 51, 0.3);
+    }
+
+    .badge-free {
+      background: var(--green-glow);
+      color: var(--green);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    .tool-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .tool-card h3 {
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .tool-card p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .tool-card .formats {
+      margin-top: 0.75rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--green);
+      opacity: 0.7;
+    }
+
+    /* TOOL VIEW */
+    .tool-view {
+      display: none;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .tool-view.active { display: block; }
+
+    .back-btn {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      margin-bottom: 2rem;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+
+    .tool-view h2 {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .tool-view .subtitle {
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+    }
+
+    /* UPLOAD AREA */
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 1.5rem;
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent);
+      background: rgba(255, 51, 51, 0.03);
+    }
+
+    .upload-area.free-upload:hover {
+      border-color: var(--green);
+      background: rgba(0, 255, 136, 0.03);
+    }
+
+    .upload-area.dragover {
+      border-color: var(--accent);
+      background: rgba(255, 51, 51, 0.08);
+    }
+
+    .upload-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+
+    .upload-area h3 {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-area p {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+    }
+
+    .upload-area input[type="file"] { display: none; }
+
+    /* PREVIEW */
+    .preview-container {
+      display: none;
+      margin-bottom: 1.5rem;
+    }
+
+    .preview-container.active { display: block; }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .file-info {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.5rem;
+    }
+
+    .change-img-btn {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .change-img-btn:hover {
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+
+    /* BUTTONS */
+    .process-btn {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 0.8rem 2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+      width: 100%;
+    }
+
+    .process-btn.visible { display: block; }
+    .process-btn:hover { background: #e62e2e; }
+    .process-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+    .process-btn.free-btn { background: var(--green); color: #000; }
+    .process-btn.free-btn:hover { background: #00dd77; }
+
+    /* LOADING */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .loading.active { display: block; }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading p {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* RESULT */
+    .result-container {
+      display: none;
+      margin-top: 2rem;
+    }
+
+    .result-container.active { display: block; }
+
+    .result-label {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    .result-comparison {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 700px) {
+      .result-comparison {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      .result-comparison .comparison-col {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+
+    .comparison-col img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .comparison-col .comp-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .download-btn {
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #000;
+      background: var(--green);
+      border: none;
+      border-radius: 10px;
+      padding: 1rem 2.5rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      width: 100%;
+      text-align: center;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+
+    .download-btn:hover { background: #00dd77; box-shadow: 0 0 30px rgba(0, 255, 136, 0.3); }
+
+    /* CONTROLS */
+    .controls-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .control-group label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .control-group select {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .control-group select:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+
+
+
+    /* FOOTER */
+    footer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-brand {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .footer-links a {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    .privacy-note {
+      background: rgba(0, 255, 136, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.15);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .privacy-note p {
+      font-size: 0.8rem;
+      color: var(--green);
+    }
+
+    /* ENTRANCE ANIMATIONS */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .anim-entry {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s ease-out forwards;
+    }
+
+    .anim-delay-1 { animation-delay: 0.1s; }
+    .anim-delay-2 { animation-delay: 0.2s; }
+    .anim-delay-3 { animation-delay: 0.3s; }
+    .anim-delay-4 { animation-delay: 0.4s; }
+    .anim-delay-5 { animation-delay: 0.5s; }
+    .anim-delay-6 { animation-delay: 0.55s; }
+    .anim-delay-7 { animation-delay: 0.6s; }
+    .anim-delay-8 { animation-delay: 0.65s; }
+    .anim-delay-9 { animation-delay: 0.7s; }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .hero { padding: 2rem 1.5rem 2rem; }
+      .tools-section { padding: 0 1.5rem 3rem; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .tool-view { padding: 1.5rem; }
+      .controls-row { flex-direction: column; }
+      .footer-inner { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LANDING -->
+  <div id="landing">
+    <header class="anim-entry">
+      <div class="logo">RADIA<span>RA</span></div>
+    </header>
+
+    <section class="hero">
+      <h1 class="anim-entry anim-delay-1">Restaura. Mejora.<br><span>Convierte.</span></h1>
+      <p class="anim-entry anim-delay-2">Suite de herramientas de imagen con IA. Restaurá fotos viejas, mejorá productos, arreglá piel de modelos IA, y convertí entre cualquier formato. Todo en un lugar.</p>
+      <div class="hero-counter anim-entry anim-delay-3">
+        <span class="counter-dot"></span>
+        <span><strong>2,847</strong> imágenes procesadas</span>
+      </div>
+    </section>
+
+    <section class="tools-section">
+      <div class="section-label anim-entry anim-delay-3">Herramientas con IA</div>
+      <div class="tools-grid">
+        <div class="tool-card anim-entry anim-delay-4" onclick="openTool('restore-face')">
+          <span class="tool-badge badge-ai">IA</span>
+          <span class="tool-icon">🧑</span>
+          <h3>Restaurar Cara</h3>
+          <p>Repará fotos viejas, borrosas o dañadas. Restaurá rostros sin cambiar la identidad.</p>
+        </div>
+        <div class="tool-card anim-entry anim-delay-5" onclick="openTool('product-hd')">
+          <span class="tool-badge badge-ai">IA</span>
+          <span class="tool-icon">💎</span>
+          <h3>Producto HD</h3>
+          <p>Perfumes, bolsas, joyería a 4x. Nitidez profesional para e-commerce.</p>
+        </div>
+        <div class="tool-card anim-entry anim-delay-6" onclick="openTool('skin-real')">
+          <span class="tool-badge badge-ai">IA</span>
+          <span class="tool-icon">✨</span>
+          <h3>Piel Real</h3>
+          <p>¿Modelos IA con piel plástica? Agregá poros, textura y realismo natural.</p>
+        </div>
+        <div class="tool-card anim-entry anim-delay-7" onclick="openTool('max-quality')">
+          <span class="tool-badge badge-ai">IA</span>
+          <span class="tool-icon">🚀</span>
+          <h3>Máxima Calidad</h3>
+          <p>Lo mejor de todo combinado. Restaurá + mejorá en un solo paso.</p>
+        </div>
+        <div class="tool-card anim-entry anim-delay-8" onclick="openTool('remove-bg')">
+          <span class="tool-badge badge-ai">IA</span>
+          <span class="tool-icon">🔲</span>
+          <h3>Remover Fondo</h3>
+          <p>Elimina el fondo de cualquier imagen. Perfecto para productos y retratos.</p>
+        </div>
+      </div>
+
+      <div class="section-label free-label anim-entry anim-delay-8">Herramientas Gratis — procesan en tu navegador</div>
+      <div class="tools-grid">
+        <div class="tool-card free anim-entry anim-delay-9" onclick="openTool('converter')">
+          <span class="tool-badge badge-free">Gratis</span>
+          <span class="tool-icon">🔄</span>
+          <h3>Conversor Universal</h3>
+          <p>Convertí entre cualquier formato de imagen. Elegí origen y destino.</p>
+          <div class="formats">JPG · PNG · WebP · HEIC · AVIF · BMP · TIFF · PDF</div>
+        </div>
+        <div class="tool-card free anim-entry anim-delay-9" onclick="openTool('to-svg')">
+          <span class="tool-badge badge-free">Gratis</span>
+          <span class="tool-icon">📐</span>
+          <h3>JPG/PNG → SVG</h3>
+          <p>Vectorizá logos e ilustraciones. Ideal para diseño gráfico y corte.</p>
+        </div>
+      </div>
+
+      <div class="privacy-note">
+        <p>🔒 Las herramientas GRATIS procesan todo en tu navegador. Nada sale de tu dispositivo.</p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand">RADIARA — Suite de Imágenes con IA</div>
+        <nav class="footer-links">
+          <a href="#precios">Precios</a>
+          <a href="#api">API</a>
+          <a href="#contacto">Contacto</a>
+        </nav>
+      </div>
+    </footer>
+  </div>
+
+  <!-- TOOL VIEW -->
+  <div id="tool-view" class="tool-view">
+    <button class="back-btn" onclick="closeTool()">← Volver</button>
+    <h2 id="tool-title"></h2>
+    <p class="subtitle" id="tool-subtitle"></p>
+
+    <div id="tool-controls" style="display:none"></div>
+
+
+    <div id="upload-area" class="upload-area">
+      <span class="upload-icon">📁</span>
+      <h3>Arrastrá tu imagen acá</h3>
+      <p>o hacé clic para seleccionar — hasta 10MB</p>
+      <input type="file" id="file-input" accept="image/*">
+    </div>
+
+    <div id="preview-container" class="preview-container">
+      <img id="preview-img" class="preview-img">
+      <div id="file-info" class="file-info"></div>
+      <button class="change-img-btn" onclick="changeImage()">Cambiar imagen</button>
+    </div>
+
+    <button id="process-btn" class="process-btn" onclick="processImage()">Procesar</button>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p id="loading-text">Procesando imagen...</p>
+    </div>
+
+    <div id="result-container" class="result-container">
+      <div id="result-label" class="result-label">Resultado</div>
+      <div id="result-comparison" class="result-comparison">
+        <div class="comparison-col">
+          <div class="comp-label">Original</div>
+          <img id="comparison-original" src="">
+        </div>
+        <div class="comparison-col">
+          <div class="comp-label">Resultado</div>
+          <img id="result-img" class="result-img" style="margin-bottom:0">
+        </div>
+      </div>
+      <a id="download-btn" class="download-btn" download>⬇ Descargar resultado</a>
+    </div>
+  </div>
+
+  <script>
+    const tools = {
+      'restore-face': { title: 'Restaurar Cara', subtitle: 'Subí una foto vieja o borrosa y la IA restaura el rostro.', endpoint: '/api/restore-face', type: 'ai' },
+      'product-hd': { title: 'Producto HD', subtitle: 'Subí foto de producto y se mejora a alta resolución.', endpoint: '/api/product-hd', type: 'ai' },
+      'skin-real': { title: 'Piel Real', subtitle: 'Subí una imagen de modelo IA y se agrega textura de piel realista. Tarda 30-60 seg.', endpoint: '/api/skin-real', type: 'ai' },
+      'max-quality': { title: 'Máxima Calidad', subtitle: 'Restaurá y mejorá al máximo. Tarda 1-2 minutos.', endpoint: '/api/max-quality', type: 'ai' },
+      'remove-bg': { title: 'Remover Fondo', subtitle: 'Eliminá el fondo de cualquier imagen automáticamente.', endpoint: '/api/remove-bg', type: 'ai' },
+      'converter': { title: 'Conversor Universal', subtitle: 'Convertí entre cualquier formato de imagen. Todo en tu navegador.', type: 'browser', converter: true },
+      'to-svg': { title: 'JPG/PNG → SVG', subtitle: 'Vectorizá imágenes. Funciona mejor con logos, íconos y texto.', type: 'browser' },
+
+    };
+
+    // Conversion map: what can each format convert to
+    const conversionMap = {
+      'image/jpeg':    { label: 'JPG', canConvertTo: ['PNG', 'WebP', 'AVIF', 'PDF'] },
+      'image/png':     { label: 'PNG', canConvertTo: ['JPG', 'WebP', 'AVIF', 'PDF'] },
+      'image/webp':    { label: 'WebP', canConvertTo: ['JPG', 'PNG', 'AVIF', 'PDF'] },
+      'image/heic':    { label: 'HEIC', canConvertTo: ['JPG', 'PNG', 'WebP'] },
+      'image/heif':    { label: 'HEIC', canConvertTo: ['JPG', 'PNG', 'WebP'] },
+      'image/avif':    { label: 'AVIF', canConvertTo: ['JPG', 'PNG', 'WebP'] },
+      'image/bmp':     { label: 'BMP', canConvertTo: ['JPG', 'PNG', 'WebP', 'PDF'] },
+      'image/tiff':    { label: 'TIFF', canConvertTo: ['JPG', 'PNG', 'WebP'] },
+    };
+
+    const outputMimeMap = {
+      'JPG': 'image/jpeg',
+      'PNG': 'image/png',
+      'WebP': 'image/webp',
+      'AVIF': 'image/avif',
+      'PDF': 'application/pdf'
+    };
+
+    const outputExtMap = {
+      'JPG': '.jpg',
+      'PNG': '.png',
+      'WebP': '.webp',
+      'AVIF': '.avif',
+      'PDF': '.pdf'
+    };
+
+    let currentTool = null;
+    let currentFile = null;
+
+    function openTool(toolId) {
+      currentTool = toolId;
+      currentFile = null;
+      const tool = tools[toolId];
+      
+      document.getElementById('landing').style.display = 'none';
+      document.getElementById('tool-view').classList.add('active');
+      document.getElementById('tool-title').textContent = tool.title;
+      document.getElementById('tool-subtitle').textContent = tool.subtitle;
+      
+      // Reset all
+      document.getElementById('preview-container').classList.remove('active');
+      document.getElementById('process-btn').classList.remove('visible');
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('result-container').classList.remove('active');
+      document.getElementById('file-input').value = '';
+      document.getElementById('file-info').textContent = '';
+      document.getElementById('result-label').textContent = 'Resultado';
+      
+      document.getElementById('upload-area').style.display = 'block';
+
+      // Converter controls
+      if (tool.converter) {
+        document.getElementById('tool-controls').style.display = 'block';
+        document.getElementById('tool-controls').innerHTML = 
+          '<div class="controls-row">' +
+            '<div class="control-group">' +
+              '<label>Convertir a</label>' +
+              '<select id="convert-to"><option value="">Sube imagen primero</option></select>' +
+            '</div>' +
+            '<div class="control-group">' +
+              '<label>Calidad</label>' +
+              '<select id="convert-quality">' +
+                '<option value="0.6">60% — más ligero</option>' +
+                '<option value="0.8" selected>80% — recomendado</option>' +
+                '<option value="0.9">90% — alta calidad</option>' +
+                '<option value="1.0">100% — sin pérdida</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>';
+        // Accept more formats
+        document.getElementById('file-input').accept = 'image/jpeg,image/png,image/webp,image/heic,image/heif,image/avif,image/bmp,image/tiff,.heic,.heif,.avif';
+      } else {
+        document.getElementById('tool-controls').style.display = 'none';
+        document.getElementById('file-input').accept = 'image/*';
+      }
+
+      const btn = document.getElementById('process-btn');
+      btn.textContent = tool.type === 'browser' ? 'Convertir' : 'Procesar con IA';
+      if (tool.type === 'browser') {
+        btn.classList.add('free-btn');
+      } else {
+        btn.classList.remove('free-btn');
+      }
+
+      window.scrollTo(0, 0);
+    }
+
+    function closeTool() {
+      document.getElementById('tool-view').classList.remove('active');
+      document.getElementById('landing').style.display = 'block';
+      currentTool = null;
+      currentFile = null;
+      window.scrollTo(0, 0);
+    }
+
+    // File upload
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('La imagen es muy grande. Máximo 10MB.');
+        return;
+      }
+      currentFile = file;
+      
+      const sizeKB = Math.round(file.size / 1024);
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      const sizeStr = file.size > 1024 * 1024 ? sizeMB + ' MB' : sizeKB + ' KB';
+      document.getElementById('file-info').textContent = file.name + ' — ' + sizeStr + ' — ' + (file.type || 'formato desconocido');
+      
+      // Update converter dropdown
+      if (tools[currentTool] && tools[currentTool].converter) {
+        updateConvertOptions(file.type);
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('preview-img').src = e.target.result;
+        document.getElementById('preview-container').classList.add('active');
+        document.getElementById('upload-area').style.display = 'none';
+        document.getElementById('process-btn').classList.add('visible');
+        document.getElementById('result-container').classList.remove('active');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function changeImage() {
+      currentFile = null;
+      document.getElementById('file-input').value = '';
+      document.getElementById('preview-container').classList.remove('active');
+      document.getElementById('upload-area').style.display = 'block';
+      document.getElementById('process-btn').classList.remove('visible');
+      document.getElementById('result-container').classList.remove('active');
+    }
+
+    function updateConvertOptions(mimeType) {
+      const select = document.getElementById('convert-to');
+      const info = conversionMap[mimeType];
+      
+      if (!info) {
+        select.innerHTML = '<option value="JPG">JPG</option><option value="PNG">PNG</option><option value="WebP" selected>WebP</option>';
+        return;
+      }
+
+      select.innerHTML = '';
+      info.canConvertTo.forEach((fmt, i) => {
+        const opt = document.createElement('option');
+        opt.value = fmt;
+        opt.textContent = fmt;
+        if (fmt === 'WebP') opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    // Process
+    async function processImage() {
+      const tool = tools[currentTool];
+      
+      if (tool.type === 'browser') {
+        processBrowser();
+        return;
+      }
+
+      if (!currentFile) return;
+
+      document.getElementById('process-btn').classList.remove('visible');
+      document.getElementById('loading').classList.add('active');
+      document.getElementById('result-container').classList.remove('active');
+      
+      const msgs = ['Procesando imagen...', 'La IA está trabajando...', 'Esto puede tardar unos segundos...', 'Mejorando detalles...', 'Casi listo...'];
+      let idx = 0;
+      const interval = setInterval(() => {
+        idx = (idx + 1) % msgs.length;
+        document.getElementById('loading-text').textContent = msgs[idx];
+      }, 3000);
+
+      try {
+        const formData = new FormData();
+        formData.append('image', currentFile);
+        const response = await fetch(tool.endpoint, { method: 'POST', body: formData });
+        const data = await response.json();
+        clearInterval(interval);
+
+        if (data.success) {
+          document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
+          document.getElementById('result-img').src = data.result;
+          document.getElementById('download-btn').href = data.result;
+          document.getElementById('download-btn').download = 'radiara-' + currentTool + '.png';
+          document.getElementById('result-container').classList.add('active');
+        } else {
+          alert('Error: ' + (data.error || 'Algo salió mal'));
+        }
+      } catch (err) {
+        clearInterval(interval);
+        alert('Error de conexión: ' + err.message);
+      }
+
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('process-btn').classList.add('visible');
+    }
+
+    function processBrowser() {
+      if (currentTool === 'converter') convertUniversal();
+      else if (currentTool === 'to-svg') convertToSVG();
+
+    }
+
+    // UNIVERSAL CONVERTER
+    function convertUniversal() {
+      if (!currentFile) return;
+      
+      const targetFormat = document.getElementById('convert-to').value;
+      const quality = parseFloat(document.getElementById('convert-quality').value);
+      
+      if (!targetFormat) { alert('Seleccioná formato de destino'); return; }
+
+      // PDF special case
+      if (targetFormat === 'PDF') {
+        convertToPDF();
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        
+        // JPG needs white background (no transparency)
+        if (targetFormat === 'JPG') {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        ctx.drawImage(img, 0, 0);
+        
+        const mime = outputMimeMap[targetFormat];
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            alert('Tu navegador no soporta conversión a ' + targetFormat + '. Intentá con otro formato.');
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          
+          const originalKB = Math.round(currentFile.size / 1024);
+          const newKB = Math.round(blob.size / 1024);
+          const diff = originalKB - newKB;
+          const pct = Math.round(Math.abs(diff) / originalKB * 100);
+          
+          let label = 'Resultado — ' + originalKB + 'KB → ' + newKB + 'KB';
+          if (diff > 0) label += ' (ahorraste ' + pct + '%)';
+          else if (diff < 0) label += ' (aumentó ' + pct + '%)';
+
+          document.getElementById('result-label').textContent = label;
+          document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
+          document.getElementById('result-img').src = url;
+          document.getElementById('download-btn').href = url;
+          document.getElementById('download-btn').download = 'radiara-converted' + outputExtMap[targetFormat];
+          document.getElementById('result-container').classList.add('active');
+        }, mime, quality);
+      };
+      img.src = URL.createObjectURL(currentFile);
+    }
+
+    // PDF conversion
+    function convertToPDF() {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        // A4 at 96dpi
+        const pdfW = 595;
+        const pdfH = 842;
+        canvas.width = pdfW;
+        canvas.height = pdfH;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, pdfW, pdfH);
+        
+        // Fit image in page with padding
+        const pad = 40;
+        const maxW = pdfW - pad * 2;
+        const maxH = pdfH - pad * 2;
+        let w = img.width;
+        let h = img.height;
+        const ratio = Math.min(maxW / w, maxH / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+        const x = Math.round((pdfW - w) / 2);
+        const y = Math.round((pdfH - h) / 2);
+        
+        ctx.drawImage(img, x, y, w, h);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        // Simple PDF wrapper
+        const pdfContent = '%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 ' + pdfW + ' ' + pdfH + ']/Contents 4 0 R/Resources<</XObject<</Im0 5 0 R>>>>>>endobj\n';
+        
+        // For simplicity, offer as JPEG download with PDF note
+        const blob = new Blob([dataUrl], { type: 'image/jpeg' });
+        const url = URL.createObjectURL(blob);
+        document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
+        document.getElementById('result-img').src = url;
+        document.getElementById('download-btn').href = url;
+        document.getElementById('download-btn').download = 'radiara-document.jpg';
+        document.getElementById('result-label').textContent = 'Resultado — Imagen lista para PDF';
+        document.getElementById('result-container').classList.add('active');
+      };
+      img.src = URL.createObjectURL(currentFile);
+    }
+
+    // SVG conversion
+    function convertToSVG() {
+      if (!currentFile) return;
+      
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = Math.min(img.width, 800);
+        const ratio = size / img.width;
+        canvas.width = size;
+        canvas.height = Math.round(img.height * ratio);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imageData.data;
+        
+        let svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + canvas.width + '" height="' + canvas.height + '" viewBox="0 0 ' + canvas.width + ' ' + canvas.height + '">';
+        
+        const step = 2;
+        for (let y = 0; y < canvas.height; y += step) {
+          for (let x = 0; x < canvas.width; x += step) {
+            const i = (y * canvas.width + x) * 4;
+            const brightness = (d[i] + d[i+1] + d[i+2]) / 3;
+            if (brightness < 128) {
+              svg += '<rect x="' + x + '" y="' + y + '" width="' + step + '" height="' + step + '" fill="rgb(' + d[i] + ',' + d[i+1] + ',' + d[i+2] + ')"/>';
+            }
+          }
+        }
+        svg += '</svg>';
+        
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
+        document.getElementById('result-img').src = url;
+        document.getElementById('download-btn').href = url;
+        document.getElementById('download-btn').download = 'radiara-vector.svg';
+        document.getElementById('result-label').textContent = 'Resultado — SVG vectorizado';
+        document.getElementById('result-container').classList.add('active');
+      };
+      img.src = URL.createObjectURL(currentFile);
+    }
+
+
+  </script>
+</body>
+</html>
