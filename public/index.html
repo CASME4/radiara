@@ -3,10 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RADIARA — Suite de Imágenes con IA</title>
+  <title>RADIARA — Suite de Imágenes con IA | Restaura, Mejora y Convierte</title>
+  <meta name="description" content="RADIARA — Suite de herramientas de imagen con IA. Restaurá fotos, mejorá productos, arreglá piel de modelos IA, y convertí entre formatos. Gratis y premium.">
+  <meta property="og:title" content="RADIARA — Suite de Imágenes con IA">
+  <meta property="og:description" content="RADIARA — Suite de herramientas de imagen con IA. Restaurá fotos, mejorá productos, arreglá piel de modelos IA, y convertí entre formatos. Gratis y premium.">
+  <meta property="og:image" content="/assets/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     
     :root {
       --bg: #0A0A0A;
@@ -491,6 +498,214 @@
 
 
 
+    /* PRICING */
+    .pricing-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .pricing-section .section-title {
+      font-family: var(--mono);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-section .section-subtitle {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      margin-bottom: 3rem;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .pricing-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+    }
+
+    .pricing-card.featured {
+      border-color: var(--accent);
+      box-shadow: 0 0 25px var(--accent-glow), 0 0 60px rgba(255, 51, 51, 0.06);
+    }
+
+    .pricing-card.featured:hover {
+      box-shadow: 0 0 30px var(--accent-glow), 0 0 80px rgba(255, 51, 51, 0.1);
+    }
+
+    .pricing-popular {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.25rem 0.8rem;
+      border-radius: 4px;
+    }
+
+    .pricing-card .plan-name {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+
+    .pricing-card .plan-price {
+      font-family: var(--mono);
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
+
+    .pricing-card .plan-price span {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--text-dim);
+    }
+
+    .pricing-card .plan-features {
+      list-style: none;
+      margin: 1.25rem 0;
+      flex-grow: 1;
+    }
+
+    .pricing-card .plan-features li {
+      font-size: 0.85rem;
+      color: var(--text-mid);
+      padding: 0.3rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+
+    .pricing-card .plan-features li::before {
+      content: '~';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-family: var(--mono);
+    }
+
+    .pricing-btn {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: block;
+    }
+
+    .pricing-btn:hover {
+      border-color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pricing-btn.btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .pricing-btn.btn-primary:hover {
+      background: #e62e2e;
+    }
+
+    .pricing-btn.btn-green {
+      background: var(--green);
+      border-color: var(--green);
+      color: #000;
+    }
+
+    .pricing-btn.btn-green:hover {
+      background: #00dd77;
+    }
+
+    /* CREDITS ROW */
+    .credits-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .credits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .credit-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+    }
+
+    .credit-card:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 20px var(--green-glow);
+      transform: translateY(-2px);
+    }
+
+    .credit-card .credit-amount {
+      font-family: var(--mono);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .credit-card .credit-price {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--green);
+      margin-top: 0.25rem;
+    }
+
     /* FOOTER */
     footer {
       max-width: 1200px;
@@ -580,6 +795,9 @@
       .controls-row { flex-direction: column; }
       .footer-inner { flex-direction: column; text-align: center; }
       .footer-links { justify-content: center; }
+      .pricing-section { padding: 3rem 1.5rem; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .credits-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -654,6 +872,76 @@
 
       <div class="privacy-note">
         <p>🔒 Las herramientas GRATIS procesan todo en tu navegador. Nada sale de tu dispositivo.</p>
+      </div>
+    </section>
+
+    <section id="precios" class="pricing-section">
+      <h2 class="section-title anim-entry">Precios</h2>
+      <p class="section-subtitle anim-entry">Elegí el plan que se ajuste a tu flujo de trabajo.</p>
+
+      <div class="pricing-grid">
+        <div class="pricing-card anim-entry">
+          <div class="plan-name">Gratis</div>
+          <div class="plan-price">$0</div>
+          <ul class="plan-features">
+            <li>Herramientas de conversión ilimitadas</li>
+            <li>3 imágenes IA por mes</li>
+            <li>Formatos básicos</li>
+          </ul>
+          <a href="#" class="pricing-btn btn-green" onclick="return false;">Empezar gratis</a>
+        </div>
+
+        <div class="pricing-card anim-entry">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">$4 <span>/mes</span></div>
+          <ul class="plan-features">
+            <li>30 imágenes IA por mes</li>
+            <li>Todos los formatos</li>
+            <li>Herramientas de conversión ilimitadas</li>
+          </ul>
+          <a href="https://wa.me/50200000000?text=Hola%2C%20me%20interesa%20el%20plan%20Starter%20de%20RADIARA" target="_blank" class="pricing-btn">Contactar</a>
+        </div>
+
+        <div class="pricing-card featured anim-entry">
+          <div class="pricing-popular">Más popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">$9 <span>/mes</span></div>
+          <ul class="plan-features">
+            <li>150 imágenes IA por mes</li>
+            <li>SUPIR incluido</li>
+            <li>Prioridad en cola</li>
+            <li>Todos los formatos</li>
+          </ul>
+          <a href="https://wa.me/50200000000?text=Hola%2C%20me%20interesa%20el%20plan%20Pro%20de%20RADIARA" target="_blank" class="pricing-btn btn-primary">Contactar</a>
+        </div>
+
+        <div class="pricing-card anim-entry">
+          <div class="plan-name">Business</div>
+          <div class="plan-price">$19 <span>/mes</span></div>
+          <ul class="plan-features">
+            <li>500 imágenes IA por mes</li>
+            <li>Acceso a API</li>
+            <li>Soporte prioritario</li>
+            <li>Todos los formatos</li>
+          </ul>
+          <a href="https://wa.me/50200000000?text=Hola%2C%20me%20interesa%20el%20plan%20Business%20de%20RADIARA" target="_blank" class="pricing-btn">Contactar</a>
+        </div>
+      </div>
+
+      <div class="credits-label">O comprá créditos sueltos</div>
+      <div class="credits-grid">
+        <a href="https://wa.me/50200000000?text=Hola%2C%20quiero%20comprar%2010%20cr%C3%A9ditos%20de%20RADIARA" target="_blank" class="credit-card anim-entry">
+          <div class="credit-amount">10 créditos</div>
+          <div class="credit-price">$2</div>
+        </a>
+        <a href="https://wa.me/50200000000?text=Hola%2C%20quiero%20comprar%2050%20cr%C3%A9ditos%20de%20RADIARA" target="_blank" class="credit-card anim-entry">
+          <div class="credit-amount">50 créditos</div>
+          <div class="credit-price">$6</div>
+        </a>
+        <a href="https://wa.me/50200000000?text=Hola%2C%20quiero%20comprar%20200%20cr%C3%A9ditos%20de%20RADIARA" target="_blank" class="credit-card anim-entry">
+          <div class="credit-amount">200 créditos</div>
+          <div class="credit-price">$19</div>
+        </a>
       </div>
     </section>
 
