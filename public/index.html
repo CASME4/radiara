@@ -936,6 +936,256 @@
       color: var(--green);
     }
 
+    /* CHECKOUT VIEW */
+    .checkout-view {
+      display: none;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    .checkout-view.active { display: block; }
+
+    .checkout-view h2 {
+      font-family: var(--mono);
+      font-size: 1.3rem;
+      margin-bottom: 2rem;
+    }
+
+    .checkout-summary {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .checkout-summary .checkout-item {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .checkout-summary .checkout-price {
+      font-family: var(--mono);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    .checkout-stripe-btn {
+      width: 100%;
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background: #635BFF;
+      border: none;
+      border-radius: 10px;
+      padding: 1rem;
+      cursor: not-allowed;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .checkout-secure {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .checkout-cards {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .checkout-cards span {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.3rem 0.6rem;
+    }
+
+    /* DASHBOARD VIEW */
+    .dashboard-view {
+      display: none;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .dashboard-view.active { display: block; }
+
+    .dash-header {
+      margin-bottom: 2rem;
+    }
+
+    .dash-header h2 {
+      font-family: var(--mono);
+      font-size: 1.3rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .dash-header p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .dash-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .dash-section h3 {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+    }
+
+    .dash-plan-name {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .dash-credits {
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .progress-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .dash-history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .dash-history-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .dash-history-item .dash-thumb {
+      width: 100%;
+      aspect-ratio: 1;
+      background: var(--card-hover);
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .dash-history-item .dash-tool {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .dash-history-item .dash-date {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-top: 0.15rem;
+    }
+
+    .dash-history-item .dash-status {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--green);
+      margin-top: 0.25rem;
+    }
+
+    /* ADMIN SECTION */
+    .dash-admin {
+      border-color: rgba(255, 51, 51, 0.3);
+    }
+
+    .dash-admin h3 { color: var(--accent); }
+
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-stat {
+      text-align: center;
+    }
+
+    .admin-stat .stat-val {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .admin-stat .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-top: 0.15rem;
+    }
+
+    .admin-log {
+      list-style: none;
+    }
+
+    .admin-log li {
+      font-size: 0.8rem;
+      color: var(--text-mid);
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+    }
+
+    .admin-log li:last-child { border-bottom: none; }
+
+    .admin-log .log-email { color: var(--text); }
+    .admin-log .log-tool { color: var(--accent); }
+    .admin-log .log-time { color: var(--text-dim); font-size: 0.7rem; }
+
     /* ENTRANCE ANIMATIONS */
     @keyframes fadeSlideUp {
       from {
@@ -978,6 +1228,10 @@
       .header-user { max-width: 100px; font-size: 0.65rem; }
       .auth-btn-header { font-size: 0.7rem; padding: 0.4rem 0.7rem; }
       .auth-modal { padding: 1.5rem; }
+      .dashboard-view { padding: 1.5rem; }
+      .dash-history-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-stats { grid-template-columns: repeat(2, 1fr); }
+      .checkout-view { padding: 2rem 1.5rem; }
     }
   </style>
 </head>
@@ -1109,7 +1363,7 @@
             <li>Todos los formatos</li>
             <li>Herramientas de conversión ilimitadas</li>
           </ul>
-          <a href="https://wa.me/50200000000?text=Hola%2C%20me%20interesa%20el%20plan%20Starter%20de%20RADIARA" target="_blank" class="pricing-btn">Contactar</a>
+          <button class="pricing-btn" onclick="initCheckout('Plan Starter','$8/mes')">Comprar</button>
         </div>
 
         <div class="pricing-card featured anim-entry">
@@ -1122,7 +1376,7 @@
             <li>Prioridad en cola</li>
             <li>Todos los formatos</li>
           </ul>
-          <a href="https://wa.me/50200000000?text=Hola%2C%20me%20interesa%20el%20plan%20Pro%20de%20RADIARA" target="_blank" class="pricing-btn btn-primary">Contactar</a>
+          <button class="pricing-btn btn-primary" onclick="initCheckout('Plan Pro','$15/mes')">Comprar</button>
         </div>
 
         <div class="pricing-card anim-entry">
@@ -1134,24 +1388,27 @@
             <li>Soporte prioritario</li>
             <li>Todos los formatos</li>
           </ul>
-          <a href="https://wa.me/50200000000?text=Hola%2C%20me%20interesa%20el%20plan%20Business%20de%20RADIARA" target="_blank" class="pricing-btn">Contactar</a>
+          <button class="pricing-btn" onclick="initCheckout('Plan Business','$29/mes')">Comprar</button>
         </div>
       </div>
 
       <div class="credits-label">O comprá créditos sueltos</div>
       <div class="credits-grid">
-        <a href="https://wa.me/50200000000?text=Hola%2C%20quiero%20comprar%2010%20cr%C3%A9ditos%20de%20RADIARA" target="_blank" class="credit-card anim-entry">
+        <div class="credit-card anim-entry" onclick="initCheckout('10 créditos','$3')">
           <div class="credit-amount">10 créditos</div>
           <div class="credit-price">$3</div>
-        </a>
-        <a href="https://wa.me/50200000000?text=Hola%2C%20quiero%20comprar%2050%20cr%C3%A9ditos%20de%20RADIARA" target="_blank" class="credit-card anim-entry">
+          <button class="pricing-btn" style="margin-top:0.75rem;font-size:0.75rem;padding:0.5rem;">Comprar</button>
+        </div>
+        <div class="credit-card anim-entry" onclick="initCheckout('50 créditos','$12')">
           <div class="credit-amount">50 créditos</div>
           <div class="credit-price">$12</div>
-        </a>
-        <a href="https://wa.me/50200000000?text=Hola%2C%20quiero%20comprar%20200%20cr%C3%A9ditos%20de%20RADIARA" target="_blank" class="credit-card anim-entry">
+          <button class="pricing-btn" style="margin-top:0.75rem;font-size:0.75rem;padding:0.5rem;">Comprar</button>
+        </div>
+        <div class="credit-card anim-entry" onclick="initCheckout('200 créditos','$29')">
           <div class="credit-amount">200 créditos</div>
           <div class="credit-price">$29</div>
-        </a>
+          <button class="pricing-btn" style="margin-top:0.75rem;font-size:0.75rem;padding:0.5rem;">Comprar</button>
+        </div>
       </div>
     </section>
 
@@ -1209,6 +1466,71 @@
         </div>
       </div>
       <a id="download-btn" class="download-btn" download>⬇ Descargar resultado</a>
+    </div>
+  </div>
+
+  <!-- CHECKOUT VIEW -->
+  <div id="checkout-view" class="checkout-view">
+    <button class="back-btn" onclick="closeCheckout()">← Volver a precios</button>
+    <h2>Checkout</h2>
+    <div class="checkout-summary">
+      <div class="checkout-item" id="checkout-item"></div>
+      <div class="checkout-price" id="checkout-price"></div>
+    </div>
+    <button class="checkout-stripe-btn" disabled>Pagar con Stripe — Próximamente</button>
+    <p class="checkout-secure">Pago seguro procesado por Stripe. Aceptamos Visa, Mastercard, American Express.</p>
+    <div class="checkout-cards">
+      <span>VISA</span>
+      <span>MC</span>
+      <span>AMEX</span>
+    </div>
+  </div>
+
+  <!-- DASHBOARD VIEW -->
+  <div id="dashboard-view" class="dashboard-view">
+    <button class="back-btn" onclick="closeDashboard()">← Volver</button>
+    <div class="dash-header">
+      <h2>Mi Dashboard</h2>
+      <p id="dash-email"></p>
+    </div>
+
+    <div class="dash-section">
+      <h3>Mi Plan</h3>
+      <div class="dash-plan-name" id="dash-plan">Gratis</div>
+      <div class="dash-credits" id="dash-credits-text">3 créditos restantes de 3</div>
+      <div class="progress-bar"><div class="progress-fill" id="dash-progress" style="width:100%"></div></div>
+      <div class="progress-label" id="dash-progress-label">3 / 3 usados este mes</div>
+    </div>
+
+    <div class="dash-section">
+      <h3>Historial de imágenes</h3>
+      <div class="dash-history-grid" id="dash-history"></div>
+    </div>
+
+    <div class="dash-section dash-admin" id="dash-admin" style="display:none">
+      <h3>Panel Admin</h3>
+      <div class="admin-stats">
+        <div class="admin-stat">
+          <div class="stat-val">127</div>
+          <div class="stat-label">Usuarios totales</div>
+        </div>
+        <div class="admin-stat">
+          <div class="stat-val">2,847</div>
+          <div class="stat-label">Imágenes procesadas</div>
+        </div>
+        <div class="admin-stat">
+          <div class="stat-val">$4.82</div>
+          <div class="stat-label">Costo Replicate hoy</div>
+        </div>
+      </div>
+      <h3 style="margin-top:1rem">Últimos procesamientos</h3>
+      <ul class="admin-log">
+        <li><span class="log-email">maria@gmail.com</span> <span class="log-tool">restore-face</span> <span class="log-time">hace 3 min</span></li>
+        <li><span class="log-email">carlos@outlook.com</span> <span class="log-tool">product-hd</span> <span class="log-time">hace 8 min</span></li>
+        <li><span class="log-email">ana@empresa.com</span> <span class="log-tool">remove-bg</span> <span class="log-time">hace 15 min</span></li>
+        <li><span class="log-email">diego@studio.co</span> <span class="log-tool">skin-real</span> <span class="log-time">hace 22 min</span></li>
+        <li><span class="log-email">lucia@foto.com</span> <span class="log-tool">max-quality</span> <span class="log-time">hace 31 min</span></li>
+      </ul>
     </div>
   </div>
 
@@ -1603,9 +1925,20 @@
     // AUTH (localStorage mock — se reemplaza con Supabase después)
     // ==================
 
-    function openAuthModal() {
+    var pendingCheckout = null; // guarda item/precio si el usuario no estaba logueado
+
+    function isLoggedIn() {
+      return !!localStorage.getItem('radiara_user');
+    }
+
+    function getUser() {
+      var s = localStorage.getItem('radiara_user');
+      return s ? JSON.parse(s) : null;
+    }
+
+    function openAuthModal(tab) {
       document.getElementById('auth-overlay').classList.add('active');
-      switchAuthTab('login');
+      switchAuthTab(tab || 'login');
       clearAuthForms();
     }
 
@@ -1624,12 +1957,10 @@
 
     function clearAuthForms() {
       ['login-email','login-password','reg-email','reg-password','reg-password2'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.value = '';
+        var el = document.getElementById(id); if (el) el.value = '';
       });
       ['login-error','reg-error','reg-success'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.style.display = 'none';
+        var el = document.getElementById(id); if (el) el.style.display = 'none';
       });
     }
 
@@ -1643,20 +1974,15 @@
       var email = document.getElementById('login-email').value.trim();
       var password = document.getElementById('login-password').value;
       document.getElementById('login-error').style.display = 'none';
-
-      if (!email || !password) {
-        showError('login-error', 'Completá email y contraseña.');
-        return;
-      }
-      if (!/\S+@\S+\.\S+/.test(email)) {
-        showError('login-error', 'Email inválido.');
-        return;
-      }
-
-      // Mock: guardar en localStorage
+      if (!email || !password) { showError('login-error', 'Completá email y contraseña.'); return; }
+      if (!/\S+@\S+\.\S+/.test(email)) { showError('login-error', 'Email inválido.'); return; }
       localStorage.setItem('radiara_user', JSON.stringify({ email: email }));
       closeAuthModal();
       updateHeaderAuth();
+      if (pendingCheckout) {
+        openCheckout(pendingCheckout.item, pendingCheckout.price);
+        pendingCheckout = null;
+      }
     }
 
     function handleRegister() {
@@ -1665,28 +1991,17 @@
       var password2 = document.getElementById('reg-password2').value;
       document.getElementById('reg-error').style.display = 'none';
       document.getElementById('reg-success').style.display = 'none';
-
-      if (!email || !password || !password2) {
-        showError('reg-error', 'Completá todos los campos.');
-        return;
-      }
-      if (!/\S+@\S+\.\S+/.test(email)) {
-        showError('reg-error', 'Email inválido.');
-        return;
-      }
-      if (password.length < 6) {
-        showError('reg-error', 'La contraseña debe tener al menos 6 caracteres.');
-        return;
-      }
-      if (password !== password2) {
-        showError('reg-error', 'Las contraseñas no coinciden.');
-        return;
-      }
-
-      // Mock: guardar y loguearse
+      if (!email || !password || !password2) { showError('reg-error', 'Completá todos los campos.'); return; }
+      if (!/\S+@\S+\.\S+/.test(email)) { showError('reg-error', 'Email inválido.'); return; }
+      if (password.length < 6) { showError('reg-error', 'La contraseña debe tener al menos 6 caracteres.'); return; }
+      if (password !== password2) { showError('reg-error', 'Las contraseñas no coinciden.'); return; }
       localStorage.setItem('radiara_user', JSON.stringify({ email: email }));
       closeAuthModal();
       updateHeaderAuth();
+      if (pendingCheckout) {
+        openCheckout(pendingCheckout.item, pendingCheckout.price);
+        pendingCheckout = null;
+      }
     }
 
     function handleLogout() {
@@ -1696,11 +2011,10 @@
 
     function updateHeaderAuth() {
       var authDiv = document.getElementById('header-auth');
-      var stored = localStorage.getItem('radiara_user');
-
-      if (stored) {
-        var user = JSON.parse(stored);
+      if (isLoggedIn()) {
+        var user = getUser();
         authDiv.innerHTML =
+          '<a href="#" class="auth-btn-header btn-login" onclick="openDashboard();return false;">Mi Dashboard</a>' +
           '<span class="header-user">' + user.email + '</span>' +
           '<button class="auth-btn-header btn-logout" onclick="handleLogout()">Cerrar sesión</button>';
       } else {
@@ -1709,7 +2023,88 @@
       }
     }
 
-    // Inicializar estado de auth al cargar
+    // ==================
+    // CHECKOUT
+    // ==================
+
+    function initCheckout(item, price) {
+      if (!isLoggedIn()) {
+        pendingCheckout = { item: item, price: price };
+        openAuthModal('login');
+        return;
+      }
+      openCheckout(item, price);
+    }
+
+    function openCheckout(item, price) {
+      document.getElementById('landing').style.display = 'none';
+      document.getElementById('tool-view').classList.remove('active');
+      document.getElementById('dashboard-view').classList.remove('active');
+      document.getElementById('checkout-view').classList.add('active');
+      document.getElementById('checkout-item').textContent = item;
+      document.getElementById('checkout-price').textContent = price;
+      window.scrollTo(0, 0);
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkout-view').classList.remove('active');
+      document.getElementById('landing').style.display = 'block';
+      window.scrollTo(0, 0);
+      // scroll to precios
+      setTimeout(function() { document.getElementById('precios').scrollIntoView({ behavior: 'smooth' }); }, 100);
+    }
+
+    // ==================
+    // DASHBOARD
+    // ==================
+
+    var mockHistory = [
+      { icon: '🧑', tool: 'Restaurar Cara', date: '28 Mar 2026', status: 'Completado' },
+      { icon: '💎', tool: 'Producto HD', date: '27 Mar 2026', status: 'Completado' },
+      { icon: '🔲', tool: 'Remover Fondo', date: '25 Mar 2026', status: 'Completado' },
+      { icon: '✨', tool: 'Piel Real', date: '24 Mar 2026', status: 'Completado' },
+      { icon: '🚀', tool: 'Máxima Calidad', date: '22 Mar 2026', status: 'Completado' },
+      { icon: '💎', tool: 'Producto HD', date: '20 Mar 2026', status: 'Completado' },
+    ];
+
+    function openDashboard() {
+      if (!isLoggedIn()) { openAuthModal(); return; }
+      var user = getUser();
+
+      document.getElementById('landing').style.display = 'none';
+      document.getElementById('tool-view').classList.remove('active');
+      document.getElementById('checkout-view').classList.remove('active');
+      document.getElementById('dashboard-view').classList.add('active');
+
+      document.getElementById('dash-email').textContent = user.email;
+
+      // Render history
+      var grid = document.getElementById('dash-history');
+      grid.innerHTML = '';
+      mockHistory.forEach(function(h) {
+        grid.innerHTML +=
+          '<div class="dash-history-item">' +
+            '<div class="dash-thumb">' + h.icon + '</div>' +
+            '<div class="dash-tool">' + h.tool + '</div>' +
+            '<div class="dash-date">' + h.date + '</div>' +
+            '<div class="dash-status">' + h.status + '</div>' +
+          '</div>';
+      });
+
+      // Admin check
+      var adminPanel = document.getElementById('dash-admin');
+      adminPanel.style.display = (user.email === 'admin@radiara.com') ? 'block' : 'none';
+
+      window.scrollTo(0, 0);
+    }
+
+    function closeDashboard() {
+      document.getElementById('dashboard-view').classList.remove('active');
+      document.getElementById('landing').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    // Init
     updateHeaderAuth();
 
   </script>
