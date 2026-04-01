@@ -2089,18 +2089,26 @@
         document.getElementById('tool-controls').style.display = 'block';
         document.getElementById('tool-controls').innerHTML =
           '<div class="controls-row">' +
-            '<div class="control-group" style="flex:1;min-width:160px">' +
-              '<label>Threshold: <span id="svg-thresh-val">128</span></label>' +
-              '<input type="range" id="svg-threshold" min="10" max="245" value="128" ' +
-                'style="width:100%;accent-color:var(--green);cursor:pointer;" ' +
-                'oninput="document.getElementById(\'svg-thresh-val\').textContent=this.value">' +
+            '<div class="control-group">' +
+              '<label>Preset</label>' +
+              '<select id="svg-preset" onchange="applySvgPreset(this.value)">' +
+                '<option value="logo" selected>Logo / Icono</option>' +
+                '<option value="illustration">Ilustracion</option>' +
+                '<option value="photo">Foto</option>' +
+              '</select>' +
             '</div>' +
             '<div class="control-group">' +
-              '<label>Modo color</label>' +
+              '<label>Colores</label>' +
               '<select id="svg-color-mode">' +
-                '<option value="bw" selected>Blanco y negro</option>' +
-                '<option value="color">Preservar colores</option>' +
+                '<option value="bw">Blanco y negro</option>' +
+                '<option value="color" selected>Color automatico</option>' +
               '</select>' +
+            '</div>' +
+            '<div class="control-group">' +
+              '<label>Max colores: <span id="svg-colors-val">12</span></label>' +
+              '<input type="range" id="svg-max-colors" min="2" max="64" value="12" ' +
+                'style="width:100%;accent-color:var(--green);cursor:pointer;" ' +
+                'oninput="document.getElementById(\'svg-colors-val\').textContent=this.value">' +
             '</div>' +
             '<div class="control-group">' +
               '<label>Suavizado</label>' +
@@ -2109,6 +2117,14 @@
                 '<option value="medium" selected>Medio — recomendado</option>' +
                 '<option value="high">Alto — mas limpio</option>' +
               '</select>' +
+            '</div>' +
+          '</div>' +
+          '<div class="controls-row">' +
+            '<div class="control-group" style="flex:1;min-width:160px">' +
+              '<label>Threshold (B/N): <span id="svg-thresh-val">128</span></label>' +
+              '<input type="range" id="svg-threshold" min="10" max="245" value="128" ' +
+                'style="width:100%;accent-color:var(--green);cursor:pointer;" ' +
+                'oninput="document.getElementById(\'svg-thresh-val\').textContent=this.value">' +
             '</div>' +
           '</div>';
         document.getElementById('file-input').accept = 'image/*';
@@ -2364,22 +2380,64 @@
     // SVG VECTORIZER
     // ==========================================
 
+    // ==========================================
+    // SVG VECTORIZER v2 — Median Cut + Anti-aliased Marching Squares
+    // ==========================================
+
+    // Preset configurations
+    var svgPresets = {
+      logo:         { maxPx: 800, maxColors: 8,  rdpTol: 0.5,  tension: 0.18, minContour: 6,  gaussR: 0, desc: 'Logo / Icono' },
+      illustration: { maxPx: 900, maxColors: 24, rdpTol: 1.0,  tension: 0.30, minContour: 4,  gaussR: 1, desc: 'Ilustracion' },
+      photo:        { maxPx: 700, maxColors: 48, rdpTol: 1.8,  tension: 0.38, minContour: 3,  gaussR: 2, desc: 'Foto' }
+    };
+
+    function applySvgPreset(preset) {
+      var p = svgPresets[preset];
+      if (!p) return;
+      var colorsEl = document.getElementById('svg-max-colors');
+      var colorsVal = document.getElementById('svg-colors-val');
+      var smoothEl = document.getElementById('svg-smooth');
+      if (colorsEl) { colorsEl.value = p.maxColors; }
+      if (colorsVal) { colorsVal.textContent = p.maxColors; }
+      if (smoothEl) {
+        if (p.rdpTol <= 0.6) smoothEl.value = 'low';
+        else if (p.rdpTol <= 1.2) smoothEl.value = 'medium';
+        else smoothEl.value = 'high';
+      }
+    }
+
     function convertToSVG() {
       if (!currentFile) return;
 
       var threshEl = document.getElementById('svg-threshold');
       var colorEl = document.getElementById('svg-color-mode');
       var smoothEl = document.getElementById('svg-smooth');
-      var threshold = threshEl ? parseInt(threshEl.value) : 128;
-      var colorMode = colorEl ? colorEl.value : 'bw';
-      var smooth = smoothEl ? smoothEl.value : 'medium';
+      var presetEl = document.getElementById('svg-preset');
+      var maxColorsEl = document.getElementById('svg-max-colors');
 
-      var smoothCfg = {
-        low:    { maxPx: 800, rdpTol: 0.6, tension: 0.2 },
-        medium: { maxPx: 700, rdpTol: 1.4, tension: 0.33 },
-        high:   { maxPx: 600, rdpTol: 2.8, tension: 0.45 }
+      var threshold = threshEl ? parseInt(threshEl.value) : 128;
+      var colorMode = colorEl ? colorEl.value : 'color';
+      var smooth = smoothEl ? smoothEl.value : 'medium';
+      var presetName = presetEl ? presetEl.value : 'logo';
+      var maxColors = maxColorsEl ? parseInt(maxColorsEl.value) : 12;
+
+      var preset = svgPresets[presetName] || svgPresets.logo;
+
+      var smoothOverrides = {
+        low:    { rdpTol: 0.5,  tension: 0.18 },
+        medium: { rdpTol: 1.2,  tension: 0.30 },
+        high:   { rdpTol: 2.2,  tension: 0.42 }
       };
-      var cfg = smoothCfg[smooth];
+      var so = smoothOverrides[smooth];
+
+      var cfg = {
+        maxPx: preset.maxPx,
+        maxColors: maxColors,
+        rdpTol: so.rdpTol,
+        tension: so.tension,
+        minContour: preset.minContour,
+        gaussR: preset.gaussR
+      };
 
       var img = new Image();
       img.onload = function() {
@@ -2393,97 +2451,336 @@
         var imageData = ctx.getImageData(0, 0, w, h);
         var px = imageData.data;
 
+        // Detect if image has meaningful alpha
+        var hasAlpha = detectAlpha(px, w, h);
+
+        // Optional gaussian blur for anti-aliasing
+        if (cfg.gaussR > 0) {
+          px = gaussianBlur(px, w, h, cfg.gaussR);
+        }
+
         var svg;
-        if (colorMode === 'color') {
-          svg = vectorizeColor(px, w, h, threshold, cfg);
+        if (colorMode === 'bw') {
+          svg = vectorizeBW(px, w, h, threshold, cfg, hasAlpha);
         } else {
-          svg = vectorizeBW(px, w, h, threshold, cfg);
+          svg = vectorizeColorV2(px, w, h, cfg, hasAlpha);
         }
 
         var blob = new Blob([svg], { type: 'image/svg+xml' });
         var url = URL.createObjectURL(blob);
         var sizeKB = (blob.size / 1024).toFixed(1);
         var pathCount = (svg.match(/<path/g) || []).length;
+        var colorCount = (svg.match(/fill="/g) || []).length - 1; // minus bg rect
         document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
         document.getElementById('result-img').src = url;
         document.getElementById('download-btn').href = url;
         document.getElementById('download-btn').download = 'radiara-vector.svg';
         document.getElementById('result-label').textContent =
-          'Resultado — SVG vectorizado — ' + sizeKB + ' KB — ' + pathCount + ' paths';
+          'Resultado — SVG ' + sizeKB + ' KB — ' + pathCount + ' paths — ' + Math.max(colorCount, 1) + ' colores';
         document.getElementById('result-container').classList.add('active');
         document.getElementById('svg-teaser').style.display = 'block';
       };
       img.src = URL.createObjectURL(currentFile);
     }
 
-    function vectorizeBW(px, w, h, threshold, cfg) {
-      var grid = buildGrid(px, w, h, threshold);
-      var contours = msTrace(grid, w, h);
-      var svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'];
-      svgParts.push('<rect width="100%" height="100%" fill="#fff"/>');
-      for (var i = 0; i < contours.length; i++) {
-        var s = rdp(contours[i], cfg.rdpTol);
-        if (s.length >= 3) svgParts.push('<path d="' + toBezier(s, cfg.tension) + '" fill="#000"/>');
+    // ==========================================
+    // ALPHA DETECTION
+    // ==========================================
+
+    function detectAlpha(px, w, h) {
+      var count = 0;
+      for (var i = 0; i < w * h; i++) {
+        if (px[i * 4 + 3] < 250) count++;
       }
-      svgParts.push('</svg>');
-      return svgParts.join('');
+      return count > (w * h * 0.01); // >1% transparent pixels
     }
 
-    function vectorizeColor(px, w, h, threshold, cfg) {
-      var bucketShift = 5;
-      var colorMap = {};
+    // ==========================================
+    // GAUSSIAN BLUR (anti-aliasing pre-pass)
+    // ==========================================
+
+    function gaussianBlur(px, w, h, radius) {
+      var out = new Uint8ClampedArray(px.length);
+      var kernel = buildGaussKernel(radius);
+      var kLen = kernel.length;
+      var kHalf = (kLen - 1) / 2;
+      // Horizontal pass
+      var tmp = new Uint8ClampedArray(px.length);
+      for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+          var r = 0, g = 0, b = 0, a = 0;
+          for (var k = 0; k < kLen; k++) {
+            var sx = Math.min(w - 1, Math.max(0, x + k - kHalf));
+            var idx = (y * w + sx) * 4;
+            var wt = kernel[k];
+            r += px[idx] * wt;
+            g += px[idx+1] * wt;
+            b += px[idx+2] * wt;
+            a += px[idx+3] * wt;
+          }
+          var oi = (y * w + x) * 4;
+          tmp[oi] = r; tmp[oi+1] = g; tmp[oi+2] = b; tmp[oi+3] = a;
+        }
+      }
+      // Vertical pass
+      for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+          var r = 0, g = 0, b = 0, a = 0;
+          for (var k = 0; k < kLen; k++) {
+            var sy = Math.min(h - 1, Math.max(0, y + k - kHalf));
+            var idx = (sy * w + x) * 4;
+            var wt = kernel[k];
+            r += tmp[idx] * wt;
+            g += tmp[idx+1] * wt;
+            b += tmp[idx+2] * wt;
+            a += tmp[idx+3] * wt;
+          }
+          var oi = (y * w + x) * 4;
+          out[oi] = r; out[oi+1] = g; out[oi+2] = b; out[oi+3] = a;
+        }
+      }
+      return out;
+    }
+
+    function buildGaussKernel(radius) {
+      var size = radius * 2 + 1;
+      var kernel = new Float32Array(size);
+      var sigma = radius / 2;
+      var sum = 0;
+      for (var i = 0; i < size; i++) {
+        var x = i - radius;
+        kernel[i] = Math.exp(-(x * x) / (2 * sigma * sigma));
+        sum += kernel[i];
+      }
+      for (var i = 0; i < size; i++) kernel[i] /= sum;
+      return kernel;
+    }
+
+    // ==========================================
+    // MEDIAN CUT COLOR QUANTIZATION
+    // ==========================================
+
+    function medianCutQuantize(px, w, h, maxColors, hasAlpha) {
+      // Collect unique-ish colors with pixel indices, skip transparent
+      var pixels = [];
       for (var i = 0; i < w * h; i++) {
         var idx = i * 4;
-        var a = px[idx+3];
-        if (a < 128) continue;
-        var qr = (px[idx] >> bucketShift) << bucketShift;
-        var qg = (px[idx+1] >> bucketShift) << bucketShift;
-        var qb = (px[idx+2] >> bucketShift) << bucketShift;
-        var key = qr + ',' + qg + ',' + qb;
-        if (!colorMap[key]) colorMap[key] = { r: qr, g: qg, b: qb, pixels: new Uint8Array(w * h) };
-        colorMap[key].pixels[i] = 1;
+        if (hasAlpha && px[idx+3] < 128) continue;
+        pixels.push({ r: px[idx], g: px[idx+1], b: px[idx+2], a: px[idx+3], i: i });
       }
 
-      var layers = Object.values(colorMap);
-      layers.sort(function(a, b) {
-        var ca = 0, cb = 0;
-        for (var j = 0; j < a.pixels.length; j++) { ca += a.pixels[j]; cb += b.pixels[j]; }
-        return cb - ca;
-      });
+      if (pixels.length === 0) return [];
 
-      if (layers.length > 24) layers = layers.slice(0, 24);
+      // Build initial bucket
+      var buckets = [{ pixels: pixels }];
 
-      var bgLayer = layers[0];
-      var bgColor = 'rgb('+bgLayer.r+','+bgLayer.g+','+bgLayer.b+')';
+      // Split buckets until we reach maxColors
+      while (buckets.length < maxColors) {
+        // Find the bucket with the largest color range
+        var bestIdx = -1;
+        var bestRange = -1;
+        for (var bi = 0; bi < buckets.length; bi++) {
+          if (buckets[bi].pixels.length < 2) continue;
+          var range = bucketColorRange(buckets[bi].pixels);
+          if (range.maxRange > bestRange) {
+            bestRange = range.maxRange;
+            bestIdx = bi;
+          }
+        }
+        if (bestIdx === -1) break;
 
+        var bucket = buckets[bestIdx];
+        var range = bucketColorRange(bucket.pixels);
+
+        // Sort by the channel with the widest range
+        var sortCh = range.maxChannel;
+        bucket.pixels.sort(function(a, b) { return a[sortCh] - b[sortCh]; });
+
+        var mid = Math.floor(bucket.pixels.length / 2);
+        var b1 = { pixels: bucket.pixels.slice(0, mid) };
+        var b2 = { pixels: bucket.pixels.slice(mid) };
+
+        buckets.splice(bestIdx, 1, b1, b2);
+      }
+
+      // Compute average color and pixel mask for each bucket
+      var layers = [];
+      for (var bi = 0; bi < buckets.length; bi++) {
+        var bpx = buckets[bi].pixels;
+        if (bpx.length === 0) continue;
+        var tr = 0, tg = 0, tb = 0;
+        var mask = new Uint8Array(w * h);
+        for (var pi = 0; pi < bpx.length; pi++) {
+          tr += bpx[pi].r;
+          tg += bpx[pi].g;
+          tb += bpx[pi].b;
+          mask[bpx[pi].i] = 1;
+        }
+        var n = bpx.length;
+        layers.push({
+          r: Math.round(tr / n),
+          g: Math.round(tg / n),
+          b: Math.round(tb / n),
+          pixels: mask,
+          count: n
+        });
+      }
+
+      // Sort by pixel count descending (draw big areas first)
+      layers.sort(function(a, b) { return b.count - a.count; });
+
+      return layers;
+    }
+
+    function bucketColorRange(pixels) {
+      var minR = 255, maxR = 0, minG = 255, maxG = 0, minB = 255, maxB = 0;
+      for (var i = 0; i < pixels.length; i++) {
+        var p = pixels[i];
+        if (p.r < minR) minR = p.r; if (p.r > maxR) maxR = p.r;
+        if (p.g < minG) minG = p.g; if (p.g > maxG) maxG = p.g;
+        if (p.b < minB) minB = p.b; if (p.b > maxB) maxB = p.b;
+      }
+      var rr = maxR - minR, rg = maxG - minG, rb = maxB - minB;
+      var maxRange = Math.max(rr, rg, rb);
+      var maxChannel = rr >= rg && rr >= rb ? 'r' : (rg >= rb ? 'g' : 'b');
+      return { maxRange: maxRange, maxChannel: maxChannel };
+    }
+
+    // ==========================================
+    // B/W VECTORIZATION (improved with alpha)
+    // ==========================================
+
+    function vectorizeBW(px, w, h, threshold, cfg, hasAlpha) {
+      var grid = buildGrid(px, w, h, threshold, hasAlpha);
+      var contours = msTrace(grid, w, h);
       var svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'];
-      svgParts.push('<rect width="100%" height="100%" fill="'+bgColor+'"/>');
-
-      for (var li = 1; li < layers.length; li++) {
-        var layer = layers[li];
-        var contours = msTrace(layer.pixels, w, h);
-        var fill = 'rgb('+layer.r+','+layer.g+','+layer.b+')';
-        for (var ci = 0; ci < contours.length; ci++) {
-          var s = rdp(contours[ci], cfg.rdpTol * 1.5);
-          if (s.length >= 3) svgParts.push('<path d="' + toBezier(s, cfg.tension) + '" fill="'+fill+'"/>');
+      if (!hasAlpha) {
+        svgParts.push('<rect width="100%" height="100%" fill="#fff"/>');
+      }
+      for (var i = 0; i < contours.length; i++) {
+        var s = rdp(contours[i], cfg.rdpTol);
+        if (s.length >= cfg.minContour) {
+          s = smoothContour(s, 0.25);
+          svgParts.push('<path d="' + toBezier(s, cfg.tension) + '" fill="#000"/>');
         }
       }
       svgParts.push('</svg>');
       return svgParts.join('');
     }
 
-    function buildGrid(px, w, h, threshold) {
+    // ==========================================
+    // COLOR VECTORIZATION v2 (Median Cut)
+    // ==========================================
+
+    function vectorizeColorV2(px, w, h, cfg, hasAlpha) {
+      var layers = medianCutQuantize(px, w, h, cfg.maxColors, hasAlpha);
+      if (layers.length === 0) {
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'"/>';
+      }
+
+      // Detect transparent pixels for alpha layer
+      var alphaMask = null;
+      if (hasAlpha) {
+        alphaMask = new Uint8Array(w * h);
+        for (var i = 0; i < w * h; i++) {
+          if (px[i * 4 + 3] < 128) alphaMask[i] = 1; // 1 = transparent
+        }
+      }
+
+      var bgLayer = layers[0];
+      var bgColor = 'rgb('+bgLayer.r+','+bgLayer.g+','+bgLayer.b+')';
+
+      var svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'];
+
+      if (hasAlpha) {
+        // No full bg rect; draw bg layer as contours too
+      } else {
+        svgParts.push('<rect width="100%" height="100%" fill="'+bgColor+'"/>');
+      }
+
+      var startLayer = hasAlpha ? 0 : 1;
+
+      for (var li = startLayer; li < layers.length; li++) {
+        var layer = layers[li];
+        // Dilate the mask slightly for smoother coverage (fill gaps between layers)
+        var dilated = dilateMask(layer.pixels, w, h);
+        var contours = msTrace(dilated, w, h);
+        var fill = 'rgb('+layer.r+','+layer.g+','+layer.b+')';
+        for (var ci = 0; ci < contours.length; ci++) {
+          var s = rdp(contours[ci], cfg.rdpTol);
+          if (s.length >= cfg.minContour) {
+            s = smoothContour(s, 0.25);
+            svgParts.push('<path d="' + toBezier(s, cfg.tension) + '" fill="'+fill+'"/>');
+          }
+        }
+      }
+
+      svgParts.push('</svg>');
+      return svgParts.join('');
+    }
+
+    // ==========================================
+    // MASK DILATION (1px, fills gaps between color layers)
+    // ==========================================
+
+    function dilateMask(mask, w, h) {
+      var out = new Uint8Array(mask.length);
+      for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+          if (mask[y * w + x]) { out[y * w + x] = 1; continue; }
+          // Check 4-connected neighbors
+          if (x > 0 && mask[y * w + x - 1]) { out[y * w + x] = 1; continue; }
+          if (x < w-1 && mask[y * w + x + 1]) { out[y * w + x] = 1; continue; }
+          if (y > 0 && mask[(y-1) * w + x]) { out[y * w + x] = 1; continue; }
+          if (y < h-1 && mask[(y+1) * w + x]) { out[y * w + x] = 1; continue; }
+        }
+      }
+      return out;
+    }
+
+    // ==========================================
+    // CONTOUR SMOOTHING (Chaikin subdivision)
+    // ==========================================
+
+    function smoothContour(pts, factor) {
+      if (pts.length < 3) return pts;
+      var out = [];
+      var n = pts.length;
+      for (var i = 0; i < n; i++) {
+        var p0 = pts[i];
+        var p1 = pts[(i + 1) % n];
+        out.push([
+          p0[0] * (1 - factor) + p1[0] * factor,
+          p0[1] * (1 - factor) + p1[1] * factor
+        ]);
+        out.push([
+          p0[0] * factor + p1[0] * (1 - factor),
+          p0[1] * factor + p1[1] * (1 - factor)
+        ]);
+      }
+      return out;
+    }
+
+    // ==========================================
+    // BUILD BINARY GRID (with alpha support)
+    // ==========================================
+
+    function buildGrid(px, w, h, threshold, hasAlpha) {
       var grid = new Uint8Array(w * h);
       for (var i = 0; i < w * h; i++) {
         var idx = i * 4;
+        if (hasAlpha && px[idx+3] < 128) continue; // transparent = 0
         var gray = px[idx] * 0.299 + px[idx+1] * 0.587 + px[idx+2] * 0.114;
         grid[i] = gray < threshold ? 1 : 0;
       }
       return grid;
     }
 
+    // ==========================================
+    // MARCHING SQUARES with interpolated edges
+    // ==========================================
+
     function msTrace(grid, w, h) {
-      var edgeVisited = {};
       var contours = [];
 
       function s(x, y) { return (x >= 0 && x < w && y >= 0 && y < h) ? grid[y * w + x] : 0; }
@@ -2572,6 +2869,10 @@
       return contours;
     }
 
+    // ==========================================
+    // Ramer-Douglas-Peucker simplification
+    // ==========================================
+
     function rdp(pts, tol) {
       if (pts.length <= 2) return pts;
       var maxD = 0, maxI = 0;
@@ -2595,6 +2896,10 @@
       var t = Math.max(0, Math.min(1, ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / len2));
       return Math.hypot(p[0] - (a[0]+t*dx), p[1] - (a[1]+t*dy));
     }
+
+    // ==========================================
+    // Catmull-Rom to Cubic Bezier path builder
+    // ==========================================
 
     function toBezier(pts, tension) {
       if (pts.length < 2) return '';
