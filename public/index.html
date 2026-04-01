@@ -3,32 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RADIARA — Suite de Imágenes con IA | Restaura, Mejora y Convierte</title>
-  <meta name="description" content="RADIARA — Suite de herramientas de imagen con IA. Restaurá fotos, mejorá productos, arreglá piel de modelos IA, y convertí entre formatos. Gratis y premium.">
-  <meta property="og:title" content="RADIARA — Suite de Imágenes con IA">
-  <meta property="og:description" content="RADIARA — Suite de herramientas de imagen con IA. Restaurá fotos, mejorá productos, arreglá piel de modelos IA, y convertí entre formatos. Gratis y premium.">
+  <title>RADIARA — Suite de Imagenes con IA | Restaura, Mejora y Convierte</title>
+  <meta name="description" content="RADIARA — Suite de herramientas de imagen con IA. Restaura fotos, mejora productos, arregla piel de modelos IA, y converti entre formatos. Gratis y premium.">
+  <meta property="og:title" content="RADIARA — Suite de Imagenes con IA">
+  <meta property="og:description" content="RADIARA — Suite de herramientas de imagen con IA. Restaura fotos, mejora productos, arregla piel de modelos IA, y converti entre formatos. Gratis y premium.">
   <meta property="og:image" content="/assets/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    
+
     :root {
-      --bg: #0A0A0A;
-      --card: #111111;
-      --card-hover: #1a1a1a;
-      --border: #222222;
-      --accent: #FF3333;
-      --accent-glow: rgba(255, 51, 51, 0.15);
-      --green: #00FF88;
-      --green-glow: rgba(0, 255, 136, 0.15);
-      --text: #FFFFFF;
-      --text-dim: #888888;
-      --text-mid: #CCCCCC;
+      --bg: #09090b;
+      --bg-subtle: #0f0f12;
+      --card: rgba(255,255,255,0.03);
+      --card-solid: #131316;
+      --card-hover: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.12);
+      --accent: #ff4444;
+      --accent-soft: rgba(255,68,68,0.12);
+      --accent-glow: rgba(255,68,68,0.2);
+      --green: #22c55e;
+      --green-soft: rgba(34,197,94,0.12);
+      --green-glow: rgba(34,197,94,0.2);
+      --purple: #a855f7;
+      --blue: #3b82f6;
+      --text: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-tertiary: #71717a;
       --mono: 'JetBrains Mono', monospace;
-      --sans: 'DM Sans', system-ui, sans-serif;
+      --sans: 'Inter', -apple-system, system-ui, sans-serif;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
     }
 
     body {
@@ -37,11 +49,80 @@
       font-family: var(--sans);
       min-height: 100vh;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* HEADER */
+    /* ===== NAVBAR ===== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 0 2rem;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    .navbar.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(9,9,11,0.7);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 0 1.5rem;
+    }
+
+    .nav-logo {
+      font-family: var(--sans);
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-auth {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* ===== HEADER (initial, before scroll) ===== */
     header {
-      padding: 2rem 2rem 0;
+      padding: 1.5rem 2rem;
       max-width: 1200px;
       margin: 0 auto;
       display: flex;
@@ -50,19 +131,14 @@
     }
 
     .logo {
-      font-family: var(--mono);
-      font-size: 1.4rem;
+      font-family: var(--sans);
+      font-size: 1.3rem;
       font-weight: 800;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
+      letter-spacing: -0.02em;
     }
 
-    .logo span {
-      color: var(--accent);
-      text-shadow: 0 0 10px rgba(255, 51, 51, 0.5), 0 0 30px rgba(255, 51, 51, 0.2);
-    }
+    .logo span { color: var(--accent); }
 
-    /* AUTH HEADER */
     .header-auth {
       display: flex;
       align-items: center;
@@ -70,9 +146,8 @@
     }
 
     .header-user {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      color: var(--text-mid);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
       max-width: 180px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -80,32 +155,33 @@
     }
 
     .auth-btn-header {
-      font-family: var(--mono);
       font-size: 0.8rem;
-      font-weight: 700;
-      padding: 0.45rem 1rem;
-      border-radius: 6px;
+      font-weight: 500;
+      padding: 0.5rem 1.1rem;
+      border-radius: var(--radius-xs);
       cursor: pointer;
       transition: all 0.2s;
       text-decoration: none;
+      font-family: var(--sans);
     }
 
     .auth-btn-header.btn-login {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
+      background: var(--text);
+      border: none;
+      color: var(--bg);
+      font-weight: 600;
     }
 
     .auth-btn-header.btn-login:hover {
-      border-color: var(--text-dim);
+      background: #e4e4e7;
     }
 
     .auth-btn-header.btn-logout {
       background: transparent;
       border: 1px solid var(--border);
-      color: var(--text-dim);
+      color: var(--text-secondary);
       font-weight: 400;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
     }
 
     .auth-btn-header.btn-logout:hover {
@@ -113,32 +189,35 @@
       color: var(--accent);
     }
 
-    /* AUTH MODAL */
+    /* ===== AUTH MODAL ===== */
     .auth-overlay {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 1000;
       align-items: center;
       justify-content: center;
     }
 
-    .auth-overlay.active {
-      display: flex;
-    }
+    .auth-overlay.active { display: flex; }
 
     .auth-modal {
-      background: var(--card);
+      background: var(--card-solid);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: var(--radius);
       width: 90%;
       max-width: 400px;
       padding: 2rem;
       position: relative;
-      animation: fadeSlideUp 0.3s ease-out;
+      animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .auth-close {
@@ -147,8 +226,8 @@
       right: 1rem;
       background: none;
       border: none;
-      color: var(--text-dim);
-      font-size: 1.3rem;
+      color: var(--text-tertiary);
+      font-size: 1.2rem;
       cursor: pointer;
       line-height: 1;
       padding: 0.25rem;
@@ -166,10 +245,10 @@
 
     .auth-tab {
       flex: 1;
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--text-dim);
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-tertiary);
       background: none;
       border: none;
       border-bottom: 2px solid transparent;
@@ -183,18 +262,18 @@
       border-bottom-color: var(--accent);
     }
 
-    .auth-tab:hover:not(.active) { color: var(--text-mid); }
+    .auth-tab:hover:not(.active) { color: var(--text-secondary); }
 
     .auth-form { display: none; }
     .auth-form.active { display: block; }
 
     .auth-input {
       width: 100%;
-      padding: 0.7rem 0.9rem;
+      padding: 0.75rem 1rem;
       margin-bottom: 0.75rem;
       background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       color: var(--text);
       font-family: var(--sans);
       font-size: 0.9rem;
@@ -203,8 +282,7 @@
     }
 
     .auth-input:focus { border-color: var(--accent); }
-
-    .auth-input::placeholder { color: #555; }
+    .auth-input::placeholder { color: var(--text-tertiary); }
 
     .auth-error {
       font-size: 0.8rem;
@@ -222,64 +300,68 @@
 
     .auth-submit {
       width: 100%;
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 0.9rem;
-      font-weight: 700;
+      font-weight: 600;
       color: #fff;
       background: var(--accent);
       border: none;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       padding: 0.8rem;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
 
-    .auth-submit:hover { background: #e62e2e; }
+    .auth-submit:hover { background: #e03c3c; }
 
-    /* HERO */
+    /* ===== HERO ===== */
     .hero {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 4rem 2rem 3rem;
+      padding: 8rem 2rem 6rem;
+      text-align: center;
+      position: relative;
     }
 
-    .hero h1 {
-      font-family: var(--mono);
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 1rem;
+    .hero-glow {
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse at center,
+        rgba(255,68,68,0.08) 0%,
+        rgba(168,85,247,0.04) 40%,
+        transparent 70%);
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .hero h1 span { color: var(--accent); }
-
-    .hero p {
-      color: var(--text-dim);
-      font-size: 1.1rem;
-      max-width: 500px;
-      line-height: 1.6;
+    .hero-content {
+      position: relative;
+      z-index: 1;
     }
 
-    .hero-counter {
+    .hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      margin-top: 1.5rem;
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      color: var(--text-mid);
+      padding: 0.4rem 1rem;
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.5rem 1rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
     }
 
-    .hero-counter .counter-dot {
+    .hero-badge .badge-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
       background: var(--green);
-      box-shadow: 0 0 6px var(--green);
+      box-shadow: 0 0 8px var(--green);
       animation: pulse-dot 2s ease-in-out infinite;
     }
 
@@ -288,32 +370,157 @@
       50% { opacity: 0.4; }
     }
 
-    .hero-counter strong {
-      color: var(--text);
-      font-weight: 700;
+    .hero h1 {
+      font-family: var(--sans);
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
     }
 
-    /* TOOLS GRID */
-    .tools-section {
+    .hero h1 .hero-word {
+      display: inline-block;
+      opacity: 0;
+    }
+
+    .hero h1 .accent-word { color: var(--accent); }
+
+    .hero h1 .gradient-word {
+      background: linear-gradient(135deg, var(--accent), var(--purple), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      color: var(--text-secondary);
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+      font-weight: 400;
+      opacity: 0;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+    }
+
+    .hero-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      background: var(--text);
+      color: var(--bg);
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .hero-btn-primary:hover {
+      background: #e4e4e7;
+      transform: translateY(-1px);
+    }
+
+    .hero-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .hero-btn-secondary:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .hero-counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 3rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      opacity: 0;
+    }
+
+    .hero-counter .counter-number {
+      font-family: var(--mono);
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ===== SECTIONS SHARED ===== */
+    .section-container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 2rem 4rem;
+      padding: 6rem 2rem;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
     }
 
     .section-label {
       font-family: var(--mono);
       font-size: 0.75rem;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.15em;
       color: var(--accent);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
+      display: block;
     }
 
-    .section-label.free-label { color: var(--green); }
+    .section-label.green { color: var(--green); }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ===== TOOLS GRID ===== */
+    .tools-section {
+      border-top: 1px solid var(--border);
+    }
 
     .tools-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 1rem;
       margin-bottom: 3rem;
     }
@@ -321,67 +528,73 @@
     .tool-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
+      border-radius: var(--radius);
+      padding: 1.75rem;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       overflow: hidden;
+      will-change: transform;
     }
 
-    .tool-card:hover {
-      background: var(--card-hover);
-      border-color: var(--accent);
-      box-shadow: 0 0 20px var(--accent-glow), 0 0 60px rgba(255, 51, 51, 0.08), inset 0 0 30px rgba(255, 51, 51, 0.03);
-      transform: translateY(-3px);
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius);
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        rgba(255,68,68,0.06), transparent 40%);
+      pointer-events: none;
     }
 
-    .tool-card.free:hover {
-      border-color: var(--green);
-      box-shadow: 0 0 20px var(--green-glow), 0 0 60px rgba(0, 255, 136, 0.08), inset 0 0 30px rgba(0, 255, 136, 0.03);
+    .tool-card:hover::before { opacity: 1; }
+
+    .tool-card.free::before {
+      background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        rgba(34,197,94,0.06), transparent 40%);
     }
 
     .tool-badge {
       font-family: var(--mono);
       font-size: 0.65rem;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      padding: 0.25rem 0.6rem;
-      border-radius: 4px;
+      padding: 0.25rem 0.65rem;
+      border-radius: 100px;
       display: inline-block;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
 
     .badge-ai {
-      background: var(--accent-glow);
+      background: var(--accent-soft);
       color: var(--accent);
-      border: 1px solid rgba(255, 51, 51, 0.3);
     }
 
     .badge-free {
-      background: var(--green-glow);
+      background: var(--green-soft);
       color: var(--green);
-      border: 1px solid rgba(0, 255, 136, 0.3);
     }
 
     .tool-icon {
       font-size: 2rem;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
       display: block;
     }
 
     .tool-card h3 {
-      font-family: var(--mono);
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
     }
 
     .tool-card p {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      line-height: 1.5;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      line-height: 1.6;
     }
 
     .tool-card .formats {
@@ -389,26 +602,384 @@
       font-family: var(--mono);
       font-size: 0.7rem;
       color: var(--green);
-      opacity: 0.7;
+      opacity: 0.8;
     }
 
-    /* TOOL VIEW */
+    .privacy-note {
+      background: var(--green-soft);
+      border: 1px solid rgba(34,197,94,0.15);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.5rem;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .privacy-note p {
+      font-size: 0.82rem;
+      color: var(--green);
+    }
+
+    /* ===== PRICING ===== */
+    .pricing-section {
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+    }
+
+    .pricing-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .pricing-toggle-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .pricing-toggle-label.active { color: var(--text); }
+
+    .pricing-toggle-switch {
+      width: 48px;
+      height: 26px;
+      background: var(--border);
+      border-radius: 100px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+      border: none;
+      padding: 0;
+    }
+
+    .pricing-toggle-switch.annual { background: var(--accent); }
+
+    .pricing-toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pricing-toggle-switch.annual::after {
+      transform: translateX(22px);
+    }
+
+    .pricing-save-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--green);
+      background: var(--green-soft);
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 4rem;
+    }
+
+    .pricing-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      backdrop-filter: blur(10px);
+    }
+
+    .pricing-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+    }
+
+    .pricing-card.featured {
+      border-color: var(--accent);
+      background: rgba(255,68,68,0.03);
+      box-shadow: 0 0 40px rgba(255,68,68,0.06), 0 0 80px rgba(255,68,68,0.03);
+    }
+
+    .pricing-card.featured:hover {
+      box-shadow: 0 0 50px rgba(255,68,68,0.1), 0 0 100px rgba(255,68,68,0.05);
+    }
+
+    .pricing-popular {
+      position: absolute;
+      top: -11px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.25rem 1rem;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .pricing-card .plan-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    .pricing-card .plan-price {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+      line-height: 1;
+    }
+
+    .pricing-card .plan-price span {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--text-tertiary);
+    }
+
+    .pricing-card .plan-period {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-card .plan-features {
+      list-style: none;
+      margin: 0 0 1.5rem;
+      flex-grow: 1;
+    }
+
+    .pricing-card .plan-features li {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      padding: 0.4rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+
+    .pricing-card .plan-features li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2322c55e'%3E%3Cpath d='M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z'/%3E%3C/svg%3E") no-repeat center;
+    }
+
+    .pricing-btn {
+      font-family: var(--sans);
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: block;
+    }
+
+    .pricing-btn:hover {
+      border-color: var(--border-hover);
+      background: var(--card-hover);
+    }
+
+    .pricing-btn.btn-primary {
+      background: var(--text);
+      border-color: var(--text);
+      color: var(--bg);
+    }
+
+    .pricing-btn.btn-primary:hover {
+      background: #e4e4e7;
+    }
+
+    .pricing-btn.btn-green {
+      background: var(--green);
+      border-color: var(--green);
+      color: #000;
+      font-weight: 700;
+    }
+
+    .pricing-btn.btn-green:hover {
+      background: #16a34a;
+    }
+
+    /* CREDITS ROW */
+    .credits-section {
+      text-align: center;
+    }
+
+    .credits-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .credits-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .credit-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+    }
+
+    .credit-card:hover {
+      border-color: var(--green);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(34,197,94,0.08);
+    }
+
+    .credit-card .credit-amount {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .credit-card .credit-price {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--green);
+      margin-top: 0.35rem;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem 2rem;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+
+    .footer-brand-col .footer-logo {
+      font-family: var(--sans);
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .footer-brand-col .footer-logo span { color: var(--accent); }
+
+    .footer-brand-col p {
+      color: var(--text-tertiary);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    .footer-col h4 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      text-decoration: none;
+      padding: 0.3rem 0;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: var(--text); }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-bottom p {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+    }
+
+    .footer-bottom-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-bottom-links a {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-bottom-links a:hover { color: var(--text-secondary); }
+
+    /* ===== TOOL VIEW ===== */
     .tool-view {
       display: none;
       max-width: 800px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 6rem 2rem 2rem;
     }
 
     .tool-view.active { display: block; }
 
     .back-btn {
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 0.85rem;
-      color: var(--text-dim);
+      color: var(--text-secondary);
       background: none;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-xs);
       padding: 0.5rem 1rem;
       cursor: pointer;
       margin-bottom: 2rem;
@@ -417,24 +988,25 @@
 
     .back-btn:hover {
       color: var(--text);
-      border-color: var(--text-dim);
+      border-color: var(--border-hover);
     }
 
     .tool-view h2 {
-      font-family: var(--mono);
       font-size: 1.5rem;
+      font-weight: 700;
       margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
     }
 
     .tool-view .subtitle {
-      color: var(--text-dim);
+      color: var(--text-secondary);
       margin-bottom: 2rem;
     }
 
     /* UPLOAD AREA */
     .upload-area {
       border: 2px dashed var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius);
       padding: 3rem 2rem;
       text-align: center;
       cursor: pointer;
@@ -444,63 +1016,59 @@
 
     .upload-area:hover {
       border-color: var(--accent);
-      background: rgba(255, 51, 51, 0.03);
+      background: rgba(255, 68, 68, 0.02);
     }
 
     .upload-area.free-upload:hover {
       border-color: var(--green);
-      background: rgba(0, 255, 136, 0.03);
+      background: rgba(34, 197, 94, 0.02);
     }
 
     .upload-area.dragover {
       border-color: var(--accent);
-      background: rgba(255, 51, 51, 0.08);
+      background: rgba(255, 68, 68, 0.05);
     }
 
     .upload-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
 
     .upload-area h3 {
-      font-family: var(--mono);
       font-size: 0.95rem;
+      font-weight: 600;
       margin-bottom: 0.5rem;
     }
 
     .upload-area p {
-      color: var(--text-dim);
+      color: var(--text-secondary);
       font-size: 0.8rem;
     }
 
     .upload-area input[type="file"] { display: none; }
 
     /* PREVIEW */
-    .preview-container {
-      display: none;
-      margin-bottom: 1.5rem;
-    }
-
+    .preview-container { display: none; margin-bottom: 1.5rem; }
     .preview-container.active { display: block; }
 
     .preview-img {
       max-width: 100%;
       max-height: 400px;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border);
     }
 
     .file-info {
       font-family: var(--mono);
       font-size: 0.75rem;
-      color: var(--text-dim);
+      color: var(--text-secondary);
       margin-top: 0.5rem;
     }
 
     .change-img-btn {
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 0.8rem;
-      color: var(--text-dim);
+      color: var(--text-secondary);
       background: none;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-xs);
       padding: 0.5rem 1.2rem;
       cursor: pointer;
       margin-top: 0.75rem;
@@ -509,19 +1077,19 @@
 
     .change-img-btn:hover {
       color: var(--text);
-      border-color: var(--text-dim);
+      border-color: var(--border-hover);
     }
 
     /* BUTTONS */
     .process-btn {
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 0.9rem;
-      font-weight: 700;
+      font-weight: 600;
       color: #fff;
       background: var(--accent);
       border: none;
-      border-radius: 8px;
-      padding: 0.8rem 2rem;
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 2rem;
       cursor: pointer;
       transition: all 0.2s;
       display: none;
@@ -529,18 +1097,13 @@
     }
 
     .process-btn.visible { display: block; }
-    .process-btn:hover { background: #e62e2e; }
-    .process-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
-    .process-btn.free-btn { background: var(--green); color: #000; }
-    .process-btn.free-btn:hover { background: #00dd77; }
+    .process-btn:hover { background: #e03c3c; }
+    .process-btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; }
+    .process-btn.free-btn { background: var(--green); color: #000; font-weight: 700; }
+    .process-btn.free-btn:hover { background: #16a34a; }
 
     /* LOADING */
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 2rem;
-    }
-
+    .loading { display: none; text-align: center; padding: 2rem; }
     .loading.active { display: block; }
 
     .spinner {
@@ -556,22 +1119,17 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .loading p {
-      font-family: var(--mono);
       font-size: 0.85rem;
-      color: var(--text-dim);
+      color: var(--text-secondary);
     }
 
     /* RESULT */
-    .result-container {
-      display: none;
-      margin-top: 2rem;
-    }
-
+    .result-container { display: none; margin-top: 2rem; }
     .result-container.active { display: block; }
 
     .result-label {
       font-family: var(--mono);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       margin-bottom: 1rem;
     }
 
@@ -583,26 +1141,20 @@
     }
 
     @media (min-width: 700px) {
-      .result-comparison {
-        flex-direction: row;
-        align-items: flex-start;
-      }
-      .result-comparison .comparison-col {
-        flex: 1;
-        min-width: 0;
-      }
+      .result-comparison { flex-direction: row; align-items: flex-start; }
+      .result-comparison .comparison-col { flex: 1; min-width: 0; }
     }
 
     .comparison-col img {
       max-width: 100%;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border);
     }
 
     .comparison-col .comp-label {
       font-family: var(--mono);
       font-size: 0.7rem;
-      color: var(--text-dim);
+      color: var(--text-tertiary);
       text-transform: uppercase;
       letter-spacing: 0.1em;
       margin-bottom: 0.5rem;
@@ -610,19 +1162,19 @@
 
     .result-img {
       max-width: 100%;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border);
       margin-bottom: 1rem;
     }
 
     .download-btn {
-      font-family: var(--mono);
-      font-size: 1.05rem;
+      font-family: var(--sans);
+      font-size: 1rem;
       font-weight: 700;
       color: #000;
       background: var(--green);
       border: none;
-      border-radius: 10px;
+      border-radius: var(--radius-sm);
       padding: 1rem 2.5rem;
       cursor: pointer;
       text-decoration: none;
@@ -630,10 +1182,9 @@
       width: 100%;
       text-align: center;
       transition: all 0.2s;
-      box-shadow: 0 0 20px var(--green-glow);
     }
 
-    .download-btn:hover { background: #00dd77; box-shadow: 0 0 30px rgba(0, 255, 136, 0.3); }
+    .download-btn:hover { background: #16a34a; }
 
     /* CONTROLS */
     .controls-row {
@@ -652,16 +1203,16 @@
     .control-group label {
       font-family: var(--mono);
       font-size: 0.7rem;
-      color: var(--text-dim);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
     .control-group select {
-      background: var(--card);
+      background: var(--card-solid);
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: var(--radius-xs);
       padding: 0.5rem 0.8rem;
       font-family: var(--mono);
       font-size: 0.8rem;
@@ -673,302 +1224,38 @@
       border-color: var(--green);
     }
 
-
-
-    /* PRICING */
-    .pricing-section {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 4rem 2rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .pricing-section .section-title {
-      font-family: var(--mono);
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 800;
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .pricing-section .section-subtitle {
-      text-align: center;
-      color: var(--text-dim);
-      font-size: 0.95rem;
-      margin-bottom: 3rem;
-    }
-
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-      margin-bottom: 3rem;
-    }
-
-    .pricing-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-
-    .pricing-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
-    }
-
-    .pricing-card.featured {
-      border-color: var(--accent);
-      box-shadow: 0 0 25px var(--accent-glow), 0 0 60px rgba(255, 51, 51, 0.06);
-    }
-
-    .pricing-card.featured:hover {
-      box-shadow: 0 0 30px var(--accent-glow), 0 0 80px rgba(255, 51, 51, 0.1);
-    }
-
-    .pricing-popular {
-      position: absolute;
-      top: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      background: var(--accent);
-      color: #fff;
-      padding: 0.25rem 0.8rem;
-      border-radius: 4px;
-    }
-
-    .pricing-card .plan-name {
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      margin-bottom: 0.75rem;
-    }
-
-    .pricing-card .plan-price {
-      font-family: var(--mono);
-      font-size: 2.2rem;
-      font-weight: 800;
-      margin-bottom: 0.25rem;
-    }
-
-    .pricing-card .plan-price span {
-      font-size: 0.85rem;
-      font-weight: 400;
-      color: var(--text-dim);
-    }
-
-    .pricing-card .plan-features {
-      list-style: none;
-      margin: 1.25rem 0;
-      flex-grow: 1;
-    }
-
-    .pricing-card .plan-features li {
-      font-size: 0.85rem;
-      color: var(--text-mid);
-      padding: 0.3rem 0;
-      padding-left: 1.2rem;
-      position: relative;
-    }
-
-    .pricing-card .plan-features li::before {
-      content: '~';
-      position: absolute;
-      left: 0;
-      color: var(--green);
-      font-family: var(--mono);
-    }
-
-    .pricing-btn {
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-align: center;
-      text-decoration: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      color: var(--text);
-      background: transparent;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: block;
-    }
-
-    .pricing-btn:hover {
-      border-color: var(--text-dim);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .pricing-btn.btn-primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .pricing-btn.btn-primary:hover {
-      background: #e62e2e;
-    }
-
-    .pricing-btn.btn-green {
-      background: var(--green);
-      border-color: var(--green);
-      color: #000;
-    }
-
-    .pricing-btn.btn-green:hover {
-      background: #00dd77;
-    }
-
-    /* CREDITS ROW */
-    .credits-label {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--text-dim);
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    .credits-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    .credit-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem;
-      text-align: center;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      text-decoration: none;
-      display: block;
-    }
-
-    .credit-card:hover {
-      border-color: var(--green);
-      box-shadow: 0 0 20px var(--green-glow);
-      transform: translateY(-2px);
-    }
-
-    .credit-card .credit-amount {
-      font-family: var(--mono);
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .credit-card .credit-price {
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      color: var(--green);
-      margin-top: 0.25rem;
-    }
-
-    /* FOOTER */
-    footer {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2.5rem 2rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .footer-inner {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .footer-brand {
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      color: var(--text-dim);
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 2rem;
-    }
-
-    .footer-links a {
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .footer-links a:hover {
-      color: var(--text);
-    }
-
-    .privacy-note {
-      background: rgba(0, 255, 136, 0.05);
-      border: 1px solid rgba(0, 255, 136, 0.15);
-      border-radius: 8px;
-      padding: 1rem;
-      margin-top: 2rem;
-      text-align: center;
-    }
-
-    .privacy-note p {
-      font-size: 0.8rem;
-      color: var(--green);
-    }
-
-    /* CHECKOUT VIEW */
+    /* ===== CHECKOUT VIEW ===== */
     .checkout-view {
       display: none;
       max-width: 560px;
       margin: 0 auto;
-      padding: 3rem 2rem;
+      padding: 6rem 2rem 3rem;
     }
 
     .checkout-view.active { display: block; }
 
     .checkout-view h2 {
-      font-family: var(--mono);
       font-size: 1.3rem;
+      font-weight: 700;
       margin-bottom: 2rem;
+      letter-spacing: -0.02em;
     }
 
     .checkout-summary {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius);
       padding: 1.5rem;
       margin-bottom: 2rem;
     }
 
     .checkout-summary .checkout-item {
-      font-family: var(--mono);
       font-size: 1.1rem;
       font-weight: 700;
       margin-bottom: 0.25rem;
     }
 
     .checkout-summary .checkout-price {
-      font-family: var(--mono);
       font-size: 1.8rem;
       font-weight: 800;
       color: var(--green);
@@ -976,13 +1263,13 @@
 
     .checkout-stripe-btn {
       width: 100%;
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 1rem;
       font-weight: 700;
       color: #fff;
       background: #635BFF;
       border: none;
-      border-radius: 10px;
+      border-radius: var(--radius-sm);
       padding: 1rem;
       cursor: not-allowed;
       opacity: 0.5;
@@ -991,7 +1278,7 @@
 
     .checkout-secure {
       text-align: center;
-      color: var(--text-dim);
+      color: var(--text-secondary);
       font-size: 0.8rem;
       margin-bottom: 0.75rem;
     }
@@ -1006,68 +1293,58 @@
     .checkout-cards span {
       font-family: var(--mono);
       font-size: 0.7rem;
-      color: var(--text-dim);
+      color: var(--text-secondary);
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: var(--radius-xs);
       padding: 0.3rem 0.6rem;
     }
 
-    /* DASHBOARD VIEW */
+    /* ===== DASHBOARD VIEW ===== */
     .dashboard-view {
       display: none;
       max-width: 900px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 6rem 2rem 2rem;
     }
 
     .dashboard-view.active { display: block; }
 
-    .dash-header {
-      margin-bottom: 2rem;
-    }
+    .dash-header { margin-bottom: 2rem; }
 
     .dash-header h2 {
-      font-family: var(--mono);
       font-size: 1.3rem;
+      font-weight: 700;
       margin-bottom: 0.25rem;
+      letter-spacing: -0.02em;
     }
 
-    .dash-header p {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-    }
+    .dash-header p { color: var(--text-secondary); font-size: 0.85rem; }
 
     .dash-section {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius);
       padding: 1.5rem;
       margin-bottom: 1.5rem;
     }
 
     .dash-section h3 {
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      font-weight: 700;
+      font-size: 0.8rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
       margin-bottom: 1rem;
     }
 
     .dash-plan-name {
-      font-family: var(--mono);
       font-size: 1.1rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
     }
 
-    .dash-credits {
-      font-size: 0.9rem;
-      color: var(--text-mid);
-      margin-bottom: 0.75rem;
-    }
+    .dash-credits { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
 
     .progress-bar {
       width: 100%;
@@ -1088,7 +1365,7 @@
     .progress-label {
       font-family: var(--mono);
       font-size: 0.7rem;
-      color: var(--text-dim);
+      color: var(--text-tertiary);
     }
 
     .dash-history-grid {
@@ -1100,7 +1377,7 @@
     .dash-history-item {
       background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       padding: 0.75rem;
       text-align: center;
     }
@@ -1109,7 +1386,7 @@
       width: 100%;
       aspect-ratio: 1;
       background: var(--card-hover);
-      border-radius: 6px;
+      border-radius: var(--radius-xs);
       margin-bottom: 0.5rem;
       display: flex;
       align-items: center;
@@ -1117,31 +1394,12 @@
       font-size: 1.5rem;
     }
 
-    .dash-history-item .dash-tool {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--accent);
-    }
+    .dash-history-item .dash-tool { font-family: var(--mono); font-size: 0.7rem; font-weight: 700; color: var(--accent); }
+    .dash-history-item .dash-date { font-size: 0.7rem; color: var(--text-tertiary); margin-top: 0.15rem; }
+    .dash-history-item .dash-status { font-family: var(--mono); font-size: 0.6rem; color: var(--green); margin-top: 0.25rem; }
 
-    .dash-history-item .dash-date {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      margin-top: 0.15rem;
-    }
-
-    .dash-history-item .dash-status {
-      font-family: var(--mono);
-      font-size: 0.6rem;
-      color: var(--green);
-      margin-top: 0.25rem;
-    }
-
-    /* ADMIN SECTION */
-    .dash-admin {
-      border-color: rgba(255, 51, 51, 0.3);
-    }
-
+    /* ADMIN */
+    .dash-admin { border-color: rgba(255,68,68,0.2); }
     .dash-admin h3 { color: var(--accent); }
 
     .admin-stats {
@@ -1151,98 +1409,69 @@
       margin-bottom: 1rem;
     }
 
-    .admin-stat {
-      text-align: center;
-    }
+    .admin-stat { text-align: center; }
+    .admin-stat .stat-val { font-family: var(--mono); font-size: 1.5rem; font-weight: 800; }
+    .admin-stat .stat-label { font-size: 0.7rem; color: var(--text-tertiary); margin-top: 0.15rem; }
 
-    .admin-stat .stat-val {
-      font-family: var(--mono);
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--text);
-    }
-
-    .admin-stat .stat-label {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      margin-top: 0.15rem;
-    }
-
-    .admin-log {
-      list-style: none;
-    }
-
-    .admin-log li {
-      font-size: 0.8rem;
-      color: var(--text-mid);
-      padding: 0.4rem 0;
-      border-bottom: 1px solid var(--border);
-      font-family: var(--mono);
-    }
-
+    .admin-log { list-style: none; }
+    .admin-log li { font-size: 0.8rem; color: var(--text-secondary); padding: 0.4rem 0; border-bottom: 1px solid var(--border); font-family: var(--mono); }
     .admin-log li:last-child { border-bottom: none; }
-
     .admin-log .log-email { color: var(--text); }
     .admin-log .log-tool { color: var(--accent); }
-    .admin-log .log-time { color: var(--text-dim); font-size: 0.7rem; }
+    .admin-log .log-time { color: var(--text-tertiary); font-size: 0.7rem; }
 
-    /* ENTRANCE ANIMATIONS */
-    @keyframes fadeSlideUp {
-      from {
-        opacity: 0;
-        transform: translateY(24px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* ===== GSAP reveal default ===== */
+    .reveal { opacity: 0; transform: translateY(30px); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .nav-links { display: none; }
     }
 
-    .anim-entry {
-      opacity: 0;
-      animation: fadeSlideUp 0.6s ease-out forwards;
-    }
-
-    .anim-delay-1 { animation-delay: 0.1s; }
-    .anim-delay-2 { animation-delay: 0.2s; }
-    .anim-delay-3 { animation-delay: 0.3s; }
-    .anim-delay-4 { animation-delay: 0.4s; }
-    .anim-delay-5 { animation-delay: 0.5s; }
-    .anim-delay-6 { animation-delay: 0.55s; }
-    .anim-delay-7 { animation-delay: 0.6s; }
-    .anim-delay-8 { animation-delay: 0.65s; }
-    .anim-delay-9 { animation-delay: 0.7s; }
-
-    /* RESPONSIVE */
     @media (max-width: 600px) {
-      .hero { padding: 2rem 1.5rem 2rem; }
-      .tools-section { padding: 0 1.5rem 3rem; }
+      .hero { padding: 5rem 1.5rem 4rem; }
+      .section-container { padding: 4rem 1.5rem; }
       .tools-grid { grid-template-columns: 1fr; }
-      .tool-view { padding: 1.5rem; }
-      .controls-row { flex-direction: column; }
-      .footer-inner { flex-direction: column; text-align: center; }
-      .footer-links { justify-content: center; }
-      .pricing-section { padding: 3rem 1.5rem; }
       .pricing-grid { grid-template-columns: 1fr; }
       .credits-grid { grid-template-columns: 1fr; }
-      .header-user { max-width: 100px; font-size: 0.65rem; }
-      .auth-btn-header { font-size: 0.7rem; padding: 0.4rem 0.7rem; }
+      .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+      .tool-view { padding: 5rem 1.5rem 1.5rem; }
+      .controls-row { flex-direction: column; }
+      .header-user { max-width: 100px; font-size: 0.7rem; }
+      .auth-btn-header { font-size: 0.75rem; padding: 0.4rem 0.8rem; }
       .auth-modal { padding: 1.5rem; }
-      .dashboard-view { padding: 1.5rem; }
+      .dashboard-view { padding: 5rem 1.5rem 1.5rem; }
       .dash-history-grid { grid-template-columns: repeat(2, 1fr); }
       .admin-stats { grid-template-columns: repeat(2, 1fr); }
-      .checkout-view { padding: 2rem 1.5rem; }
+      .checkout-view { padding: 5rem 1.5rem 2rem; }
+      .navbar-inner { padding: 0 1rem; }
     }
   </style>
 </head>
 <body>
 
+  <!-- NAVBAR (sticky, appears on scroll) -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <a href="#" class="nav-logo" onclick="closeTool();closeDashboard();closeCheckoutSafe();return false;">RADIA<span>RA</span></a>
+      <div class="nav-links">
+        <a href="#herramientas">Herramientas</a>
+        <a href="#precios">Precios</a>
+        <a href="#contacto">Contacto</a>
+      </div>
+      <div class="nav-auth" id="nav-auth"></div>
+    </div>
+  </nav>
+
   <!-- LANDING -->
   <div id="landing">
-    <header class="anim-entry">
+    <header>
       <div class="logo">RADIA<span>RA</span></div>
       <div class="header-auth" id="header-auth">
-        <button class="auth-btn-header btn-login" onclick="openAuthModal()">Iniciar sesión</button>
+        <button class="auth-btn-header btn-login" onclick="openAuthModal()">Iniciar sesion</button>
       </div>
     </header>
 
@@ -1251,21 +1480,19 @@
       <div class="auth-modal">
         <button class="auth-close" onclick="closeAuthModal()">&#10005;</button>
         <div class="auth-tabs">
-          <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar sesión</button>
+          <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar sesion</button>
           <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Registrarse</button>
         </div>
-        <!-- Login form -->
         <div class="auth-form active" id="form-login">
           <input class="auth-input" type="email" id="login-email" placeholder="Email">
-          <input class="auth-input" type="password" id="login-password" placeholder="Contraseña">
+          <input class="auth-input" type="password" id="login-password" placeholder="Contrasena">
           <div class="auth-error" id="login-error"></div>
           <button class="auth-submit" onclick="handleLogin()">Entrar</button>
         </div>
-        <!-- Register form -->
         <div class="auth-form" id="form-register">
           <input class="auth-input" type="email" id="reg-email" placeholder="Email">
-          <input class="auth-input" type="password" id="reg-password" placeholder="Contraseña">
-          <input class="auth-input" type="password" id="reg-password2" placeholder="Confirmar contraseña">
+          <input class="auth-input" type="password" id="reg-password" placeholder="Contrasena">
+          <input class="auth-input" type="password" id="reg-password2" placeholder="Confirmar contrasena">
           <div class="auth-error" id="reg-error"></div>
           <div class="auth-success" id="reg-success"></div>
           <button class="auth-submit" onclick="handleRegister()">Crear cuenta</button>
@@ -1273,186 +1500,251 @@
       </div>
     </div>
 
-    <section class="hero">
-      <h1 class="anim-entry anim-delay-1">Restaura. Mejora.<br><span>Convierte.</span></h1>
-      <p class="anim-entry anim-delay-2">Suite de herramientas de imagen con IA. Restaurá fotos viejas, mejorá productos, arreglá piel de modelos IA, y convertí entre cualquier formato. Todo en un lugar.</p>
-      <div class="hero-counter anim-entry anim-delay-3">
-        <span class="counter-dot"></span>
-        <span><strong>2,847</strong> imágenes procesadas</span>
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="hero-glow" id="hero-glow"></div>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Suite de imagen con IA
+        </div>
+        <h1>
+          <span class="hero-word">Restaura.</span>
+          <span class="hero-word">Mejora.</span>
+          <br>
+          <span class="hero-word gradient-word">Convierte.</span>
+        </h1>
+        <p class="hero-subtitle">Suite de herramientas de imagen con IA. Restaura fotos viejas, mejora productos, arregla piel de modelos IA, y converti entre cualquier formato.</p>
+        <div class="hero-actions">
+          <a href="#herramientas" class="hero-btn-primary">Empezar gratis</a>
+          <a href="#precios" class="hero-btn-secondary">Ver precios</a>
+        </div>
+        <div class="hero-counter" id="hero-counter">
+          <span class="badge-dot"></span>
+          <span><span class="counter-number" id="counter-number">0</span> imagenes procesadas</span>
+        </div>
       </div>
     </section>
 
-    <section class="tools-section">
-      <div class="section-label anim-entry anim-delay-3">Herramientas con IA</div>
-      <div class="tools-grid">
-        <div class="tool-card anim-entry anim-delay-4" onclick="openTool('restore-face')">
-          <span class="tool-badge badge-ai">IA</span>
-          <span class="tool-icon">🧑</span>
-          <h3>Restaurar Cara</h3>
-          <p>Repará fotos viejas, borrosas o dañadas. Restaurá rostros sin cambiar la identidad.</p>
+    <!-- TOOLS -->
+    <section class="tools-section" id="herramientas">
+      <div class="section-container">
+        <div class="section-header reveal">
+          <span class="section-label">Herramientas con IA</span>
+          <h2 class="section-title">Todo lo que necesitas<br>para tus imagenes</h2>
+          <p class="section-subtitle">Herramientas profesionales impulsadas por inteligencia artificial. Resultados en segundos.</p>
         </div>
-        <div class="tool-card anim-entry anim-delay-5" onclick="openTool('product-hd')">
-          <span class="tool-badge badge-ai">IA</span>
-          <span class="tool-icon">💎</span>
-          <h3>Producto HD</h3>
-          <p>Perfumes, bolsas, joyería a 4x. Nitidez profesional para e-commerce.</p>
-        </div>
-        <div class="tool-card anim-entry anim-delay-6" onclick="openTool('skin-real')">
-          <span class="tool-badge badge-ai">IA</span>
-          <span class="tool-icon">✨</span>
-          <h3>Piel Real</h3>
-          <p>¿Modelos IA con piel plástica? Agregá poros, textura y realismo natural.</p>
-        </div>
-        <div class="tool-card anim-entry anim-delay-7" onclick="openTool('max-quality')">
-          <span class="tool-badge badge-ai">IA</span>
-          <span class="tool-icon">🚀</span>
-          <h3>Máxima Calidad</h3>
-          <p>Lo mejor de todo combinado. Restaurá + mejorá en un solo paso.</p>
-        </div>
-        <div class="tool-card anim-entry anim-delay-8" onclick="openTool('remove-bg')">
-          <span class="tool-badge badge-ai">IA</span>
-          <span class="tool-icon">🔲</span>
-          <h3>Remover Fondo</h3>
-          <p>Elimina el fondo de cualquier imagen. Perfecto para productos y retratos.</p>
-        </div>
-      </div>
 
-      <div class="section-label free-label anim-entry anim-delay-8">Herramientas Gratis — procesan en tu navegador</div>
-      <div class="tools-grid">
-        <div class="tool-card free anim-entry anim-delay-9" onclick="openTool('converter')">
-          <span class="tool-badge badge-free">Gratis</span>
-          <span class="tool-icon">🔄</span>
-          <h3>Conversor Universal</h3>
-          <p>Convertí entre cualquier formato de imagen. Elegí origen y destino.</p>
-          <div class="formats">JPG · PNG · WebP · HEIC · AVIF · BMP · TIFF · PDF</div>
+        <div class="tools-grid" id="ai-tools-grid">
+          <div class="tool-card reveal" onclick="openTool('restore-face')">
+            <span class="tool-badge badge-ai">IA</span>
+            <span class="tool-icon">&#x1F9D1;</span>
+            <h3>Restaurar Cara</h3>
+            <p>Repara fotos viejas, borrosas o danadas. Restaura rostros sin cambiar la identidad.</p>
+          </div>
+          <div class="tool-card reveal" onclick="openTool('product-hd')">
+            <span class="tool-badge badge-ai">IA</span>
+            <span class="tool-icon">&#x1F48E;</span>
+            <h3>Producto HD</h3>
+            <p>Perfumes, bolsas, joyeria a 4x. Nitidez profesional para e-commerce.</p>
+          </div>
+          <div class="tool-card reveal" onclick="openTool('skin-real')">
+            <span class="tool-badge badge-ai">IA</span>
+            <span class="tool-icon">&#x2728;</span>
+            <h3>Piel Real</h3>
+            <p>Modelos IA con piel plastica? Agrega poros, textura y realismo natural.</p>
+          </div>
+          <div class="tool-card reveal" onclick="openTool('max-quality')">
+            <span class="tool-badge badge-ai">IA</span>
+            <span class="tool-icon">&#x1F680;</span>
+            <h3>Maxima Calidad</h3>
+            <p>Lo mejor de todo combinado. Restaura + mejora en un solo paso.</p>
+          </div>
+          <div class="tool-card reveal" onclick="openTool('remove-bg')">
+            <span class="tool-badge badge-ai">IA</span>
+            <span class="tool-icon">&#x1F532;</span>
+            <h3>Remover Fondo</h3>
+            <p>Elimina el fondo de cualquier imagen. Perfecto para productos y retratos.</p>
+          </div>
         </div>
-        <div class="tool-card free anim-entry anim-delay-9" onclick="openTool('to-svg')">
-          <span class="tool-badge badge-free">Gratis</span>
-          <span class="tool-icon">📐</span>
-          <h3>JPG/PNG → SVG</h3>
-          <p>Vectorizá logos e ilustraciones. Ideal para diseño gráfico y corte.</p>
-        </div>
-      </div>
 
-      <div class="privacy-note">
-        <p>🔒 Las herramientas GRATIS procesan todo en tu navegador. Nada sale de tu dispositivo.</p>
+        <div class="section-header reveal" style="margin-top: 2rem;">
+          <span class="section-label green">Herramientas Gratis</span>
+          <p class="section-subtitle">Procesan en tu navegador. Nada sale de tu dispositivo.</p>
+        </div>
+
+        <div class="tools-grid" id="free-tools-grid">
+          <div class="tool-card free reveal" onclick="openTool('converter')">
+            <span class="tool-badge badge-free">Gratis</span>
+            <span class="tool-icon">&#x1F504;</span>
+            <h3>Conversor Universal</h3>
+            <p>Converti entre cualquier formato de imagen. Elegi origen y destino.</p>
+            <div class="formats">JPG . PNG . WebP . HEIC . AVIF . BMP . TIFF . PDF</div>
+          </div>
+          <div class="tool-card free reveal" onclick="openTool('to-svg')">
+            <span class="tool-badge badge-free">Gratis</span>
+            <span class="tool-icon">&#x1F4D0;</span>
+            <h3>JPG/PNG &#8594; SVG</h3>
+            <p>Vectoriza logos e ilustraciones. Ideal para diseno grafico y corte.</p>
+          </div>
+        </div>
+
+        <div class="privacy-note reveal">
+          <p>&#x1F512; Las herramientas GRATIS procesan todo en tu navegador. Nada sale de tu dispositivo.</p>
+        </div>
       </div>
     </section>
 
+    <!-- PRICING -->
     <section id="precios" class="pricing-section">
-      <h2 class="section-title anim-entry">Precios</h2>
-      <p class="section-subtitle anim-entry">Elegí el plan que se ajuste a tu flujo de trabajo.</p>
-
-      <div class="pricing-grid">
-        <div class="pricing-card anim-entry">
-          <div class="plan-name">Gratis</div>
-          <div class="plan-price">$0</div>
-          <ul class="plan-features">
-            <li>Herramientas de conversión ilimitadas</li>
-            <li>3 imágenes IA por mes</li>
-            <li>Formatos básicos</li>
-          </ul>
-          <a href="#" class="pricing-btn btn-green" onclick="return false;">Empezar gratis</a>
+      <div class="section-container">
+        <div class="section-header reveal">
+          <span class="section-label">Precios</span>
+          <h2 class="section-title">Precios simples,<br>sin sorpresas</h2>
+          <p class="section-subtitle">Elegi el plan que se ajuste a tu flujo de trabajo.</p>
         </div>
 
-        <div class="pricing-card anim-entry">
-          <div class="plan-name">Starter</div>
-          <div class="plan-price">$8 <span>/mes</span></div>
-          <ul class="plan-features">
-            <li>30 imágenes IA por mes</li>
-            <li>Todos los formatos</li>
-            <li>Herramientas de conversión ilimitadas</li>
-          </ul>
-          <button class="pricing-btn" onclick="initCheckout('Plan Starter','$8/mes')">Comprar</button>
+        <div class="pricing-toggle reveal">
+          <span class="pricing-toggle-label active" id="toggle-monthly" onclick="setPricingPeriod('monthly')">Mensual</span>
+          <button class="pricing-toggle-switch" id="pricing-switch" onclick="togglePricing()"></button>
+          <span class="pricing-toggle-label" id="toggle-annual" onclick="setPricingPeriod('annual')">Anual</span>
+          <span class="pricing-save-badge">Ahorra 20%</span>
         </div>
 
-        <div class="pricing-card featured anim-entry">
-          <div class="pricing-popular">Más popular</div>
-          <div class="plan-name">Pro</div>
-          <div class="plan-price">$15 <span>/mes</span></div>
-          <ul class="plan-features">
-            <li>150 imágenes IA por mes</li>
-            <li>SUPIR incluido</li>
-            <li>Prioridad en cola</li>
-            <li>Todos los formatos</li>
-          </ul>
-          <button class="pricing-btn btn-primary" onclick="initCheckout('Plan Pro','$15/mes')">Comprar</button>
+        <div class="pricing-grid" id="pricing-grid">
+          <div class="pricing-card reveal">
+            <div class="plan-name">Gratis</div>
+            <div class="plan-price">$0</div>
+            <div class="plan-period">Para siempre</div>
+            <ul class="plan-features">
+              <li>Herramientas de conversion ilimitadas</li>
+              <li>3 imagenes IA por mes</li>
+              <li>Formatos basicos</li>
+            </ul>
+            <a href="#herramientas" class="pricing-btn btn-green">Empezar gratis</a>
+          </div>
+
+          <div class="pricing-card reveal">
+            <div class="plan-name">Starter</div>
+            <div class="plan-price" data-monthly="8" data-annual="6">$8 <span>/mes</span></div>
+            <div class="plan-period price-period">Facturado mensualmente</div>
+            <ul class="plan-features">
+              <li>30 imagenes IA por mes</li>
+              <li>Todos los formatos</li>
+              <li>Herramientas de conversion ilimitadas</li>
+            </ul>
+            <button class="pricing-btn" onclick="initCheckout('Plan Starter', getCurrentPrice('Starter'))">Comprar</button>
+          </div>
+
+          <div class="pricing-card featured reveal">
+            <div class="pricing-popular">Mas popular</div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price" data-monthly="15" data-annual="12">$15 <span>/mes</span></div>
+            <div class="plan-period price-period">Facturado mensualmente</div>
+            <ul class="plan-features">
+              <li>150 imagenes IA por mes</li>
+              <li>SUPIR incluido</li>
+              <li>Prioridad en cola</li>
+              <li>Todos los formatos</li>
+            </ul>
+            <button class="pricing-btn btn-primary" onclick="initCheckout('Plan Pro', getCurrentPrice('Pro'))">Comprar</button>
+          </div>
+
+          <div class="pricing-card reveal">
+            <div class="plan-name">Business</div>
+            <div class="plan-price" data-monthly="29" data-annual="23">$29 <span>/mes</span></div>
+            <div class="plan-period price-period">Facturado mensualmente</div>
+            <ul class="plan-features">
+              <li>500 imagenes IA por mes</li>
+              <li>Acceso a API</li>
+              <li>Soporte prioritario</li>
+              <li>Todos los formatos</li>
+            </ul>
+            <button class="pricing-btn" onclick="initCheckout('Plan Business', getCurrentPrice('Business'))">Comprar</button>
+          </div>
         </div>
 
-        <div class="pricing-card anim-entry">
-          <div class="plan-name">Business</div>
-          <div class="plan-price">$29 <span>/mes</span></div>
-          <ul class="plan-features">
-            <li>500 imágenes IA por mes</li>
-            <li>Acceso a API</li>
-            <li>Soporte prioritario</li>
-            <li>Todos los formatos</li>
-          </ul>
-          <button class="pricing-btn" onclick="initCheckout('Plan Business','$29/mes')">Comprar</button>
-        </div>
-      </div>
-
-      <div class="credits-label">O comprá créditos sueltos</div>
-      <div class="credits-grid">
-        <div class="credit-card anim-entry" onclick="initCheckout('10 créditos','$3')">
-          <div class="credit-amount">10 créditos</div>
-          <div class="credit-price">$3</div>
-          <button class="pricing-btn" style="margin-top:0.75rem;font-size:0.75rem;padding:0.5rem;">Comprar</button>
-        </div>
-        <div class="credit-card anim-entry" onclick="initCheckout('50 créditos','$12')">
-          <div class="credit-amount">50 créditos</div>
-          <div class="credit-price">$12</div>
-          <button class="pricing-btn" style="margin-top:0.75rem;font-size:0.75rem;padding:0.5rem;">Comprar</button>
-        </div>
-        <div class="credit-card anim-entry" onclick="initCheckout('200 créditos','$29')">
-          <div class="credit-amount">200 créditos</div>
-          <div class="credit-price">$29</div>
-          <button class="pricing-btn" style="margin-top:0.75rem;font-size:0.75rem;padding:0.5rem;">Comprar</button>
+        <div class="credits-section reveal">
+          <div class="credits-label">O compra creditos sueltos</div>
+          <div class="credits-grid">
+            <div class="credit-card" onclick="initCheckout('10 creditos','$3')">
+              <div class="credit-amount">10 creditos</div>
+              <div class="credit-price">$3</div>
+            </div>
+            <div class="credit-card" onclick="initCheckout('50 creditos','$12')">
+              <div class="credit-amount">50 creditos</div>
+              <div class="credit-price">$12</div>
+            </div>
+            <div class="credit-card" onclick="initCheckout('200 creditos','$29')">
+              <div class="credit-amount">200 creditos</div>
+              <div class="credit-price">$29</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <footer>
-      <div class="footer-inner">
-        <div class="footer-brand">RADIARA — Suite de Imágenes con IA</div>
-        <nav class="footer-links">
-          <a href="#precios">Precios</a>
-          <a href="#api">API</a>
-          <a href="#contacto">Contacto</a>
-        </nav>
+    <!-- FOOTER -->
+    <footer id="contacto">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <div class="footer-brand-col">
+            <div class="footer-logo">RADIA<span>RA</span></div>
+            <p>Suite de herramientas de imagen con inteligencia artificial. Restaura, mejora y convierte tus imagenes en segundos.</p>
+          </div>
+          <div class="footer-col">
+            <h4>Producto</h4>
+            <a href="#herramientas">Herramientas</a>
+            <a href="#precios">Precios</a>
+            <a href="#api">API</a>
+            <a href="#">Changelog</a>
+          </div>
+          <div class="footer-col">
+            <h4>Legal</h4>
+            <a href="#">Terminos de servicio</a>
+            <a href="#">Politica de privacidad</a>
+            <a href="#">Cookies</a>
+          </div>
+          <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="mailto:hola@radiara.com">hola@radiara.com</a>
+            <a href="#">Twitter / X</a>
+            <a href="#">Instagram</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 RADIARA. Todos los derechos reservados.</p>
+          <div class="footer-bottom-links">
+            <a href="#">Privacidad</a>
+            <a href="#">Terminos</a>
+          </div>
+        </div>
       </div>
     </footer>
   </div>
 
   <!-- TOOL VIEW -->
   <div id="tool-view" class="tool-view">
-    <button class="back-btn" onclick="closeTool()">← Volver</button>
+    <button class="back-btn" onclick="closeTool()">&#8592; Volver</button>
     <h2 id="tool-title"></h2>
     <p class="subtitle" id="tool-subtitle"></p>
-
     <div id="tool-controls" style="display:none"></div>
-
-
     <div id="upload-area" class="upload-area">
-      <span class="upload-icon">📁</span>
-      <h3>Arrastrá tu imagen acá</h3>
-      <p>o hacé clic para seleccionar — hasta 10MB</p>
+      <span class="upload-icon">&#x1F4C1;</span>
+      <h3>Arrastra tu imagen aca</h3>
+      <p>o hace clic para seleccionar — hasta 10MB</p>
       <input type="file" id="file-input" accept="image/*">
     </div>
-
     <div id="preview-container" class="preview-container">
       <img id="preview-img" class="preview-img">
       <div id="file-info" class="file-info"></div>
       <button class="change-img-btn" onclick="changeImage()">Cambiar imagen</button>
     </div>
-
     <button id="process-btn" class="process-btn" onclick="processImage()">Procesar</button>
-
     <div id="loading" class="loading">
       <div class="spinner"></div>
       <p id="loading-text">Procesando imagen...</p>
     </div>
-
     <div id="result-container" class="result-container">
       <div id="result-label" class="result-label">Resultado</div>
       <div id="result-comparison" class="result-comparison">
@@ -1465,23 +1757,23 @@
           <img id="result-img" class="result-img" style="margin-bottom:0">
         </div>
       </div>
-      <a id="download-btn" class="download-btn" download>⬇ Descargar resultado</a>
-      <div id="svg-teaser" style="display:none;margin-top:1.5rem;text-align:center;padding:1rem;background:var(--card);border:1px solid var(--border);border-radius:10px;">
-        <p style="font-size:0.85rem;color:var(--text-mid);margin-bottom:0.25rem;">¿Necesitás mejor calidad?</p>
-        <p style="font-family:var(--mono);font-size:0.8rem;color:var(--accent);">Probá Vectorizar con IA (próximamente)</p>
+      <a id="download-btn" class="download-btn" download>Descargar resultado</a>
+      <div id="svg-teaser" style="display:none;margin-top:1.5rem;text-align:center;padding:1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);">
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;">Necesitas mejor calidad?</p>
+        <p style="font-family:var(--mono);font-size:0.8rem;color:var(--accent);">Proba Vectorizar con IA (proximamente)</p>
       </div>
     </div>
   </div>
 
   <!-- CHECKOUT VIEW -->
   <div id="checkout-view" class="checkout-view">
-    <button class="back-btn" onclick="closeCheckout()">← Volver a precios</button>
+    <button class="back-btn" onclick="closeCheckout()">&#8592; Volver a precios</button>
     <h2>Checkout</h2>
     <div class="checkout-summary">
       <div class="checkout-item" id="checkout-item"></div>
       <div class="checkout-price" id="checkout-price"></div>
     </div>
-    <button class="checkout-stripe-btn" disabled>Pagar con Stripe — Próximamente</button>
+    <button class="checkout-stripe-btn" disabled>Pagar con Stripe — Proximamente</button>
     <p class="checkout-secure">Pago seguro procesado por Stripe. Aceptamos Visa, Mastercard, American Express.</p>
     <div class="checkout-cards">
       <span>VISA</span>
@@ -1492,42 +1784,30 @@
 
   <!-- DASHBOARD VIEW -->
   <div id="dashboard-view" class="dashboard-view">
-    <button class="back-btn" onclick="closeDashboard()">← Volver</button>
+    <button class="back-btn" onclick="closeDashboard()">&#8592; Volver</button>
     <div class="dash-header">
       <h2>Mi Dashboard</h2>
       <p id="dash-email"></p>
     </div>
-
     <div class="dash-section">
       <h3>Mi Plan</h3>
       <div class="dash-plan-name" id="dash-plan">Gratis</div>
-      <div class="dash-credits" id="dash-credits-text">3 créditos restantes de 3</div>
+      <div class="dash-credits" id="dash-credits-text">3 creditos restantes de 3</div>
       <div class="progress-bar"><div class="progress-fill" id="dash-progress" style="width:100%"></div></div>
       <div class="progress-label" id="dash-progress-label">3 / 3 usados este mes</div>
     </div>
-
     <div class="dash-section">
-      <h3>Historial de imágenes</h3>
+      <h3>Historial de imagenes</h3>
       <div class="dash-history-grid" id="dash-history"></div>
     </div>
-
     <div class="dash-section dash-admin" id="dash-admin" style="display:none">
       <h3>Panel Admin</h3>
       <div class="admin-stats">
-        <div class="admin-stat">
-          <div class="stat-val">127</div>
-          <div class="stat-label">Usuarios totales</div>
-        </div>
-        <div class="admin-stat">
-          <div class="stat-val">2,847</div>
-          <div class="stat-label">Imágenes procesadas</div>
-        </div>
-        <div class="admin-stat">
-          <div class="stat-val">$4.82</div>
-          <div class="stat-label">Costo Replicate hoy</div>
-        </div>
+        <div class="admin-stat"><div class="stat-val">127</div><div class="stat-label">Usuarios totales</div></div>
+        <div class="admin-stat"><div class="stat-val">2,847</div><div class="stat-label">Imagenes procesadas</div></div>
+        <div class="admin-stat"><div class="stat-val">$4.82</div><div class="stat-label">Costo Replicate hoy</div></div>
       </div>
-      <h3 style="margin-top:1rem">Últimos procesamientos</h3>
+      <h3 style="margin-top:1rem">Ultimos procesamientos</h3>
       <ul class="admin-log">
         <li><span class="log-email">maria@gmail.com</span> <span class="log-tool">restore-face</span> <span class="log-time">hace 3 min</span></li>
         <li><span class="log-email">carlos@outlook.com</span> <span class="log-tool">product-hd</span> <span class="log-time">hace 8 min</span></li>
@@ -1539,19 +1819,205 @@
   </div>
 
   <script>
-    const tools = {
-      'restore-face': { title: 'Restaurar Cara', subtitle: 'Subí una foto vieja o borrosa y la IA restaura el rostro.', endpoint: '/api/restore-face', type: 'ai' },
-      'product-hd': { title: 'Producto HD', subtitle: 'Subí foto de producto y se mejora a alta resolución.', endpoint: '/api/product-hd', type: 'ai' },
-      'skin-real': { title: 'Piel Real', subtitle: 'Subí una imagen de modelo IA y se agrega textura de piel realista. Tarda 30-60 seg.', endpoint: '/api/skin-real', type: 'ai' },
-      'max-quality': { title: 'Máxima Calidad', subtitle: 'Restaurá y mejorá al máximo. Tarda 1-2 minutos.', endpoint: '/api/max-quality', type: 'ai' },
-      'remove-bg': { title: 'Remover Fondo', subtitle: 'Eliminá el fondo de cualquier imagen automáticamente.', endpoint: '/api/remove-bg', type: 'ai' },
-      'converter': { title: 'Conversor Universal', subtitle: 'Convertí entre cualquier formato de imagen. Todo en tu navegador.', type: 'browser', converter: true },
-      'to-svg': { title: 'JPG/PNG → SVG', subtitle: 'Vectorizá imágenes. Funciona mejor con logos, íconos y texto.', type: 'browser' },
+    // ==========================================
+    // GSAP ANIMATIONS
+    // ==========================================
 
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero word-by-word animation
+    gsap.fromTo('.hero-badge',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 0.2 }
+    );
+
+    gsap.fromTo('.hero-word',
+      { opacity: 0, y: 40, rotateX: -15 },
+      { opacity: 1, y: 0, rotateX: 0, duration: 0.9, ease: 'power3.out', stagger: 0.15, delay: 0.5 }
+    );
+
+    gsap.fromTo('.hero-subtitle',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 1.1 }
+    );
+
+    gsap.fromTo('.hero-actions',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 1.3 }
+    );
+
+    gsap.fromTo('#hero-counter',
+      { opacity: 0, y: 15 },
+      { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 1.6 }
+    );
+
+    // Animated counter
+    var counterTarget = 2847;
+    gsap.to({ val: 0 }, {
+      val: counterTarget,
+      duration: 2.5,
+      delay: 1.8,
+      ease: 'power2.out',
+      onUpdate: function() {
+        document.getElementById('counter-number').textContent =
+          Math.round(this.targets()[0].val).toLocaleString('es-AR');
+      }
+    });
+
+    // Hero parallax glow
+    gsap.to('#hero-glow', {
+      y: 150,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '#hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1
+      }
+    });
+
+    // Navbar show on scroll
+    ScrollTrigger.create({
+      trigger: '#herramientas',
+      start: 'top 80%',
+      onEnter: function() { document.getElementById('navbar').classList.add('visible'); },
+      onLeaveBack: function() { document.getElementById('navbar').classList.remove('visible'); }
+    });
+
+    // Reveal animations for all .reveal elements
+    gsap.utils.toArray('.reveal').forEach(function(el) {
+      gsap.fromTo(el,
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 88%',
+            toggleActions: 'play none none none'
+          }
+        }
+      );
+    });
+
+    // Tool cards stagger within each grid
+    ['#ai-tools-grid', '#free-tools-grid'].forEach(function(gridSel) {
+      var cards = document.querySelectorAll(gridSel + ' .tool-card');
+      if (cards.length) {
+        gsap.fromTo(cards,
+          { opacity: 0, y: 40, scale: 0.97 },
+          {
+            opacity: 1, y: 0, scale: 1,
+            duration: 0.6,
+            ease: 'power3.out',
+            stagger: 0.1,
+            scrollTrigger: {
+              trigger: gridSel,
+              start: 'top 85%',
+              toggleActions: 'play none none none'
+            }
+          }
+        );
+      }
+    });
+
+    // Pricing cards stagger
+    gsap.fromTo('#pricing-grid .pricing-card',
+      { opacity: 0, y: 40, scale: 0.97 },
+      {
+        opacity: 1, y: 0, scale: 1,
+        duration: 0.6,
+        ease: 'power3.out',
+        stagger: 0.12,
+        scrollTrigger: {
+          trigger: '#pricing-grid',
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        }
+      }
+    );
+
+    // Card hover glow follow mouse
+    document.querySelectorAll('.tool-card').forEach(function(card) {
+      card.addEventListener('mousemove', function(e) {
+        var rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+        card.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+      });
+    });
+
+    // Card GSAP hover effects
+    document.querySelectorAll('.tool-card').forEach(function(card) {
+      card.addEventListener('mouseenter', function() {
+        gsap.to(card, { scale: 1.02, duration: 0.3, ease: 'power2.out' });
+      });
+      card.addEventListener('mouseleave', function() {
+        gsap.to(card, { scale: 1, duration: 0.3, ease: 'power2.out' });
+      });
+    });
+
+    // ==========================================
+    // PRICING TOGGLE
+    // ==========================================
+
+    var isAnnual = false;
+
+    function togglePricing() {
+      isAnnual = !isAnnual;
+      updatePricingUI();
+    }
+
+    function setPricingPeriod(period) {
+      isAnnual = period === 'annual';
+      updatePricingUI();
+    }
+
+    function updatePricingUI() {
+      var sw = document.getElementById('pricing-switch');
+      var ml = document.getElementById('toggle-monthly');
+      var al = document.getElementById('toggle-annual');
+
+      sw.classList.toggle('annual', isAnnual);
+      ml.classList.toggle('active', !isAnnual);
+      al.classList.toggle('active', isAnnual);
+
+      document.querySelectorAll('.plan-price[data-monthly]').forEach(function(el) {
+        var m = el.getAttribute('data-monthly');
+        var a = el.getAttribute('data-annual');
+        var price = isAnnual ? a : m;
+        el.innerHTML = '$' + price + ' <span>/mes</span>';
+      });
+
+      document.querySelectorAll('.price-period').forEach(function(el) {
+        el.textContent = isAnnual ? 'Facturado anualmente' : 'Facturado mensualmente';
+      });
+    }
+
+    function getCurrentPrice(planName) {
+      var prices = {
+        'Starter': { monthly: '$8/mes', annual: '$6/mes (anual)' },
+        'Pro': { monthly: '$15/mes', annual: '$12/mes (anual)' },
+        'Business': { monthly: '$29/mes', annual: '$23/mes (anual)' }
+      };
+      return isAnnual ? prices[planName].annual : prices[planName].monthly;
+    }
+
+    // ==========================================
+    // TOOLS LOGIC
+    // ==========================================
+
+    var tools = {
+      'restore-face': { title: 'Restaurar Cara', subtitle: 'Subi una foto vieja o borrosa y la IA restaura el rostro.', endpoint: '/api/restore-face', type: 'ai' },
+      'product-hd': { title: 'Producto HD', subtitle: 'Subi foto de producto y se mejora a alta resolucion.', endpoint: '/api/product-hd', type: 'ai' },
+      'skin-real': { title: 'Piel Real', subtitle: 'Subi una imagen de modelo IA y se agrega textura de piel realista. Tarda 30-60 seg.', endpoint: '/api/skin-real', type: 'ai' },
+      'max-quality': { title: 'Maxima Calidad', subtitle: 'Restaura y mejora al maximo. Tarda 1-2 minutos.', endpoint: '/api/max-quality', type: 'ai' },
+      'remove-bg': { title: 'Remover Fondo', subtitle: 'Elimina el fondo de cualquier imagen automaticamente.', endpoint: '/api/remove-bg', type: 'ai' },
+      'converter': { title: 'Conversor Universal', subtitle: 'Converti entre cualquier formato de imagen. Todo en tu navegador.', type: 'browser', converter: true },
+      'to-svg': { title: 'JPG/PNG -> SVG', subtitle: 'Vectoriza imagenes. Funciona mejor con logos, iconos y texto.', type: 'browser' },
     };
 
-    // Conversion map: what can each format convert to
-    const conversionMap = {
+    var conversionMap = {
       'image/jpeg':    { label: 'JPG', canConvertTo: ['PNG', 'WebP', 'AVIF', 'PDF'] },
       'image/png':     { label: 'PNG', canConvertTo: ['JPG', 'WebP', 'AVIF', 'PDF'] },
       'image/webp':    { label: 'WebP', canConvertTo: ['JPG', 'PNG', 'AVIF', 'PDF'] },
@@ -1562,7 +2028,7 @@
       'image/tiff':    { label: 'TIFF', canConvertTo: ['JPG', 'PNG', 'WebP'] },
     };
 
-    const outputMimeMap = {
+    var outputMimeMap = {
       'JPG': 'image/jpeg',
       'PNG': 'image/png',
       'WebP': 'image/webp',
@@ -1570,7 +2036,7 @@
       'PDF': 'application/pdf'
     };
 
-    const outputExtMap = {
+    var outputExtMap = {
       'JPG': '.jpg',
       'PNG': '.png',
       'WebP': '.webp',
@@ -1578,20 +2044,19 @@
       'PDF': '.pdf'
     };
 
-    let currentTool = null;
-    let currentFile = null;
+    var currentTool = null;
+    var currentFile = null;
 
     function openTool(toolId) {
       currentTool = toolId;
       currentFile = null;
-      const tool = tools[toolId];
-      
+      var tool = tools[toolId];
+
       document.getElementById('landing').style.display = 'none';
       document.getElementById('tool-view').classList.add('active');
       document.getElementById('tool-title').textContent = tool.title;
       document.getElementById('tool-subtitle').textContent = tool.subtitle;
-      
-      // Reset all
+
       document.getElementById('preview-container').classList.remove('active');
       document.getElementById('process-btn').classList.remove('visible');
       document.getElementById('loading').classList.remove('active');
@@ -1599,13 +2064,11 @@
       document.getElementById('file-input').value = '';
       document.getElementById('file-info').textContent = '';
       document.getElementById('result-label').textContent = 'Resultado';
-      
       document.getElementById('upload-area').style.display = 'block';
 
-      // Converter controls
       if (tool.converter) {
         document.getElementById('tool-controls').style.display = 'block';
-        document.getElementById('tool-controls').innerHTML = 
+        document.getElementById('tool-controls').innerHTML =
           '<div class="controls-row">' +
             '<div class="control-group">' +
               '<label>Convertir a</label>' +
@@ -1614,14 +2077,13 @@
             '<div class="control-group">' +
               '<label>Calidad</label>' +
               '<select id="convert-quality">' +
-                '<option value="0.6">60% — más ligero</option>' +
+                '<option value="0.6">60% — mas ligero</option>' +
                 '<option value="0.8" selected>80% — recomendado</option>' +
                 '<option value="0.9">90% — alta calidad</option>' +
-                '<option value="1.0">100% — sin pérdida</option>' +
+                '<option value="1.0">100% — sin perdida</option>' +
               '</select>' +
             '</div>' +
           '</div>';
-        // Accept more formats
         document.getElementById('file-input').accept = 'image/jpeg,image/png,image/webp,image/heic,image/heif,image/avif,image/bmp,image/tiff,.heic,.heif,.avif';
       } else if (toolId === 'to-svg') {
         document.getElementById('tool-controls').style.display = 'block';
@@ -1643,9 +2105,9 @@
             '<div class="control-group">' +
               '<label>Suavizado</label>' +
               '<select id="svg-smooth">' +
-                '<option value="low">Bajo — más detalle</option>' +
+                '<option value="low">Bajo — mas detalle</option>' +
                 '<option value="medium" selected>Medio — recomendado</option>' +
-                '<option value="high">Alto — más limpio</option>' +
+                '<option value="high">Alto — mas limpio</option>' +
               '</select>' +
             '</div>' +
           '</div>';
@@ -1655,7 +2117,7 @@
         document.getElementById('file-input').accept = 'image/*';
       }
 
-      const btn = document.getElementById('process-btn');
+      var btn = document.getElementById('process-btn');
       btn.textContent = tool.type === 'browser' ? 'Convertir' : 'Procesar con IA';
       if (tool.type === 'browser') {
         btn.classList.add('free-btn');
@@ -1675,47 +2137,46 @@
     }
 
     // File upload
-    const uploadArea = document.getElementById('upload-area');
-    const fileInput = document.getElementById('file-input');
+    var uploadArea = document.getElementById('upload-area');
+    var fileInput = document.getElementById('file-input');
 
-    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('click', function() { fileInput.click(); });
 
-    uploadArea.addEventListener('dragover', (e) => {
+    uploadArea.addEventListener('dragover', function(e) {
       e.preventDefault();
       uploadArea.classList.add('dragover');
     });
 
-    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('dragleave', function() { uploadArea.classList.remove('dragover'); });
 
-    uploadArea.addEventListener('drop', (e) => {
+    uploadArea.addEventListener('drop', function(e) {
       e.preventDefault();
       uploadArea.classList.remove('dragover');
       if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
     });
 
-    fileInput.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', function(e) {
       if (e.target.files.length) handleFile(e.target.files[0]);
     });
 
     function handleFile(file) {
       if (file.size > 10 * 1024 * 1024) {
-        alert('La imagen es muy grande. Máximo 10MB.');
+        alert('La imagen es muy grande. Maximo 10MB.');
         return;
       }
       currentFile = file;
-      
-      const sizeKB = Math.round(file.size / 1024);
-      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      const sizeStr = file.size > 1024 * 1024 ? sizeMB + ' MB' : sizeKB + ' KB';
+
+      var sizeKB = Math.round(file.size / 1024);
+      var sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      var sizeStr = file.size > 1024 * 1024 ? sizeMB + ' MB' : sizeKB + ' KB';
       document.getElementById('file-info').textContent = file.name + ' — ' + sizeStr + ' — ' + (file.type || 'formato desconocido');
-      
-      // Update converter dropdown
+
       if (tools[currentTool] && tools[currentTool].converter) {
         updateConvertOptions(file.type);
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
+      var reader = new FileReader();
+      reader.onload = function(e) {
         document.getElementById('preview-img').src = e.target.result;
         document.getElementById('preview-container').classList.add('active');
         document.getElementById('upload-area').style.display = 'none';
@@ -1735,17 +2196,17 @@
     }
 
     function updateConvertOptions(mimeType) {
-      const select = document.getElementById('convert-to');
-      const info = conversionMap[mimeType];
-      
+      var select = document.getElementById('convert-to');
+      var info = conversionMap[mimeType];
+
       if (!info) {
         select.innerHTML = '<option value="JPG">JPG</option><option value="PNG">PNG</option><option value="WebP" selected>WebP</option>';
         return;
       }
 
       select.innerHTML = '';
-      info.canConvertTo.forEach((fmt, i) => {
-        const opt = document.createElement('option');
+      info.canConvertTo.forEach(function(fmt) {
+        var opt = document.createElement('option');
         opt.value = fmt;
         opt.textContent = fmt;
         if (fmt === 'WebP') opt.selected = true;
@@ -1755,8 +2216,8 @@
 
     // Process
     async function processImage() {
-      const tool = tools[currentTool];
-      
+      var tool = tools[currentTool];
+
       if (tool.type === 'browser') {
         processBrowser();
         return;
@@ -1767,19 +2228,19 @@
       document.getElementById('process-btn').classList.remove('visible');
       document.getElementById('loading').classList.add('active');
       document.getElementById('result-container').classList.remove('active');
-      
-      const msgs = ['Procesando imagen...', 'La IA está trabajando...', 'Esto puede tardar unos segundos...', 'Mejorando detalles...', 'Casi listo...'];
-      let idx = 0;
-      const interval = setInterval(() => {
+
+      var msgs = ['Procesando imagen...', 'La IA esta trabajando...', 'Esto puede tardar unos segundos...', 'Mejorando detalles...', 'Casi listo...'];
+      var idx = 0;
+      var interval = setInterval(function() {
         idx = (idx + 1) % msgs.length;
         document.getElementById('loading-text').textContent = msgs[idx];
       }, 3000);
 
       try {
-        const formData = new FormData();
+        var formData = new FormData();
         formData.append('image', currentFile);
-        const response = await fetch(tool.endpoint, { method: 'POST', body: formData });
-        const data = await response.json();
+        var response = await fetch(tool.endpoint, { method: 'POST', body: formData });
+        var data = await response.json();
         clearInterval(interval);
 
         if (data.success) {
@@ -1789,11 +2250,11 @@
           document.getElementById('download-btn').download = 'radiara-' + currentTool + '.png';
           document.getElementById('result-container').classList.add('active');
         } else {
-          alert('Error: ' + (data.error || 'Algo salió mal'));
+          alert('Error: ' + (data.error || 'Algo salio mal'));
         }
       } catch (err) {
         clearInterval(interval);
-        alert('Error de conexión: ' + err.message);
+        alert('Error de conexion: ' + err.message);
       }
 
       document.getElementById('loading').classList.remove('active');
@@ -1803,55 +2264,52 @@
     function processBrowser() {
       if (currentTool === 'converter') convertUniversal();
       else if (currentTool === 'to-svg') convertToSVG();
-
     }
 
     // UNIVERSAL CONVERTER
     function convertUniversal() {
       if (!currentFile) return;
-      
-      const targetFormat = document.getElementById('convert-to').value;
-      const quality = parseFloat(document.getElementById('convert-quality').value);
-      
-      if (!targetFormat) { alert('Seleccioná formato de destino'); return; }
 
-      // PDF special case
+      var targetFormat = document.getElementById('convert-to').value;
+      var quality = parseFloat(document.getElementById('convert-quality').value);
+
+      if (!targetFormat) { alert('Selecciona formato de destino'); return; }
+
       if (targetFormat === 'PDF') {
         convertToPDF();
         return;
       }
 
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        
-        // JPG needs white background (no transparency)
+        var ctx = canvas.getContext('2d');
+
         if (targetFormat === 'JPG') {
           ctx.fillStyle = '#FFFFFF';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
-        
+
         ctx.drawImage(img, 0, 0);
-        
-        const mime = outputMimeMap[targetFormat];
-        canvas.toBlob((blob) => {
+
+        var mime = outputMimeMap[targetFormat];
+        canvas.toBlob(function(blob) {
           if (!blob) {
-            alert('Tu navegador no soporta conversión a ' + targetFormat + '. Intentá con otro formato.');
+            alert('Tu navegador no soporta conversion a ' + targetFormat + '. Intenta con otro formato.');
             return;
           }
-          const url = URL.createObjectURL(blob);
-          
-          const originalKB = Math.round(currentFile.size / 1024);
-          const newKB = Math.round(blob.size / 1024);
-          const diff = originalKB - newKB;
-          const pct = Math.round(Math.abs(diff) / originalKB * 100);
-          
-          let label = 'Resultado — ' + originalKB + 'KB → ' + newKB + 'KB';
+          var url = URL.createObjectURL(blob);
+
+          var originalKB = Math.round(currentFile.size / 1024);
+          var newKB = Math.round(blob.size / 1024);
+          var diff = originalKB - newKB;
+          var pct = Math.round(Math.abs(diff) / originalKB * 100);
+
+          var label = 'Resultado — ' + originalKB + 'KB -> ' + newKB + 'KB';
           if (diff > 0) label += ' (ahorraste ' + pct + '%)';
-          else if (diff < 0) label += ' (aumentó ' + pct + '%)';
+          else if (diff < 0) label += ' (aumento ' + pct + '%)';
 
           document.getElementById('result-label').textContent = label;
           document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
@@ -1864,41 +2322,34 @@
       img.src = URL.createObjectURL(currentFile);
     }
 
-    // PDF conversion
     function convertToPDF() {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        // A4 at 96dpi
-        const pdfW = 595;
-        const pdfH = 842;
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var pdfW = 595;
+        var pdfH = 842;
         canvas.width = pdfW;
         canvas.height = pdfH;
-        const ctx = canvas.getContext('2d');
+        var ctx = canvas.getContext('2d');
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, pdfW, pdfH);
-        
-        // Fit image in page with padding
-        const pad = 40;
-        const maxW = pdfW - pad * 2;
-        const maxH = pdfH - pad * 2;
-        let w = img.width;
-        let h = img.height;
-        const ratio = Math.min(maxW / w, maxH / h);
+
+        var pad = 40;
+        var maxW = pdfW - pad * 2;
+        var maxH = pdfH - pad * 2;
+        var w = img.width;
+        var h = img.height;
+        var ratio = Math.min(maxW / w, maxH / h);
         w = Math.round(w * ratio);
         h = Math.round(h * ratio);
-        const x = Math.round((pdfW - w) / 2);
-        const y = Math.round((pdfH - h) / 2);
-        
+        var x = Math.round((pdfW - w) / 2);
+        var y = Math.round((pdfH - h) / 2);
+
         ctx.drawImage(img, x, y, w, h);
-        
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-        // Simple PDF wrapper
-        const pdfContent = '%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 ' + pdfW + ' ' + pdfH + ']/Contents 4 0 R/Resources<</XObject<</Im0 5 0 R>>>>>>endobj\n';
-        
-        // For simplicity, offer as JPEG download with PDF note
-        const blob = new Blob([dataUrl], { type: 'image/jpeg' });
-        const url = URL.createObjectURL(blob);
+
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        var blob = new Blob([dataUrl], { type: 'image/jpeg' });
+        var url = URL.createObjectURL(blob);
         document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
         document.getElementById('result-img').src = url;
         document.getElementById('download-btn').href = url;
@@ -1910,7 +2361,7 @@
     }
 
     // ==========================================
-    // SVG VECTORIZER — Marching Squares + Bezier
+    // SVG VECTORIZER
     // ==========================================
 
     function convertToSVG() {
@@ -1965,8 +2416,6 @@
       img.src = URL.createObjectURL(currentFile);
     }
 
-    // ---- B/W vectorization ----
-
     function vectorizeBW(px, w, h, threshold, cfg) {
       var grid = buildGrid(px, w, h, threshold);
       var contours = msTrace(grid, w, h);
@@ -1980,11 +2429,8 @@
       return svgParts.join('');
     }
 
-    // ---- Color vectorization ----
-
     function vectorizeColor(px, w, h, threshold, cfg) {
-      // Quantize to palette then trace each color layer
-      var bucketShift = 5; // 8 levels per channel = 512 possible colors
+      var bucketShift = 5;
       var colorMap = {};
       for (var i = 0; i < w * h; i++) {
         var idx = i * 4;
@@ -1998,7 +2444,6 @@
         colorMap[key].pixels[i] = 1;
       }
 
-      // Sort by pixel count descending (draw big areas first)
       var layers = Object.values(colorMap);
       layers.sort(function(a, b) {
         var ca = 0, cb = 0;
@@ -2006,10 +2451,8 @@
         return cb - ca;
       });
 
-      // Keep top N layers to avoid huge SVG
       if (layers.length > 24) layers = layers.slice(0, 24);
 
-      // Find background color (most pixels)
       var bgLayer = layers[0];
       var bgColor = 'rgb('+bgLayer.r+','+bgLayer.g+','+bgLayer.b+')';
 
@@ -2029,8 +2472,6 @@
       return svgParts.join('');
     }
 
-    // ---- Binary grid from pixel data ----
-
     function buildGrid(px, w, h, threshold) {
       var grid = new Uint8Array(w * h);
       for (var i = 0; i < w * h; i++) {
@@ -2041,12 +2482,7 @@
       return grid;
     }
 
-    // ==========================================
-    // MARCHING SQUARES contour tracer
-    // ==========================================
-
     function msTrace(grid, w, h) {
-      // Use interpolated positions for smoother contours
       var edgeVisited = {};
       var contours = [];
 
@@ -2056,8 +2492,6 @@
         return (s(cx, cy) << 0) | (s(cx+1, cy) << 1) | (s(cx+1, cy+1) << 2) | (s(cx, cy+1) << 3);
       }
 
-      // Edge midpoint with linear interpolation
-      // Edges: 0=top, 1=right, 2=bottom, 3=left of cell (cx,cy)
       function edgePt(cx, cy, edge) {
         switch(edge) {
           case 0: return [cx + 0.5, cy];
@@ -2068,21 +2502,18 @@
       }
 
       function edgeKey(cx, cy, edge) {
-        // Normalize shared edges between adjacent cells
         if (edge === 0 && cy > 0) return (cx)+','+(cy-1)+',2';
         if (edge === 3 && cx > 0) return (cx-1)+','+(cy)+',1';
         return cx+','+cy+','+edge;
       }
 
-      // For each case, which edge pairs to connect [enter_edge, exit_edge]
       var caseSegments = {
         0:[], 1:[[3,0]], 2:[[0,1]], 3:[[3,1]], 4:[[1,2]], 5:[[3,0],[1,2]],
         6:[[0,2]], 7:[[3,2]], 8:[[2,3]], 9:[[2,0]], 10:[[0,1],[2,3]],
         11:[[2,1]], 12:[[1,3]], 13:[[1,0]], 14:[[0,3]], 15:[]
       };
 
-      // Collect all edge segments
-      var segments = []; // each: { from: [x,y], to: [x,y], fromKey, toKey }
+      var segments = [];
       for (var cy = -1; cy < h; cy++) {
         for (var cx = -1; cx < w; cx++) {
           var cc = cellCase(cx, cy);
@@ -2099,7 +2530,6 @@
         }
       }
 
-      // Build adjacency: endpoint key → [segment indices]
       var adj = {};
       for (var i = 0; i < segments.length; i++) {
         var seg = segments[i];
@@ -2109,7 +2539,6 @@
         adj[seg.tk].push(i);
       }
 
-      // Chain segments into closed contours
       var used = new Uint8Array(segments.length);
       for (var i = 0; i < segments.length; i++) {
         if (used[i]) continue;
@@ -2118,7 +2547,6 @@
         var endKey = segments[i].tk;
         var startKey = segments[i].fk;
 
-        // Extend forward
         for (var iter = 0; iter < segments.length; iter++) {
           var nbrs = adj[endKey];
           if (!nbrs) break;
@@ -2144,10 +2572,6 @@
       return contours;
     }
 
-    // ==========================================
-    // Ramer-Douglas-Peucker path simplification
-    // ==========================================
-
     function rdp(pts, tol) {
       if (pts.length <= 2) return pts;
       var maxD = 0, maxI = 0;
@@ -2172,10 +2596,6 @@
       return Math.hypot(p[0] - (a[0]+t*dx), p[1] - (a[1]+t*dy));
     }
 
-    // ==========================================
-    // Catmull-Rom → Cubic Bezier path builder
-    // ==========================================
-
     function toBezier(pts, tension) {
       if (pts.length < 2) return '';
       var n = pts.length;
@@ -2198,11 +2618,11 @@
 
     function R(n) { return Math.round(n * 100) / 100; }
 
-    // ==================
-    // AUTH (localStorage mock — se reemplaza con Supabase después)
-    // ==================
+    // ==========================================
+    // AUTH
+    // ==========================================
 
-    var pendingCheckout = null; // guarda item/precio si el usuario no estaba logueado
+    var pendingCheckout = null;
 
     function isLoggedIn() {
       return !!localStorage.getItem('radiara_user');
@@ -2251,8 +2671,8 @@
       var email = document.getElementById('login-email').value.trim();
       var password = document.getElementById('login-password').value;
       document.getElementById('login-error').style.display = 'none';
-      if (!email || !password) { showError('login-error', 'Completá email y contraseña.'); return; }
-      if (!/\S+@\S+\.\S+/.test(email)) { showError('login-error', 'Email inválido.'); return; }
+      if (!email || !password) { showError('login-error', 'Completa email y contrasena.'); return; }
+      if (!/\S+@\S+\.\S+/.test(email)) { showError('login-error', 'Email invalido.'); return; }
       localStorage.setItem('radiara_user', JSON.stringify({ email: email }));
       closeAuthModal();
       updateHeaderAuth();
@@ -2268,10 +2688,10 @@
       var password2 = document.getElementById('reg-password2').value;
       document.getElementById('reg-error').style.display = 'none';
       document.getElementById('reg-success').style.display = 'none';
-      if (!email || !password || !password2) { showError('reg-error', 'Completá todos los campos.'); return; }
-      if (!/\S+@\S+\.\S+/.test(email)) { showError('reg-error', 'Email inválido.'); return; }
-      if (password.length < 6) { showError('reg-error', 'La contraseña debe tener al menos 6 caracteres.'); return; }
-      if (password !== password2) { showError('reg-error', 'Las contraseñas no coinciden.'); return; }
+      if (!email || !password || !password2) { showError('reg-error', 'Completa todos los campos.'); return; }
+      if (!/\S+@\S+\.\S+/.test(email)) { showError('reg-error', 'Email invalido.'); return; }
+      if (password.length < 6) { showError('reg-error', 'La contrasena debe tener al menos 6 caracteres.'); return; }
+      if (password !== password2) { showError('reg-error', 'Las contrasenas no coinciden.'); return; }
       localStorage.setItem('radiara_user', JSON.stringify({ email: email }));
       closeAuthModal();
       updateHeaderAuth();
@@ -2288,21 +2708,25 @@
 
     function updateHeaderAuth() {
       var authDiv = document.getElementById('header-auth');
+      var navAuthDiv = document.getElementById('nav-auth');
       if (isLoggedIn()) {
         var user = getUser();
-        authDiv.innerHTML =
+        var html =
           '<a href="#" class="auth-btn-header btn-login" onclick="openDashboard();return false;">Mi Dashboard</a>' +
           '<span class="header-user">' + user.email + '</span>' +
-          '<button class="auth-btn-header btn-logout" onclick="handleLogout()">Cerrar sesión</button>';
+          '<button class="auth-btn-header btn-logout" onclick="handleLogout()">Cerrar sesion</button>';
+        authDiv.innerHTML = html;
+        navAuthDiv.innerHTML = html;
       } else {
-        authDiv.innerHTML =
-          '<button class="auth-btn-header btn-login" onclick="openAuthModal()">Iniciar sesión</button>';
+        var html = '<button class="auth-btn-header btn-login" onclick="openAuthModal()">Iniciar sesion</button>';
+        authDiv.innerHTML = html;
+        navAuthDiv.innerHTML = html;
       }
     }
 
-    // ==================
+    // ==========================================
     // CHECKOUT
-    // ==================
+    // ==========================================
 
     function initCheckout(item, price) {
       if (!isLoggedIn()) {
@@ -2327,21 +2751,24 @@
       document.getElementById('checkout-view').classList.remove('active');
       document.getElementById('landing').style.display = 'block';
       window.scrollTo(0, 0);
-      // scroll to precios
       setTimeout(function() { document.getElementById('precios').scrollIntoView({ behavior: 'smooth' }); }, 100);
     }
 
-    // ==================
+    function closeCheckoutSafe() {
+      document.getElementById('checkout-view').classList.remove('active');
+    }
+
+    // ==========================================
     // DASHBOARD
-    // ==================
+    // ==========================================
 
     var mockHistory = [
-      { icon: '🧑', tool: 'Restaurar Cara', date: '28 Mar 2026', status: 'Completado' },
-      { icon: '💎', tool: 'Producto HD', date: '27 Mar 2026', status: 'Completado' },
-      { icon: '🔲', tool: 'Remover Fondo', date: '25 Mar 2026', status: 'Completado' },
-      { icon: '✨', tool: 'Piel Real', date: '24 Mar 2026', status: 'Completado' },
-      { icon: '🚀', tool: 'Máxima Calidad', date: '22 Mar 2026', status: 'Completado' },
-      { icon: '💎', tool: 'Producto HD', date: '20 Mar 2026', status: 'Completado' },
+      { icon: '&#x1F9D1;', tool: 'Restaurar Cara', date: '28 Mar 2026', status: 'Completado' },
+      { icon: '&#x1F48E;', tool: 'Producto HD', date: '27 Mar 2026', status: 'Completado' },
+      { icon: '&#x1F532;', tool: 'Remover Fondo', date: '25 Mar 2026', status: 'Completado' },
+      { icon: '&#x2728;', tool: 'Piel Real', date: '24 Mar 2026', status: 'Completado' },
+      { icon: '&#x1F680;', tool: 'Maxima Calidad', date: '22 Mar 2026', status: 'Completado' },
+      { icon: '&#x1F48E;', tool: 'Producto HD', date: '20 Mar 2026', status: 'Completado' },
     ];
 
     function openDashboard() {
@@ -2355,7 +2782,6 @@
 
       document.getElementById('dash-email').textContent = user.email;
 
-      // Render history
       var grid = document.getElementById('dash-history');
       grid.innerHTML = '';
       mockHistory.forEach(function(h) {
@@ -2368,7 +2794,6 @@
           '</div>';
       });
 
-      // Admin check
       var adminPanel = document.getElementById('dash-admin');
       adminPanel.style.display = (user.email === 'admin@radiara.com') ? 'block' : 'none';
 
@@ -2383,7 +2808,6 @@
 
     // Init
     updateHeaderAuth();
-
   </script>
 </body>
 </html>
