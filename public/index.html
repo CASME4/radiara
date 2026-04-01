@@ -1566,6 +1566,12 @@
             <h3>Remover Fondo</h3>
             <p>Elimina el fondo de cualquier imagen. Perfecto para productos y retratos.</p>
           </div>
+          <div class="tool-card reveal" onclick="openTool('vectorize-ai')">
+            <span class="tool-badge badge-ai">IA</span>
+            <span class="tool-icon">&#x270F;&#xFE0F;</span>
+            <h3>Vectorizar con IA</h3>
+            <p>Vectorizacion profesional con deep learning. Resultados nivel Vector Magic.</p>
+          </div>
         </div>
 
         <div class="section-header reveal" style="margin-top: 2rem;">
@@ -1759,8 +1765,8 @@
       </div>
       <a id="download-btn" class="download-btn" download>Descargar resultado</a>
       <div id="svg-teaser" style="display:none;margin-top:1.5rem;text-align:center;padding:1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);">
-        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;">Necesitas mejor calidad?</p>
-        <p style="font-family:var(--mono);font-size:0.8rem;color:var(--accent);">Proba Vectorizar con IA (proximamente)</p>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem;">Necesitas mejor calidad?</p>
+        <button onclick="closeTool(); setTimeout(function(){ openTool('vectorize-ai'); }, 300);" style="font-family:var(--sans);font-size:0.85rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:var(--radius-xs);padding:0.6rem 1.5rem;cursor:pointer;transition:all 0.2s;">Vectorizar con IA</button>
       </div>
     </div>
   </div>
@@ -2013,6 +2019,7 @@
       'skin-real': { title: 'Piel Real', subtitle: 'Subi una imagen de modelo IA y se agrega textura de piel realista. Tarda 30-60 seg.', endpoint: '/api/skin-real', type: 'ai' },
       'max-quality': { title: 'Maxima Calidad', subtitle: 'Restaura y mejora al maximo. Tarda 1-2 minutos.', endpoint: '/api/max-quality', type: 'ai' },
       'remove-bg': { title: 'Remover Fondo', subtitle: 'Elimina el fondo de cualquier imagen automaticamente.', endpoint: '/api/remove-bg', type: 'ai' },
+      'vectorize-ai': { title: 'Vectorizar con IA', subtitle: 'Sube imagen y la IA la convierte en SVG vectorial profesional.', endpoint: '/api/vectorize-ai', type: 'ai' },
       'converter': { title: 'Conversor Universal', subtitle: 'Converti entre cualquier formato de imagen. Todo en tu navegador.', type: 'browser', converter: true },
       'to-svg': { title: 'JPG/PNG -> SVG', subtitle: 'Vectoriza imagenes. Funciona mejor con logos, iconos y texto.', type: 'browser' },
     };
