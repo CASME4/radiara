@@ -1246,6 +1246,8 @@
 
     .tool-center .center-result.active { display: block; }
 
+    .tool-center .center-result img { cursor: zoom-in; }
+
     /* History panel */
     .tool-history {
       width: 220px;
@@ -1854,6 +1856,75 @@
     .admin-log .log-tool { color: var(--accent); }
     .admin-log .log-time { color: var(--text-tertiary); font-size: 0.7rem; }
 
+    /* ===== ZOOM MODAL ===== */
+    .zoom-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(0,0,0,0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .zoom-modal.active { display: flex; }
+
+    .zoom-modal .zoom-close {
+      position: fixed;
+      top: 1rem;
+      right: 1.5rem;
+      z-index: 2001;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      backdrop-filter: blur(8px);
+    }
+
+    .zoom-modal .zoom-close:hover { background: rgba(255,255,255,0.2); }
+
+    .zoom-modal .zoom-hint {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.4);
+      font-family: var(--mono);
+      pointer-events: none;
+      z-index: 2001;
+    }
+
+    .zoom-viewport {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .zoom-viewport.dragging { cursor: grabbing; }
+
+    .zoom-viewport img {
+      max-width: none;
+      max-height: none;
+      transform-origin: center center;
+      transition: transform 0.15s ease-out;
+      pointer-events: none;
+      user-select: none;
+    }
+
     /* ===== GSAP reveal default ===== */
     .reveal { opacity: 0; transform: translateY(30px); }
 
@@ -2348,6 +2419,15 @@
         <li><span class="log-email">lucia@foto.com</span> <span class="log-tool">max-quality</span> <span class="log-time">hace 31 min</span></li>
       </ul>
     </div>
+  </div>
+
+  <!-- ZOOM MODAL -->
+  <div class="zoom-modal" id="zoom-modal">
+    <button class="zoom-close" onclick="closeZoom()">&#10005;</button>
+    <div class="zoom-viewport" id="zoom-viewport">
+      <img id="zoom-img" src="">
+    </div>
+    <div class="zoom-hint">Rueda para zoom &middot; Arrastra para mover</div>
   </div>
 
   <script>
@@ -4009,6 +4089,143 @@
     function toggleHistoryPanel() {
       var panel = document.getElementById('ai-history-panel');
       panel.classList.toggle('mobile-visible');
+    }
+
+    // ==========================================
+    // ZOOM MODAL
+    // ==========================================
+
+    var zoomState = { scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 };
+
+    function openZoom(src) {
+      if (!src) return;
+      var modal = document.getElementById('zoom-modal');
+      var img = document.getElementById('zoom-img');
+      zoomState = { scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 };
+      img.src = src;
+      img.style.transform = 'translate(0px,0px) scale(1)';
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeZoom() {
+      document.getElementById('zoom-modal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function applyZoomTransform() {
+      var img = document.getElementById('zoom-img');
+      img.style.transform = 'translate(' + zoomState.x + 'px,' + zoomState.y + 'px) scale(' + zoomState.scale + ')';
+    }
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.getElementById('zoom-modal').classList.contains('active')) closeZoom();
+    });
+
+    // Close on click background (not on image)
+    document.getElementById('zoom-modal').addEventListener('click', function(e) {
+      if (e.target === document.getElementById('zoom-viewport') || e.target === document.getElementById('zoom-modal')) closeZoom();
+    });
+
+    // Mouse wheel zoom
+    document.getElementById('zoom-viewport').addEventListener('wheel', function(e) {
+      e.preventDefault();
+      var delta = e.deltaY > 0 ? 0.9 : 1.1;
+      zoomState.scale = Math.max(0.2, Math.min(10, zoomState.scale * delta));
+      applyZoomTransform();
+    }, { passive: false });
+
+    // Mouse drag
+    var vp = document.getElementById('zoom-viewport');
+    vp.addEventListener('mousedown', function(e) {
+      if (e.target === vp) return;
+      zoomState.dragging = true;
+      zoomState.startX = e.clientX;
+      zoomState.startY = e.clientY;
+      zoomState.origX = zoomState.x;
+      zoomState.origY = zoomState.y;
+      vp.classList.add('dragging');
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!zoomState.dragging) return;
+      zoomState.x = zoomState.origX + (e.clientX - zoomState.startX);
+      zoomState.y = zoomState.origY + (e.clientY - zoomState.startY);
+      var img = document.getElementById('zoom-img');
+      img.style.transition = 'none';
+      applyZoomTransform();
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (zoomState.dragging) {
+        zoomState.dragging = false;
+        vp.classList.remove('dragging');
+        document.getElementById('zoom-img').style.transition = '';
+      }
+    });
+
+    // Touch: drag + pinch to zoom
+    var touchState = { dist: 0, mid: null };
+
+    vp.addEventListener('touchstart', function(e) {
+      if (e.touches.length === 1) {
+        zoomState.dragging = true;
+        zoomState.startX = e.touches[0].clientX;
+        zoomState.startY = e.touches[0].clientY;
+        zoomState.origX = zoomState.x;
+        zoomState.origY = zoomState.y;
+      } else if (e.touches.length === 2) {
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchState.dist = Math.hypot(dx, dy);
+      }
+    }, { passive: true });
+
+    vp.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+      if (e.touches.length === 1 && zoomState.dragging) {
+        zoomState.x = zoomState.origX + (e.touches[0].clientX - zoomState.startX);
+        zoomState.y = zoomState.origY + (e.touches[0].clientY - zoomState.startY);
+        document.getElementById('zoom-img').style.transition = 'none';
+        applyZoomTransform();
+      } else if (e.touches.length === 2) {
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        var dist = Math.hypot(dx, dy);
+        if (touchState.dist > 0) {
+          var ratio = dist / touchState.dist;
+          zoomState.scale = Math.max(0.2, Math.min(10, zoomState.scale * ratio));
+          applyZoomTransform();
+        }
+        touchState.dist = dist;
+      }
+    }, { passive: false });
+
+    vp.addEventListener('touchend', function() {
+      zoomState.dragging = false;
+      touchState.dist = 0;
+      document.getElementById('zoom-img').style.transition = '';
+    });
+
+    // Make AI result images clickable for zoom
+    document.addEventListener('click', function(e) {
+      var img = e.target;
+      if (img.tagName !== 'IMG') return;
+      // AI result single image
+      if (img.id === 'ai-result-img-single' && img.src) { openZoom(img.src); return; }
+      // AI result slider image (result side)
+      if (img.id === 'ai-result-img' && img.src) { openZoom(img.src); return; }
+    });
+
+    // Double click on AI slider opens zoom
+    var aiSlider = document.getElementById('ai-result-slider');
+    if (aiSlider) {
+      aiSlider.addEventListener('dblclick', function() {
+        var img = document.getElementById('ai-result-img');
+        if (img && img.src) openZoom(img.src);
+      });
     }
 
     // Init
