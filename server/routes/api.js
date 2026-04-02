@@ -41,7 +41,9 @@ router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), 
       "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
       { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
     );
+    console.log('restore-face raw output:', typeof output, JSON.stringify(output).substring(0, 500));
     const resultUrl = normalizeOutput(output);
+    console.log('restore-face normalized:', typeof resultUrl, String(resultUrl).substring(0, 200));
     const resultBase64 = await downloadAsBase64(resultUrl);
     res.json({ success: true, result: resultBase64 });
   } catch (err) {
