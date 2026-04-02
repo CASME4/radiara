@@ -68,7 +68,9 @@ router.post('/reconstruct-face', requireAuth, checkCredits, upload.single('image
       "google/nano-banana:5bdc2c7cd642ae33611d8c33f79615f98ff02509ab8db9d8ec1cc6c36d378fba",
       { input: {
         prompt: "restore this damaged old photograph, reconstruct all missing facial features, remove all damage and torn paper, output a clean pristine portrait photo, photorealistic restoration",
-        image_input: dataURI
+        image_input: [dataURI],
+        aspect_ratio: "match_input_image",
+        output_format: "png"
       }}
     );
     const step1Url = extractUrl(step1Raw);
