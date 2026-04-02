@@ -23,7 +23,7 @@ router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), 
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const output = await replicate.run(
-      "sczhou/codeformer:7de2ea26c616d5bf2245ad0d5e24f0ff9ea204d7ff76a805b379c3baa9b99cc1",
+      "sczhou/codeformer",
       { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
     );
     res.json({ success: true, result: output });
@@ -39,7 +39,7 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const output = await replicate.run(
-      "nightmareai/real-esrgan:f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa",
+      "nightmareai/real-esrgan",
       { input: { image: dataURI, scale: 4, face_enhance: false } }
     );
     res.json({ success: true, result: output });
@@ -71,7 +71,7 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const output = await replicate.run(
-      "cjwbw/rembg:fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
+      "cjwbw/rembg",
       { input: { image: dataURI } }
     );
     res.json({ success: true, result: output });
@@ -89,7 +89,7 @@ router.post('/max-quality', requireAuth, checkCredits, upload.single('image'), a
 
     // Paso 1: CodeFormer — face restore only (fidelity 0.5, no upscale)
     const step1 = await replicate.run(
-      "sczhou/codeformer:7de2ea26c616d5bf2245ad0d5e24f0ff9ea204d7ff76a805b379c3baa9b99cc1",
+      "sczhou/codeformer",
       { input: { image: dataURI, fidelity: 0.5, background_enhance: true, face_upsample: true, upscale: 1 } }
     );
 
@@ -101,7 +101,7 @@ router.post('/max-quality', requireAuth, checkCredits, upload.single('image'), a
 
     // Paso 3: Real-ESRGAN — 4x upscale to 4K with face enhance
     const output = await replicate.run(
-      "nightmareai/real-esrgan:f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa",
+      "nightmareai/real-esrgan",
       { input: { image: step2, scale: 4, face_enhance: true } }
     );
 
