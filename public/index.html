@@ -1133,38 +1133,108 @@
       margin-bottom: 1rem;
     }
 
-    .result-comparison {
+    /* Comparison Slider */
+    .comparison-slider {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+      cursor: ew-resize;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    .comparison-slider img {
+      display: block;
+      width: 100%;
+      pointer-events: none;
+    }
+
+    .comparison-slider .slider-original {
+      display: block;
+    }
+
+    .comparison-slider .slider-result {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      clip-path: inset(0 0 0 50%);
+    }
+
+    .comparison-slider .slider-result img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .comparison-slider .slider-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: #fff;
+      transform: translateX(-50%);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .comparison-slider .slider-handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.95);
+      border: 2px solid rgba(255,255,255,0.3);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      z-index: 3;
       display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #111;
+      font-weight: 700;
+      letter-spacing: -1px;
+      cursor: ew-resize;
+    }
+
+    .comparison-slider .slider-label {
+      position: absolute;
+      bottom: 10px;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #fff;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .comparison-slider .slider-label-left { left: 10px; }
+    .comparison-slider .slider-label-right { right: 10px; }
+
+    /* Single result (no slider, for remove-bg etc) */
+    .result-single {
       margin-bottom: 1.5rem;
     }
 
-    @media (min-width: 700px) {
-      .result-comparison { flex-direction: row; align-items: flex-start; }
-      .result-comparison .comparison-col { flex: 1; min-width: 0; }
-    }
-
-    .comparison-col img {
+    .result-single img {
       max-width: 100%;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
-    }
-
-    .comparison-col .comp-label {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--text-tertiary);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.5rem;
-    }
-
-    .result-img {
-      max-width: 100%;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      margin-bottom: 1rem;
+      display: block;
     }
 
     .download-btn {
@@ -1753,15 +1823,18 @@
     </div>
     <div id="result-container" class="result-container">
       <div id="result-label" class="result-label">Resultado</div>
-      <div id="result-comparison" class="result-comparison">
-        <div class="comparison-col">
-          <div class="comp-label">Original</div>
-          <img id="comparison-original" src="">
+      <div id="result-slider" class="comparison-slider" style="display:none;">
+        <img id="comparison-original" class="slider-original" src="">
+        <div class="slider-result" id="slider-result-clip">
+          <img id="result-img" src="">
         </div>
-        <div class="comparison-col">
-          <div class="comp-label">Resultado</div>
-          <img id="result-img" class="result-img" style="margin-bottom:0">
-        </div>
+        <div class="slider-line" id="slider-line"></div>
+        <div class="slider-handle" id="slider-handle">&#x2194;</div>
+        <span class="slider-label slider-label-left">Original</span>
+        <span class="slider-label slider-label-right">Resultado</span>
+      </div>
+      <div id="result-single" class="result-single" style="display:none;">
+        <img id="result-img-single" src="">
       </div>
       <a id="download-btn" class="download-btn" download>Descargar resultado</a>
       <div id="svg-teaser" style="display:none;margin-top:1.5rem;text-align:center;padding:1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);">
@@ -2267,10 +2340,19 @@
         clearInterval(interval);
 
         if (data.success) {
-          document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
-          document.getElementById('result-img').src = data.result;
           document.getElementById('download-btn').href = data.result;
           document.getElementById('download-btn').download = 'radiara-' + currentTool + '.png';
+          if (currentTool === 'remove-bg' || currentTool === 'vectorize-ai') {
+            document.getElementById('result-slider').style.display = 'none';
+            document.getElementById('result-single').style.display = 'block';
+            document.getElementById('result-img-single').src = data.result;
+          } else {
+            document.getElementById('result-single').style.display = 'none';
+            document.getElementById('result-slider').style.display = 'block';
+            document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
+            document.getElementById('result-img').src = data.result;
+            initSlider();
+          }
           document.getElementById('result-container').classList.add('active');
         } else {
           alert('Error: ' + (data.error || 'Algo salio mal'));
@@ -2335,11 +2417,14 @@
           else if (diff < 0) label += ' (aumento ' + pct + '%)';
 
           document.getElementById('result-label').textContent = label;
+          document.getElementById('result-single').style.display = 'none';
+          document.getElementById('result-slider').style.display = 'block';
           document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
           document.getElementById('result-img').src = url;
           document.getElementById('download-btn').href = url;
           document.getElementById('download-btn').download = 'radiara-converted' + outputExtMap[targetFormat];
           document.getElementById('result-container').classList.add('active');
+          initSlider();
         }, mime, quality);
       };
       img.src = URL.createObjectURL(currentFile);
@@ -2373,12 +2458,15 @@
         var dataUrl = canvas.toDataURL('image/jpeg', 0.92);
         var blob = new Blob([dataUrl], { type: 'image/jpeg' });
         var url = URL.createObjectURL(blob);
+        document.getElementById('result-single').style.display = 'none';
+        document.getElementById('result-slider').style.display = 'block';
         document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
         document.getElementById('result-img').src = url;
         document.getElementById('download-btn').href = url;
         document.getElementById('download-btn').download = 'radiara-document.jpg';
         document.getElementById('result-label').textContent = 'Resultado — Imagen lista para PDF';
         document.getElementById('result-container').classList.add('active');
+        initSlider();
       };
       img.src = URL.createObjectURL(currentFile);
     }
@@ -2478,6 +2566,8 @@
         var sizeKB = (blob.size / 1024).toFixed(1);
         var pathCount = (svg.match(/<path/g) || []).length;
         var colorCount = (svg.match(/fill="/g) || []).length - 1; // minus bg rect
+        document.getElementById('result-single').style.display = 'none';
+        document.getElementById('result-slider').style.display = 'block';
         document.getElementById('comparison-original').src = document.getElementById('preview-img').src;
         document.getElementById('result-img').src = url;
         document.getElementById('download-btn').href = url;
@@ -2486,6 +2576,7 @@
           'Resultado — SVG ' + sizeKB + ' KB — ' + pathCount + ' paths — ' + Math.max(colorCount, 1) + ' colores';
         document.getElementById('result-container').classList.add('active');
         document.getElementById('svg-teaser').style.display = 'block';
+        initSlider();
       };
       img.src = URL.createObjectURL(currentFile);
     }
@@ -3116,6 +3207,91 @@
       document.getElementById('dashboard-view').classList.remove('active');
       document.getElementById('landing').style.display = 'block';
       window.scrollTo(0, 0);
+    }
+
+    // ==========================================
+    // COMPARISON SLIDER
+    // ==========================================
+
+    function initSlider() {
+      var container = document.getElementById('result-slider');
+      var handle = document.getElementById('slider-handle');
+      var line = document.getElementById('slider-line');
+      var clip = document.getElementById('slider-result-clip');
+      if (!container || !handle) return;
+
+      var dragging = false;
+
+      function setPosition(pct) {
+        pct = Math.max(0, Math.min(100, pct));
+        clip.style.clipPath = 'inset(0 0 0 ' + pct + '%)';
+        line.style.left = pct + '%';
+        handle.style.left = pct + '%';
+      }
+
+      function getPercent(clientX) {
+        var rect = container.getBoundingClientRect();
+        return ((clientX - rect.left) / rect.width) * 100;
+      }
+
+      // Mouse events
+      container.addEventListener('mousedown', function(e) {
+        dragging = true;
+        setPosition(getPercent(e.clientX));
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        setPosition(getPercent(e.clientX));
+      });
+
+      document.addEventListener('mouseup', function() {
+        dragging = false;
+      });
+
+      // Touch events
+      container.addEventListener('touchstart', function(e) {
+        dragging = true;
+        setPosition(getPercent(e.touches[0].clientX));
+      }, { passive: true });
+
+      container.addEventListener('touchmove', function(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        setPosition(getPercent(e.touches[0].clientX));
+      }, { passive: false });
+
+      container.addEventListener('touchend', function() {
+        dragging = false;
+      });
+
+      // Intro animation: sweep from right to left and back to center
+      setPosition(95);
+      setTimeout(function() {
+        var start = 95;
+        var end = 5;
+        var duration = 800;
+        var startTime = performance.now();
+        function animateIn(now) {
+          var t = Math.min((now - startTime) / duration, 1);
+          var ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          setPosition(start + (end - start) * ease);
+          if (t < 1) requestAnimationFrame(animateIn);
+          else {
+            // Sweep back to center
+            var s2 = performance.now();
+            function animateBack(now2) {
+              var t2 = Math.min((now2 - s2) / 600, 1);
+              var ease2 = t2 < 0.5 ? 2 * t2 * t2 : 1 - Math.pow(-2 * t2 + 2, 2) / 2;
+              setPosition(5 + (50 - 5) * ease2);
+              if (t2 < 1) requestAnimationFrame(animateBack);
+            }
+            setTimeout(function() { requestAnimationFrame(animateBack); }, 200);
+          }
+        }
+        requestAnimationFrame(animateIn);
+      }, 300);
     }
 
     // Init
