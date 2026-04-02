@@ -1160,9 +1160,85 @@
     .tool-center .center-loading {
       display: none;
       text-align: center;
+      padding: 3rem;
     }
 
-    .tool-center .center-loading.active { display: block; }
+    .tool-center .center-loading.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    .futuristic-spinner {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 2rem;
+    }
+
+    .futuristic-spinner .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid transparent;
+    }
+
+    .futuristic-spinner .ring-outer {
+      border-top-color: var(--accent);
+      border-right-color: rgba(255,68,68,0.3);
+      animation: spin-cw 1.4s linear infinite;
+      filter: drop-shadow(0 0 6px var(--accent));
+    }
+
+    .futuristic-spinner .ring-inner {
+      inset: 12px;
+      border-bottom-color: var(--purple);
+      border-left-color: rgba(168,85,247,0.3);
+      animation: spin-ccw 1s linear infinite;
+      filter: drop-shadow(0 0 6px var(--purple));
+    }
+
+    .futuristic-spinner .ring-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    @keyframes spin-cw { to { transform: rotate(360deg); } }
+    @keyframes spin-ccw { to { transform: rotate(-360deg); } }
+
+    .loading-progress {
+      font-family: var(--mono);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .loading-status {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .loading-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: grid-drift 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes grid-drift {
+      to { background-position: 40px 40px; }
+    }
 
     .tool-center .center-result {
       display: none;
@@ -1901,11 +1977,17 @@
         </div>
 
         <div class="tools-grid" id="ai-tools-grid">
-          <div class="tool-card reveal" onclick="openTool('restore-face')">
+          <div class="tool-card reveal" onclick="openTool('improve-face')">
             <span class="tool-badge badge-ai">IA</span>
             <span class="tool-icon">&#x1F9D1;</span>
-            <h3>Restaurar Cara</h3>
-            <p>Repara fotos viejas, borrosas o danadas. Restaura rostros sin cambiar la identidad.</p>
+            <h3>Mejorar Rostro</h3>
+            <p>Repara fotos viejas o borrosas. Restaura rostros sin cambiar la identidad.</p>
+          </div>
+          <div class="tool-card reveal" onclick="openTool('reconstruct-face')">
+            <span class="tool-badge badge-ai">IA</span>
+            <span class="tool-icon">&#x1F527;</span>
+            <h3>Reconstruir Rostro</h3>
+            <p>Para fotos con pedazos faltantes, rayones o manchas graves. Reconstruye con IA generativa.</p>
           </div>
           <div class="tool-card reveal" onclick="openTool('product-hd')">
             <span class="tool-badge badge-ai">IA</span>
@@ -2174,8 +2256,14 @@
         </div>
         <div class="center-content" id="ai-center-content" style="display:none;">
           <div class="center-loading" id="ai-loading">
-            <div class="spinner"></div>
-            <p id="ai-loading-text">Procesando imagen...</p>
+            <div class="loading-grid-bg"></div>
+            <div class="futuristic-spinner">
+              <div class="ring ring-outer"></div>
+              <div class="ring ring-inner"></div>
+              <div class="ring-dot"></div>
+            </div>
+            <div class="loading-progress" id="ai-loading-pct">0%</div>
+            <p class="loading-status" id="ai-loading-text">Analizando imagen...</p>
           </div>
           <div class="center-result" id="ai-result">
             <div id="ai-result-label" class="result-label">Resultado</div>
@@ -2251,7 +2339,7 @@
       </div>
       <h3 style="margin-top:1rem">Ultimos procesamientos</h3>
       <ul class="admin-log">
-        <li><span class="log-email">maria@gmail.com</span> <span class="log-tool">restore-face</span> <span class="log-time">hace 3 min</span></li>
+        <li><span class="log-email">maria@gmail.com</span> <span class="log-tool">improve-face</span> <span class="log-time">hace 3 min</span></li>
         <li><span class="log-email">carlos@outlook.com</span> <span class="log-tool">product-hd</span> <span class="log-time">hace 8 min</span></li>
         <li><span class="log-email">ana@empresa.com</span> <span class="log-tool">remove-bg</span> <span class="log-time">hace 15 min</span></li>
         <li><span class="log-email">diego@studio.co</span> <span class="log-tool">skin-real</span> <span class="log-time">hace 22 min</span></li>
@@ -2450,7 +2538,8 @@
     // ==========================================
 
     var tools = {
-      'restore-face': { title: 'Restaurar Cara', subtitle: 'Subi una foto vieja o borrosa y la IA restaura el rostro.', endpoint: '/api/restore-face', type: 'ai' },
+      'improve-face': { title: 'Mejorar Rostro', subtitle: 'Subi una foto vieja o borrosa y la IA restaura el rostro.', endpoint: '/api/improve-face', type: 'ai' },
+      'reconstruct-face': { title: 'Reconstruir Rostro', subtitle: 'Para fotos con pedazos faltantes, rayones o manchas graves. Reconstruye con IA generativa.', endpoint: '/api/reconstruct-face', type: 'ai' },
       'product-hd': { title: 'Producto HD', subtitle: 'Subi foto de producto y se mejora a alta resolucion.', endpoint: '/api/product-hd', type: 'ai' },
       'skin-real': { title: 'Piel Real', subtitle: 'Subi una imagen de modelo IA y se agrega textura de piel realista. Tarda 30-60 seg.', endpoint: '/api/skin-real', type: 'ai' },
       'max-quality': { title: 'Maxima Calidad', subtitle: 'Restaura y mejora al maximo. Tarda 1-2 minutos.', endpoint: '/api/max-quality', type: 'ai' },
@@ -2708,12 +2797,38 @@
 
       var isAILayout = document.getElementById('tool-view').classList.contains('ai-layout');
 
+      var progressTween = null;
+
       if (isAILayout) {
         document.getElementById('ai-process-btn').classList.remove('visible');
         document.getElementById('ai-center-empty').style.display = 'none';
         document.getElementById('ai-center-content').style.display = 'block';
         document.getElementById('ai-loading').classList.add('active');
         document.getElementById('ai-result').classList.remove('active');
+        document.getElementById('ai-loading-pct').textContent = '0%';
+        document.getElementById('ai-loading-text').textContent = 'Analizando imagen...';
+
+        // GSAP progress: 0→30 fast, 30→80 slow
+        var pctObj = { val: 0 };
+        var pctEl = document.getElementById('ai-loading-pct');
+        var statusEl = document.getElementById('ai-loading-text');
+        var aiMsgs = [
+          { at: 0, text: 'Analizando imagen...' },
+          { at: 15, text: 'Procesando con IA...' },
+          { at: 40, text: 'Mejorando detalles...' },
+          { at: 70, text: 'Casi listo...' }
+        ];
+        progressTween = gsap.timeline();
+        progressTween.to(pctObj, { val: 30, duration: 3, ease: 'power2.out', onUpdate: function() {
+          var v = Math.round(pctObj.val);
+          pctEl.textContent = v + '%';
+          for (var mi = aiMsgs.length - 1; mi >= 0; mi--) { if (v >= aiMsgs[mi].at) { statusEl.textContent = aiMsgs[mi].text; break; } }
+        }});
+        progressTween.to(pctObj, { val: 80, duration: 40, ease: 'none', onUpdate: function() {
+          var v = Math.round(pctObj.val);
+          pctEl.textContent = v + '%';
+          for (var mi = aiMsgs.length - 1; mi >= 0; mi--) { if (v >= aiMsgs[mi].at) { statusEl.textContent = aiMsgs[mi].text; break; } }
+        }});
       } else {
         document.getElementById('process-btn').classList.remove('visible');
         document.getElementById('loading').classList.add('active');
@@ -2722,18 +2837,29 @@
 
       var msgs = ['Procesando imagen...', 'La IA esta trabajando...', 'Esto puede tardar unos segundos...', 'Mejorando detalles...', 'Casi listo...'];
       var idx = 0;
-      var loadingTextEl = isAILayout ? document.getElementById('ai-loading-text') : document.getElementById('loading-text');
-      var interval = setInterval(function() {
+      var loadingTextEl = !isAILayout ? document.getElementById('loading-text') : null;
+      var interval = !isAILayout ? setInterval(function() {
         idx = (idx + 1) % msgs.length;
-        loadingTextEl.textContent = msgs[idx];
-      }, 3000);
+        if (loadingTextEl) loadingTextEl.textContent = msgs[idx];
+      }, 3000) : null;
 
       try {
         var formData = new FormData();
         formData.append('image', currentFile);
         var response = await fetch(tool.endpoint, { method: 'POST', body: formData });
         var data = await response.json();
-        clearInterval(interval);
+        if (interval) clearInterval(interval);
+        if (progressTween) progressTween.kill();
+
+        // Finish progress to 100%
+        if (isAILayout) {
+          gsap.to({ val: parseFloat(document.getElementById('ai-loading-pct').textContent) }, {
+            val: 100, duration: 0.6, ease: 'power2.out',
+            onUpdate: function() { document.getElementById('ai-loading-pct').textContent = Math.round(this.targets()[0].val) + '%'; },
+            onComplete: function() { document.getElementById('ai-loading-text').textContent = 'Listo!'; }
+          });
+          await new Promise(function(r) { setTimeout(r, 700); });
+        }
 
         if (data.success) {
           if (isAILayout) {
@@ -2777,7 +2903,8 @@
           alert('Error: ' + (data.error || 'Algo salio mal'));
         }
       } catch (err) {
-        clearInterval(interval);
+        if (interval) clearInterval(interval);
+        if (progressTween) progressTween.kill();
         alert('Error de conexion: ' + err.message);
       }
 
@@ -3590,7 +3717,7 @@
     // ==========================================
 
     var mockHistory = [
-      { icon: '&#x1F9D1;', tool: 'Restaurar Cara', date: '28 Mar 2026', status: 'Completado' },
+      { icon: '&#x1F9D1;', tool: 'Mejorar Rostro', date: '28 Mar 2026', status: 'Completado' },
       { icon: '&#x1F48E;', tool: 'Producto HD', date: '27 Mar 2026', status: 'Completado' },
       { icon: '&#x1F532;', tool: 'Remover Fondo', date: '25 Mar 2026', status: 'Completado' },
       { icon: '&#x2728;', tool: 'Piel Real', date: '24 Mar 2026', status: 'Completado' },

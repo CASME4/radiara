@@ -40,33 +40,53 @@ async function replicateResultToBase64(output) {
   return 'data:' + contentType + ';base64,' + buffer.toString('base64');
 }
 
-// 1. Restaurar Cara — Pipeline: Magic Image Refiner (inpainting) → CodeFormer (face restore)
-router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+// 1. Mejorar Rostro — CodeFormer solo (fotos borrosas/viejas normales)
+router.post('/improve-face', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
-
-    // Paso 1: Magic Image Refiner — rellena pedazos faltantes, limpia dano
-    const step1Raw = await replicate.run(
-      "fermatresearch/magic-image-refiner:507ddf6f977a7e30e46c0daefd30de7d563c72322f9e4cf7cbac52ef0f667b13",
-      { input: { image: dataURI, resemblance: 0.5, creativity: 0.7, prompt: "restore damaged old photograph, reconstruct missing facial features, remove white torn paper damage, clean pristine portrait photo" } }
-    );
-    const step1Url = extractUrl(step1Raw);
-
-    // Paso 2: CodeFormer — restaura rasgos faciales
     const output = await replicate.run(
       "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
-      { input: { image: step1Url, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
+      { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
     );
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('restore-face error:', err.message);
+    console.error('improve-face error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
   }
 });
 
-// 2. Producto HD
+// 2. Reconstruir Rostro — Nano Banana (inpainting) + CodeFormer (fotos MUY danadas)
+router.post('/reconstruct-face', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
+    const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
+
+    // Paso 1: Nano Banana — reconstruye partes faltantes con IA generativa
+    const step1Raw = await replicate.run(
+      "google/nano-banana:5bdc2c7cd642ae33611d8c33f79615f98ff02509ab8db9d8ec1cc6c36d378fba",
+      { input: {
+        prompt: "restore this damaged old photograph, reconstruct all missing facial features, remove all damage and torn paper, output a clean pristine portrait photo, photorealistic restoration",
+        image_input: dataURI
+      }}
+    );
+    const step1Url = extractUrl(step1Raw);
+
+    // Paso 2: CodeFormer — refina rasgos faciales con alta fidelidad
+    const output = await replicate.run(
+      "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
+      { input: { image: step1Url, fidelity: 0.9, background_enhance: true, face_upsample: true, upscale: 2 } }
+    );
+    const base64 = await replicateResultToBase64(output);
+    res.json({ success: true, result: base64 });
+  } catch (err) {
+    console.error('reconstruct-face error:', err.message);
+    res.status(500).json({ error: 'Error procesando imagen', details: err.message });
+  }
+});
+
+// 3. Producto HD
 router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
@@ -83,7 +103,7 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
   }
 });
 
-// 3. Piel Real — Crystal Upscaler (reemplaza SUPIR: 4x mas barato, 10x mas rapido)
+// 4. Piel Real — Crystal Upscaler
 router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
@@ -100,7 +120,7 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
   }
 });
 
-// 4. Remover Fondo
+// 5. Remover Fondo
 router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
@@ -117,7 +137,7 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
   }
 });
 
-// 5. Maxima Calidad — Pipeline de 3 pasos: CodeFormer → Crystal Upscaler → Real-ESRGAN 4K
+// 6. Maxima Calidad — Pipeline de 3 pasos: CodeFormer -> Crystal Upscaler -> Real-ESRGAN 4K
 router.post('/max-quality', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
@@ -151,7 +171,7 @@ router.post('/max-quality', requireAuth, checkCredits, upload.single('image'), a
   }
 });
 
-// 6. Vectorizar con IA — Vectorizer.AI API
+// 7. Vectorizar con IA — Vectorizer.AI API
 router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
