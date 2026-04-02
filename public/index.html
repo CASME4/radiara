@@ -1516,6 +1516,8 @@
       display: block;
       width: 100%;
       pointer-events: none;
+      will-change: transform;
+      transition: transform 0.15s ease-out;
     }
 
     .comparison-slider .slider-original {
@@ -1536,6 +1538,26 @@
       height: 100%;
       object-fit: cover;
     }
+
+    .comparison-slider .slider-zoom-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .comparison-slider .slider-zoom-badge.visible { opacity: 1; }
 
     .comparison-slider .slider-line {
       position: absolute;
@@ -2284,6 +2306,7 @@
           <div class="slider-handle" id="slider-handle">&#x2194;</div>
           <span class="slider-label slider-label-left">Original</span>
           <span class="slider-label slider-label-right">Resultado</span>
+          <span class="slider-zoom-badge" id="slider-zoom-badge">100%</span>
         </div>
         <div id="result-single" class="result-single" style="display:none;">
           <img id="result-img-single" src="">
@@ -2349,6 +2372,7 @@
               <div class="slider-handle" id="ai-slider-handle">&#x2194;</div>
               <span class="slider-label slider-label-left">Original</span>
               <span class="slider-label slider-label-right">Resultado</span>
+              <span class="slider-zoom-badge" id="ai-slider-zoom-badge">100%</span>
             </div>
             <div id="ai-result-single" class="result-single" style="display:none;">
               <img id="ai-result-img-single" src="">
@@ -3853,7 +3877,26 @@
       var clip = document.getElementById(clipId || 'slider-result-clip');
       if (!container || !handle) return;
 
+      var origImg = container.querySelector('.slider-original');
+      var resImg = clip ? clip.querySelector('img') : null;
+      var badge = container.querySelector('.slider-zoom-badge');
+
       var dragging = false;
+
+      // Zoom state for this slider
+      var sz = { scale: 1, x: 0, y: 0, panning: false, startX: 0, startY: 0, origX: 0, origY: 0 };
+
+      function applyImgTransform() {
+        var t = 'translate(' + sz.x + 'px,' + sz.y + 'px) scale(' + sz.scale + ')';
+        if (origImg) origImg.style.transform = t;
+        if (resImg) resImg.style.transform = t;
+        // Badge
+        if (badge) {
+          var pct = Math.round(sz.scale * 100);
+          badge.textContent = pct + '%';
+          badge.classList.toggle('visible', sz.scale > 1.01);
+        }
+      }
 
       function setPosition(pct) {
         pct = Math.max(0, Math.min(100, pct));
@@ -3867,30 +3910,89 @@
         return ((clientX - rect.left) / rect.width) * 100;
       }
 
-      // Mouse events
+      // Wheel zoom — centered on cursor
+      container.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var rect = container.getBoundingClientRect();
+        var cursorX = e.clientX - rect.left;
+        var cursorY = e.clientY - rect.top;
+        var oldScale = sz.scale;
+        var delta = e.deltaY < 0 ? 0.3 : -0.3;
+        sz.scale = Math.max(1, Math.min(5, sz.scale + delta));
+        if (sz.scale === oldScale) return;
+        // Adjust pan so zoom centers on cursor
+        var ratio = sz.scale / oldScale;
+        sz.x = cursorX - ratio * (cursorX - sz.x);
+        sz.y = cursorY - ratio * (cursorY - sz.y);
+        // Clamp pan when back at 1x
+        if (sz.scale <= 1) { sz.x = 0; sz.y = 0; }
+        if (origImg) origImg.style.transition = 'transform 0.15s ease-out';
+        if (resImg) resImg.style.transition = 'transform 0.15s ease-out';
+        applyImgTransform();
+      }, { passive: false });
+
+      // Mouse events — slider drag vs Alt+pan
       container.addEventListener('mousedown', function(e) {
-        dragging = true;
-        setPosition(getPercent(e.clientX));
+        if (e.altKey && sz.scale > 1) {
+          // Pan mode
+          sz.panning = true;
+          sz.startX = e.clientX;
+          sz.startY = e.clientY;
+          sz.origX = sz.x;
+          sz.origY = sz.y;
+          container.style.cursor = 'grabbing';
+          e.preventDefault();
+        } else {
+          dragging = true;
+          setPosition(getPercent(e.clientX));
+        }
       });
 
       document.addEventListener('mousemove', function(e) {
+        if (sz.panning) {
+          e.preventDefault();
+          sz.x = sz.origX + (e.clientX - sz.startX);
+          sz.y = sz.origY + (e.clientY - sz.startY);
+          if (origImg) origImg.style.transition = 'none';
+          if (resImg) resImg.style.transition = 'none';
+          applyImgTransform();
+          return;
+        }
         if (!dragging) return;
         e.preventDefault();
         setPosition(getPercent(e.clientX));
       });
 
       document.addEventListener('mouseup', function() {
+        if (sz.panning) {
+          sz.panning = false;
+          container.style.cursor = '';
+          if (origImg) origImg.style.transition = '';
+          if (resImg) resImg.style.transition = '';
+        }
         dragging = false;
       });
 
-      // Touch events
+      // Double click resets zoom
+      container.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        sz.scale = 1; sz.x = 0; sz.y = 0;
+        if (origImg) origImg.style.transition = 'transform 0.3s ease-out';
+        if (resImg) resImg.style.transition = 'transform 0.3s ease-out';
+        applyImgTransform();
+      });
+
+      // Touch events (slider drag)
       container.addEventListener('touchstart', function(e) {
-        dragging = true;
-        setPosition(getPercent(e.touches[0].clientX));
+        if (e.touches.length === 1) {
+          dragging = true;
+          setPosition(getPercent(e.touches[0].clientX));
+        }
       }, { passive: true });
 
       container.addEventListener('touchmove', function(e) {
-        if (!dragging) return;
+        if (!dragging || e.touches.length !== 1) return;
         e.preventDefault();
         setPosition(getPercent(e.touches[0].clientX));
       }, { passive: false });
@@ -3898,6 +4000,10 @@
       container.addEventListener('touchend', function() {
         dragging = false;
       });
+
+      // Reset zoom when slider re-initializes
+      sz.scale = 1; sz.x = 0; sz.y = 0;
+      applyImgTransform();
 
       // Intro animation: sweep from right to left and back to center
       setPosition(95);
@@ -3912,7 +4018,6 @@
           setPosition(start + (end - start) * ease);
           if (t < 1) requestAnimationFrame(animateIn);
           else {
-            // Sweep back to center
             var s2 = performance.now();
             function animateBack(now2) {
               var t2 = Math.min((now2 - s2) / 600, 1);
@@ -4227,14 +4332,7 @@
       if (img.id === 'ai-result-img' && img.src) { openZoom(img.src); return; }
     });
 
-    // Double click on AI slider opens zoom
-    var aiSlider = document.getElementById('ai-result-slider');
-    if (aiSlider) {
-      aiSlider.addEventListener('dblclick', function() {
-        var img = document.getElementById('ai-result-img');
-        if (img && img.src) openZoom(img.src);
-      });
-    }
+    // Double click on AI slider resets zoom (handled inside initSlider)
 
     // Init
     updateHeaderAuth();
