@@ -17,15 +17,23 @@ function toDataURI(buffer, mimetype) {
   return 'data:' + mimetype + ';base64,' + buffer.toString('base64');
 }
 
-function normalizeOutput(output) {
-  return typeof output === 'string' ? output :
-    Array.isArray(output) ? output[0] :
-    (output && output.url) ? output.url :
-    (output && output.output) ? output.output : output;
+function extractUrl(output) {
+  if (output && typeof output === 'object' && typeof output.url === 'function') {
+    const u = output.url();
+    return u.href || u.toString();
+  }
+  if (typeof output === 'string' && output.startsWith('http')) return output;
+  if (Array.isArray(output) && output.length > 0) return extractUrl(output[0]);
+  if (typeof output === 'string' && output.startsWith('data:')) return output;
+  throw new Error('Formato de output no reconocido: ' + typeof output);
 }
 
-async function downloadAsBase64(url) {
+async function replicateResultToBase64(output) {
+  const url = extractUrl(output);
+  if (url.startsWith('data:')) return url;
+
   const fetch = (await import('node-fetch')).default;
+  console.log('Downloading from:', url);
   const response = await fetch(url);
   const buffer = await response.buffer();
   const contentType = response.headers.get('content-type') || 'image/png';
@@ -41,11 +49,8 @@ router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), 
       "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
       { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
     );
-    console.log('restore-face raw output:', typeof output, JSON.stringify(output).substring(0, 500));
-    const resultUrl = normalizeOutput(output);
-    console.log('restore-face normalized:', typeof resultUrl, String(resultUrl).substring(0, 200));
-    const resultBase64 = await downloadAsBase64(resultUrl);
-    res.json({ success: true, result: resultBase64 });
+    const base64 = await replicateResultToBase64(output);
+    res.json({ success: true, result: base64 });
   } catch (err) {
     console.error('restore-face error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
@@ -61,9 +66,8 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
       "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
       { input: { image: dataURI, scale: 4, face_enhance: false } }
     );
-    const resultUrl = normalizeOutput(output);
-    const resultBase64 = await downloadAsBase64(resultUrl);
-    res.json({ success: true, result: resultBase64 });
+    const base64 = await replicateResultToBase64(output);
+    res.json({ success: true, result: base64 });
   } catch (err) {
     console.error('product-hd error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
@@ -79,9 +83,8 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
       "philz1337x/crystal-upscaler:5d917b1444c89ed91055f3052d27e1ad433a1218599a36544510e1dfa9ac26c8",
       { input: { image: dataURI, scale_factor: 2 } }
     );
-    const resultUrl = normalizeOutput(output);
-    const resultBase64 = await downloadAsBase64(resultUrl);
-    res.json({ success: true, result: resultBase64 });
+    const base64 = await replicateResultToBase64(output);
+    res.json({ success: true, result: base64 });
   } catch (err) {
     console.error('skin-real error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
@@ -97,9 +100,8 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
       "cjwbw/rembg:fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
       { input: { image: dataURI } }
     );
-    const resultUrl = normalizeOutput(output);
-    const resultBase64 = await downloadAsBase64(resultUrl);
-    res.json({ success: true, result: resultBase64 });
+    const base64 = await replicateResultToBase64(output);
+    res.json({ success: true, result: base64 });
   } catch (err) {
     console.error('remove-bg error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
@@ -113,28 +115,27 @@ router.post('/max-quality', requireAuth, checkCredits, upload.single('image'), a
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
 
     // Paso 1: CodeFormer — face restore only (fidelity 0.5, no upscale)
-    const raw1 = await replicate.run(
+    const step1Raw = await replicate.run(
       "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
       { input: { image: dataURI, fidelity: 0.5, background_enhance: true, face_upsample: true, upscale: 1 } }
     );
-    const step1 = normalizeOutput(raw1);
+    const step1Url = extractUrl(step1Raw);
 
     // Paso 2: Crystal Upscaler — skin texture + 2x upscale
-    const raw2 = await replicate.run(
+    const step2Raw = await replicate.run(
       "philz1337x/crystal-upscaler:5d917b1444c89ed91055f3052d27e1ad433a1218599a36544510e1dfa9ac26c8",
-      { input: { image: step1, scale_factor: 2 } }
+      { input: { image: step1Url, scale_factor: 2 } }
     );
-    const step2 = normalizeOutput(raw2);
+    const step2Url = extractUrl(step2Raw);
 
     // Paso 3: Real-ESRGAN — 4x upscale to 4K with face enhance
-    const raw3 = await replicate.run(
+    const output = await replicate.run(
       "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
-      { input: { image: step2, scale: 4, face_enhance: true } }
+      { input: { image: step2Url, scale: 4, face_enhance: true } }
     );
-    const resultUrl = normalizeOutput(raw3);
-    const resultBase64 = await downloadAsBase64(resultUrl);
+    const base64 = await replicateResultToBase64(output);
 
-    res.json({ success: true, result: resultBase64 });
+    res.json({ success: true, result: base64 });
   } catch (err) {
     console.error('max-quality error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
