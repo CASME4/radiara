@@ -2071,7 +2071,7 @@
             <div class="plan-period">Para siempre</div>
             <ul class="plan-features">
               <li>Herramientas de conversion ilimitadas</li>
-              <li>3 imagenes IA por mes</li>
+              <li>5 creditos IA por mes</li>
               <li>Formatos basicos</li>
             </ul>
             <a href="#herramientas" class="pricing-btn btn-green">Empezar gratis</a>
@@ -2079,10 +2079,10 @@
 
           <div class="pricing-card reveal">
             <div class="plan-name">Starter</div>
-            <div class="plan-price" data-monthly="8" data-annual="6">$8 <span>/mes</span></div>
+            <div class="plan-price" data-monthly="9" data-annual="7">$9 <span>/mes</span></div>
             <div class="plan-period price-period">Facturado mensualmente</div>
             <ul class="plan-features">
-              <li>30 imagenes IA por mes</li>
+              <li>40 creditos por mes</li>
               <li>Todos los formatos</li>
               <li>Herramientas de conversion ilimitadas</li>
             </ul>
@@ -2092,10 +2092,10 @@
           <div class="pricing-card featured reveal">
             <div class="pricing-popular">Mas popular</div>
             <div class="plan-name">Pro</div>
-            <div class="plan-price" data-monthly="15" data-annual="12">$15 <span>/mes</span></div>
+            <div class="plan-price" data-monthly="19" data-annual="15">$19 <span>/mes</span></div>
             <div class="plan-period price-period">Facturado mensualmente</div>
             <ul class="plan-features">
-              <li>150 imagenes IA por mes</li>
+              <li>100 creditos por mes</li>
               <li>SUPIR incluido</li>
               <li>Prioridad en cola</li>
               <li>Todos los formatos</li>
@@ -2105,10 +2105,10 @@
 
           <div class="pricing-card reveal">
             <div class="plan-name">Business</div>
-            <div class="plan-price" data-monthly="29" data-annual="23">$29 <span>/mes</span></div>
+            <div class="plan-price" data-monthly="39" data-annual="31">$39 <span>/mes</span></div>
             <div class="plan-period price-period">Facturado mensualmente</div>
             <ul class="plan-features">
-              <li>500 imagenes IA por mes</li>
+              <li>300 creditos por mes</li>
               <li>Acceso a API</li>
               <li>Soporte prioritario</li>
               <li>Todos los formatos</li>
@@ -2117,6 +2117,8 @@
           </div>
         </div>
 
+        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Las herramientas basicas cuestan 1 credito. Mejorar Rostro cuesta 2 creditos. Reconstruir Rostro y Maxima Calidad cuestan 3 creditos.</p>
+
         <div class="credits-section reveal">
           <div class="credits-label">O compra creditos sueltos</div>
           <div class="credits-grid">
@@ -2124,13 +2126,13 @@
               <div class="credit-amount">10 creditos</div>
               <div class="credit-price">$3</div>
             </div>
-            <div class="credit-card" onclick="initCheckout('50 creditos','$12')">
+            <div class="credit-card" onclick="initCheckout('50 creditos','$15')">
               <div class="credit-amount">50 creditos</div>
-              <div class="credit-price">$12</div>
+              <div class="credit-price">$15</div>
             </div>
-            <div class="credit-card" onclick="initCheckout('200 creditos','$29')">
+            <div class="credit-card" onclick="initCheckout('200 creditos','$35')">
               <div class="credit-amount">200 creditos</div>
-              <div class="credit-price">$29</div>
+              <div class="credit-price">$35</div>
             </div>
           </div>
         </div>
@@ -2526,9 +2528,9 @@
 
     function getCurrentPrice(planName) {
       var prices = {
-        'Starter': { monthly: '$8/mes', annual: '$6/mes (anual)' },
-        'Pro': { monthly: '$15/mes', annual: '$12/mes (anual)' },
-        'Business': { monthly: '$29/mes', annual: '$23/mes (anual)' }
+        'Starter': { monthly: '$9/mes', annual: '$7/mes (anual)' },
+        'Pro': { monthly: '$19/mes', annual: '$15/mes (anual)' },
+        'Business': { monthly: '$39/mes', annual: '$31/mes (anual)' }
       };
       return isAnnual ? prices[planName].annual : prices[planName].monthly;
     }
