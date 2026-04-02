@@ -24,6 +24,14 @@ function normalizeOutput(output) {
     (output && output.output) ? output.output : output;
 }
 
+async function downloadAsBase64(url) {
+  const fetch = (await import('node-fetch')).default;
+  const response = await fetch(url);
+  const buffer = await response.buffer();
+  const contentType = response.headers.get('content-type') || 'image/png';
+  return 'data:' + contentType + ';base64,' + buffer.toString('base64');
+}
+
 // 1. Restaurar Cara
 router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
@@ -34,7 +42,8 @@ router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), 
       { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
     );
     const resultUrl = normalizeOutput(output);
-    res.json({ success: true, result: resultUrl });
+    const resultBase64 = await downloadAsBase64(resultUrl);
+    res.json({ success: true, result: resultBase64 });
   } catch (err) {
     console.error('restore-face error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
@@ -51,7 +60,8 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
       { input: { image: dataURI, scale: 4, face_enhance: false } }
     );
     const resultUrl = normalizeOutput(output);
-    res.json({ success: true, result: resultUrl });
+    const resultBase64 = await downloadAsBase64(resultUrl);
+    res.json({ success: true, result: resultBase64 });
   } catch (err) {
     console.error('product-hd error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
@@ -68,7 +78,8 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
       { input: { image: dataURI, scale_factor: 2 } }
     );
     const resultUrl = normalizeOutput(output);
-    res.json({ success: true, result: resultUrl });
+    const resultBase64 = await downloadAsBase64(resultUrl);
+    res.json({ success: true, result: resultBase64 });
   } catch (err) {
     console.error('skin-real error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
@@ -85,7 +96,8 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
       { input: { image: dataURI } }
     );
     const resultUrl = normalizeOutput(output);
-    res.json({ success: true, result: resultUrl });
+    const resultBase64 = await downloadAsBase64(resultUrl);
+    res.json({ success: true, result: resultBase64 });
   } catch (err) {
     console.error('remove-bg error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
@@ -118,8 +130,9 @@ router.post('/max-quality', requireAuth, checkCredits, upload.single('image'), a
       { input: { image: step2, scale: 4, face_enhance: true } }
     );
     const resultUrl = normalizeOutput(raw3);
+    const resultBase64 = await downloadAsBase64(resultUrl);
 
-    res.json({ success: true, result: resultUrl });
+    res.json({ success: true, result: resultBase64 });
   } catch (err) {
     console.error('max-quality error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
