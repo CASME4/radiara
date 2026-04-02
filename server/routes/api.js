@@ -40,14 +40,23 @@ async function replicateResultToBase64(output) {
   return 'data:' + contentType + ';base64,' + buffer.toString('base64');
 }
 
-// 1. Restaurar Cara
+// 1. Restaurar Cara — Pipeline: Magic Image Refiner (inpainting) → CodeFormer (face restore)
 router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
+
+    // Paso 1: Magic Image Refiner — rellena pedazos faltantes, limpia dano
+    const step1Raw = await replicate.run(
+      "batouresearch/magic-image-refiner",
+      { input: { image: dataURI, resemblance: 0.75, creativity: 0.5 } }
+    );
+    const step1Url = extractUrl(step1Raw);
+
+    // Paso 2: CodeFormer — restaura rasgos faciales
     const output = await replicate.run(
       "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
-      { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
+      { input: { image: step1Url, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
     );
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
