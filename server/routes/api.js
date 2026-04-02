@@ -128,8 +128,8 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const output = await replicate.run(
-      "lucataco/remove-bg:95fcc2a26d3899cd6c2691c900465aaeff466285a65c14638cc5f36f34befaf1",
-      { input: { image: dataURI } }
+      "851-labs/background-remover:a029dff38972b5fda4ec5d75d7d1cd25aeff621d2cf4946a41055d7db66b80bc",
+      { input: { image: dataURI, format: 'png', background_type: 'rgba', threshold: 0 } }
     );
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
