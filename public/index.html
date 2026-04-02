@@ -3993,34 +3993,41 @@
 
     function saveToHistory(toolId, originalSrc, resultData) {
       try {
-        var key = 'radiara_history_' + toolId;
-        var history = [];
-        try { var d = localStorage.getItem(key); if(d) history = JSON.parse(d); } catch(e) {}
+        // Create a real 150px thumbnail via canvas, then save
+        var img = new Image();
+        img.onload = function() {
+          var canvas = document.createElement('canvas');
+          var scale = Math.min(150 / img.width, 150 / img.height, 1);
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          var thumb = canvas.toDataURL('image/jpeg', 0.6);
 
-        // Create small thumbnails
-        var thumb = createThumbnail(resultData, 120);
+          var key = 'radiara_history_' + toolId;
+          var history = [];
+          try { var d = localStorage.getItem(key); if(d) history = JSON.parse(d); } catch(e) {}
 
-        history.unshift({
-          id: Date.now(),
-          date: new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
-          thumb: thumb,
-          fullResult: resultData
-        });
+          history.unshift({
+            id: Date.now(),
+            thumbnail: thumb,
+            date: new Date().toLocaleString('es-GT'),
+            toolId: toolId
+          });
 
-        if (history.length > 10) history = history.slice(0, 10);
-        localStorage.setItem(key, JSON.stringify(history));
-        renderToolHistory();
+          if (history.length > 10) history = history.slice(0, 10);
+
+          try {
+            localStorage.setItem(key, JSON.stringify(history));
+          } catch(e) {
+            // localStorage full — remove oldest entries and retry
+            if (history.length > 5) history = history.slice(0, 5);
+            try { localStorage.setItem(key, JSON.stringify(history)); } catch(e2) {}
+          }
+          renderToolHistory();
+        };
+        img.src = resultData;
       } catch(e) { console.warn('History save failed:', e.message); }
-    }
-
-    function createThumbnail(src, maxSize) {
-      // For data URIs that are images, just return as-is (localStorage will handle size)
-      // For very large base64, we truncate by returning a smaller version
-      if (src && src.length > 200000) {
-        // Too large for localStorage history, skip thumbnail
-        return '';
-      }
-      return src;
     }
 
     function renderToolHistory() {
@@ -4044,8 +4051,7 @@
       history.forEach(function(item) {
         var div = document.createElement('div');
         div.className = 'hist-item';
-        div.onclick = function() { loadHistoryItem(item); };
-        var imgSrc = item.thumb || item.fullResult;
+        var imgSrc = item.thumbnail || item.thumb || '';
         div.innerHTML = (imgSrc ? '<img src="' + imgSrc + '">' : '<div style="aspect-ratio:4/3;background:var(--card-hover);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);">&#x1F5BC;</div>') +
           '<div class="hist-meta">' + item.date + '</div>';
         grid.appendChild(div);
@@ -4128,11 +4134,13 @@
       if (e.target === document.getElementById('zoom-viewport') || e.target === document.getElementById('zoom-modal')) closeZoom();
     });
 
-    // Mouse wheel zoom
-    document.getElementById('zoom-viewport').addEventListener('wheel', function(e) {
+    // Mouse wheel zoom — listen on the entire modal to catch all scroll events
+    document.getElementById('zoom-modal').addEventListener('wheel', function(e) {
       e.preventDefault();
-      var delta = e.deltaY > 0 ? 0.9 : 1.1;
+      e.stopPropagation();
+      var delta = e.deltaY > 0 ? 0.85 : 1.18;
       zoomState.scale = Math.max(0.2, Math.min(10, zoomState.scale * delta));
+      document.getElementById('zoom-img').style.transition = 'transform 0.1s ease-out';
       applyZoomTransform();
     }, { passive: false });
 
