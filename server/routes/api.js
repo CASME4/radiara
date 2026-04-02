@@ -23,7 +23,7 @@ router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), 
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const output = await replicate.run(
-      "sczhou/codeformer",
+      "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
       { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 2 } }
     );
     res.json({ success: true, result: output });
@@ -39,7 +39,7 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const output = await replicate.run(
-      "nightmareai/real-esrgan",
+      "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
       { input: { image: dataURI, scale: 4, face_enhance: false } }
     );
     res.json({ success: true, result: output });
@@ -55,7 +55,7 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const output = await replicate.run(
-      "philz1337x/crystal-upscaler",
+      "philz1337x/crystal-upscaler:5d917b1444c89ed91055f3052d27e1ad433a1218599a36544510e1dfa9ac26c8",
       { input: { image: dataURI, scale_factor: 2 } }
     );
     res.json({ success: true, result: output });
@@ -71,7 +71,7 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const output = await replicate.run(
-      "cjwbw/rembg",
+      "cjwbw/rembg:fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
       { input: { image: dataURI } }
     );
     res.json({ success: true, result: output });
@@ -89,19 +89,19 @@ router.post('/max-quality', requireAuth, checkCredits, upload.single('image'), a
 
     // Paso 1: CodeFormer — face restore only (fidelity 0.5, no upscale)
     const step1 = await replicate.run(
-      "sczhou/codeformer",
+      "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
       { input: { image: dataURI, fidelity: 0.5, background_enhance: true, face_upsample: true, upscale: 1 } }
     );
 
     // Paso 2: Crystal Upscaler — skin texture + 2x upscale
     const step2 = await replicate.run(
-      "philz1337x/crystal-upscaler",
+      "philz1337x/crystal-upscaler:5d917b1444c89ed91055f3052d27e1ad433a1218599a36544510e1dfa9ac26c8",
       { input: { image: step1, scale_factor: 2 } }
     );
 
     // Paso 3: Real-ESRGAN — 4x upscale to 4K with face enhance
     const output = await replicate.run(
-      "nightmareai/real-esrgan",
+      "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
       { input: { image: step2, scale: 4, face_enhance: true } }
     );
 
