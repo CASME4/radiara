@@ -48,7 +48,7 @@ router.post('/restore-face', requireAuth, checkCredits, upload.single('image'), 
 
     // Paso 1: Magic Image Refiner — rellena pedazos faltantes, limpia dano
     const step1Raw = await replicate.run(
-      "batouresearch/magic-image-refiner",
+      "fermatresearch/magic-image-refiner:507ddf6f977a7e30e46c0daefd30de7d563c72322f9e4cf7cbac52ef0f667b13",
       { input: { image: dataURI, resemblance: 0.5, creativity: 0.7, prompt: "restore damaged old photograph, reconstruct missing facial features, remove white torn paper damage, clean pristine portrait photo" } }
     );
     const step1Url = extractUrl(step1Raw);
