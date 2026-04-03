@@ -122,42 +122,51 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
     let finalResult;
 
     if (mode === 'hyperreal') {
-      // MODO HIPERREALISTA: Nano Banana + Real-ESRGAN
+      // MODO HIPERREALISTA: SUPIR-v0F (restauracion fotorealista con detalle de piel)
       const t1 = Date.now();
-      const step1Raw = await replicate.run(
-        "google/nano-banana:5bdc2c7cd642ae33611d8c33f79615f98ff02509ab8db9d8ec1cc6c36d378fba",
-        { input: {
-          prompt: "Edit this exact image. Keep the identical pose, scene, background, clothing, hair, and composition completely unchanged. ONLY enhance the skin and eyes to be hyper-realistic: add visible pore density on cheeks forehead and nose, natural skin oil sheen on T-zone, peach fuzz on cheeks and jawline, individual defined eyelashes, realistic eye reflections with catchlights, slight natural hyperpigmentation, fine lines, subtle microtexture. Make the eyes look alive with depth and light. Unretouched raw photography look. Do NOT change the pose, do NOT change the background, do NOT change the face structure or identity. Only enhance skin texture and eye detail to photorealistic extreme.",
-          image_input: [dataURI],
-          aspect_ratio: "match_input_image",
-          output_format: "png"
-        }}
-      );
-      const step1Url = extractUrl(step1Raw);
-      console.log('skin-real hyperreal paso 1 (nano-banana):', (Date.now() - t1) + 'ms');
-
-      // Resize seguro + ESRGAN 4x
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const dlResp = await fetchMod(step1Url);
-        const dlBuf = Buffer.from(await dlResp.arrayBuffer());
-        const meta = await sharp(dlBuf).metadata();
-        let esrganBuf = dlBuf;
-        if (meta.width * meta.height > 2000000) {
-          const r = Math.sqrt(2000000 / (meta.width * meta.height));
-          esrganBuf = await sharp(dlBuf).resize(Math.floor(meta.width * r), Math.floor(meta.height * r)).png().toBuffer();
-          console.log('skin-real hyperreal: resize for esrgan');
-        }
-        const t2 = Date.now();
-        const step2Raw = await replicate.run(
-          "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
-          { input: { image: toDataURI(esrganBuf, 'image/png'), scale: 4, face_enhance: false } }
+        const supirRaw = await replicate.run(
+          "cjwbw/supir-v0f:b9c26267b41f3617099b53f09f2d894a621ebf4a59b632bfedb5031eeabd8959",
+          { input: {
+            image: dataURI,
+            upscale: 2,
+            a_prompt: "Cinematic, highly detailed, taken using a Canon EOS R camera with 85mm macro lens, hyper detailed photo-realistic maximum detail, 32k, ultra HD, extreme meticulous detailing, skin pore detailing, visible individual pores, peach fuzz, natural skin oil sheen, individual eyelashes, realistic eye reflections, hyper sharpness, perfect without deformations, unretouched raw photography",
+            n_prompt: "painting, illustration, drawing, art, sketch, oil painting, cartoon, CG Style, 3D render, unreal engine, blurry, plastic skin, smooth skin, airbrushed, beauty filter, waxy, porcelain, doll-like, deformed",
+            s_cfg: 4.0,
+            s_stage2: 1.0,
+            s_churn: 5,
+            s_noise: 1.01,
+            edm_steps: 50,
+            min_size: 1024,
+            color_fix_type: "Wavelet"
+          }}
         );
-        console.log('skin-real hyperreal paso 2 (esrgan 4x):', (Date.now() - t2) + 'ms');
-        finalResult = step2Raw;
-      } catch (err2) {
-        console.warn('skin-real hyperreal esrgan fallback:', err2.message);
-        finalResult = step1Url;
+        console.log('skin-real hyperreal (supir-v0f 2x):', (Date.now() - t1) + 'ms');
+        finalResult = supirRaw;
+      } catch (supirErr) {
+        console.warn('skin-real hyperreal supir failed, trying controlnet-tile:', supirErr.message);
+        try {
+          const tileRaw = await replicate.run(
+            "batouresearch/high-resolution-controlnet-tile",
+            { input: {
+              image: dataURI,
+              prompt: "hyper detailed photo-realistic, skin pore detailing, visible pores, peach fuzz, natural skin oil sheen, individual eyelashes, realistic eye reflections, unretouched raw photography, 32k ultra HD",
+              negative_prompt: "painting, illustration, cartoon, blurry, plastic skin, smooth skin, airbrushed, beauty filter, deformed",
+              resemblance: 0.85,
+              creativity: 0.35
+            }}
+          );
+          console.log('skin-real hyperreal (controlnet-tile fallback):', (Date.now() - t1) + 'ms');
+          finalResult = tileRaw;
+        } catch (tileErr) {
+          console.warn('skin-real hyperreal controlnet-tile failed, using esrgan:', tileErr.message);
+          const esrganRaw = await replicate.run(
+            "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
+            { input: { image: dataURI, scale: 4, face_enhance: false } }
+          );
+          console.log('skin-real hyperreal (esrgan final fallback):', (Date.now() - t1) + 'ms');
+          finalResult = esrganRaw;
+        }
       }
 
     } else {
