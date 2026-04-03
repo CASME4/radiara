@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/api', apiRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'RADIARA online', version: '1.1.0', endpoints: ['improve-face','reconstruct-face','product-hd','skin-real-8k','remove-bg','vectorize-ai'] });
+  res.json({ status: 'RADIARA online', version: '1.2.0', endpoints: ['improve-face','reconstruct-face','product-hd','ultra-hd','remove-bg','vectorize-ai'] });
 });
 
 // Global error handler — always return JSON, never HTML
@@ -38,5 +38,6 @@ app.use(function(err, req, res, next) {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log('RADIARA corriendo en http://localhost:' + PORT);
+  console.log('Server started - Ultra HD endpoint ready');
+  console.log('RADIARA v1.2.0 corriendo en http://localhost:' + PORT);
 });
