@@ -134,50 +134,56 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
     let finalResult;
 
     if (mode === 'hyperreal') {
-      // MODO HIPERREALISTA: SUPIR-v0F (1.5MP, 80 steps, high cfg) + Real-ESRGAN 4x → 8K
+      // MODO HIPERREALISTA: SUPIR completo con LLaVA (A100 80GB) + Real-ESRGAN 4x → 8K
       const supirSafe = await resizeForModel(req.file.buffer, 1500000);
       const supirURI = toDataURI(supirSafe.buffer, 'image/png');
       const t1 = Date.now();
       let supirUrl = null;
       try {
         const supirRaw = await replicate.run(
-          "cjwbw/supir-v0f:b9c26267b41f3617099b53f09f2d894a621ebf4a59b632bfedb5031eeabd8959",
+          "cjwbw/supir:1302b550b4f7681da87ed0e405016d443fe1fafd64dabce6673401855a5039b5",
           { input: {
             image: supirURI,
             upscale: 2,
-            a_prompt: "Extreme macro photography, Canon EOS R5 with 100mm macro lens, f/2.8, ISO 100. Hyper detailed skin with visible individual pores on nose cheeks and forehead, natural skin oil sheen, peach fuzz hair on face, individual eyelashes with mascara detail, realistic eye iris texture with visible fibers and catchlight reflections, detailed teeth texture, lip texture with natural moisture, individual hair strands, skin pore detailing at microscopic level, subsurface scattering on skin, 32K ultra HD, maximum photographic detail, unretouched raw photograph",
-            n_prompt: "painting, illustration, drawing, art, sketch, oil painting, cartoon, CG Style, 3D render, unreal engine, blurry, plastic skin, smooth skin, airbrushed, beauty filter, waxy, porcelain, doll-like, deformed, low quality, lowres",
-            s_cfg: 7.0,
-            s_stage2: 1.0,
+            model_name: "SUPIR-v0F",
+            use_llava: true,
+            a_prompt: "Extreme macro photography shot on Canon EOS R5 with 100mm f/2.8L macro lens at ISO 100. Microscopic skin detail: individually visible pores with depth and shadow on nose bridge, cheeks, forehead and chin. Natural sebum oil sheen reflecting light on T-zone. Visible vellus hair (peach fuzz) on cheeks and jawline catching sidelight. Each eyelash individually defined and separated. Iris showing radial fibers, collarette ring, and bright catchlight reflection. Teeth showing individual texture and subtle translucency. Lips with natural moisture, fine vertical lines and slight color variation. Hair with individual strand definition, natural flyaways and light interaction. Skin showing subsurface scattering where light penetrates. 32K ultra high definition resolution, photojournalistic unretouched raw quality.",
+            n_prompt: "painting, oil painting, illustration, drawing, art, sketch, cartoon, CG Style, 3D render, unreal engine, blurry, plastic skin, smooth skin, airbrushed, beauty filter, waxy, porcelain, doll-like, deformed, low quality, lowres, over-smooth, frames, watermark",
+            s_cfg: 8.0,
+            s_stage2: 1.2,
             s_churn: 5,
             s_noise: 1.003,
-            edm_steps: 80,
+            edm_steps: 100,
             min_size: 1024,
             color_fix_type: "Wavelet"
           }}
         );
         supirUrl = extractUrl(supirRaw);
-        console.log('skin-real hyperreal paso 1 (supir-v0f 2x, 80 steps):', (Date.now() - t1) + 'ms');
+        console.log('skin-real hyperreal paso 1 (supir+llava 2x, 100 steps):', (Date.now() - t1) + 'ms');
       } catch (supirErr) {
-        console.warn('skin-real hyperreal supir failed, trying controlnet-tile:', supirErr.message);
-        // Fallback: ControlNet tile (max 1.5MP)
+        console.warn('skin-real hyperreal supir full failed, trying supir-v0f:', supirErr.message);
+        // Fallback 1: SUPIR-v0F standalone (no LLaVA, less VRAM)
         try {
-          const tileSafe = await resizeForModel(req.file.buffer, 1500000);
-          const tileURI = toDataURI(tileSafe.buffer, 'image/png');
-          const tileRaw = await replicate.run(
-            "batouresearch/high-resolution-controlnet-tile:8e6a54d7b2848c48dc741a109d3fb0ea2a7f554eb4becd39a25cc532536ea975",
+          const v0fRaw = await replicate.run(
+            "cjwbw/supir-v0f:b9c26267b41f3617099b53f09f2d894a621ebf4a59b632bfedb5031eeabd8959",
             { input: {
-              image: tileURI,
-              prompt: "hyper detailed photo-realistic, skin pore detailing, visible pores, peach fuzz, natural skin oil sheen, individual eyelashes, realistic eye reflections, unretouched raw photography, 32k ultra HD",
-              negative_prompt: "painting, illustration, cartoon, blurry, plastic skin, smooth skin, airbrushed, beauty filter, deformed",
-              resemblance: 0.85,
-              creativity: 0.35
+              image: supirURI,
+              upscale: 2,
+              a_prompt: "Extreme macro photography, hyper detailed skin pores, peach fuzz, individual eyelashes, iris fibers, natural skin oil sheen, 32K ultra HD, unretouched raw photograph",
+              n_prompt: "painting, illustration, cartoon, blurry, plastic skin, smooth skin, airbrushed, deformed, low quality",
+              s_cfg: 7.0,
+              s_stage2: 1.0,
+              s_churn: 5,
+              s_noise: 1.003,
+              edm_steps: 80,
+              min_size: 1024,
+              color_fix_type: "Wavelet"
             }}
           );
-          supirUrl = extractUrl(tileRaw);
-          console.log('skin-real hyperreal (controlnet-tile fallback):', (Date.now() - t1) + 'ms');
-        } catch (tileErr) {
-          console.warn('skin-real hyperreal controlnet-tile also failed:', tileErr.message);
+          supirUrl = extractUrl(v0fRaw);
+          console.log('skin-real hyperreal (supir-v0f fallback):', (Date.now() - t1) + 'ms');
+        } catch (v0fErr) {
+          console.warn('skin-real hyperreal supir-v0f also failed:', v0fErr.message);
         }
       }
 
