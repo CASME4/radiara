@@ -110,19 +110,19 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
   }
 });
 
-// 4. Piel Real 8K — Pipeline: CodeFormer + Magic Image Refiner + Real-ESRGAN
+// 4. Piel Real 8K — Pipeline: CodeFormer (identity) + Magic Refiner (texture) + Real-ESRGAN (4K)
 router.post('/skin-real-8k', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
 
-    // Paso 1: CodeFormer — restaurar rostro preservando identidad
+    // Paso 1: CodeFormer — restaurar y limpiar rostro SIN cambiar identidad
     let step1Url = dataURI;
     try {
       const t1 = Date.now();
       const step1Raw = await replicate.run(
         "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
-        { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 1 } }
+        { input: { image: dataURI, fidelity: 0.9, background_enhance: true, face_upsample: true, upscale: 1 } }
       );
       step1Url = extractUrl(step1Raw);
       console.log('skin-real-8k paso 1 (codeformer):', (Date.now() - t1) + 'ms');
@@ -130,17 +130,19 @@ router.post('/skin-real-8k', requireAuth, checkCredits, upload.single('image'), 
       console.warn('skin-real-8k paso 1 fallback:', err1.message);
     }
 
-    // Paso 2: Magic Image Refiner — agregar textura de piel ultra realista
+    // Paso 2: Magic Image Refiner — agregar SOLO textura microscopica de piel
     let step2Url = step1Url;
     try {
       const t2 = Date.now();
       const step2Raw = await replicate.run(
-        "fermatresearch/magic-image-refiner:507ddf6f977a7e30e46c0daefd30de7d563c72322f9e4cf7cbac52ef0f667b13",
+        "batouresearch/magic-image-refiner:507ddf6f977a7e30e46c0daefd30de7d563c72322f9e4cf7cbac52ef0f667b13",
         { input: {
           image: step1Url,
-          resemblance: 0.95,
-          creativity: 0.2,
-          prompt: "ultra realistic human skin texture, visible pores, individual eyelashes, fine hair follicles, natural skin oil, subsurface scattering, photorealistic 8k detail"
+          resemblance: 0.9,
+          creativity: 0.25,
+          hdr: 0,
+          prompt: "Add visible pores and fine micro-texture to skin only, keep natural fine lines, preserve exact same face identity and facial features unchanged, keep the same lighting, no smoothing, no beauty filter, no AI glow, natural skin imperfections, subtle uneven pigmentation, slight natural redness, visible hair follicles, realistic skin oil sheen on forehead and nose, subtle sensor grain, unretouched raw photograph look, do not change face structure or features",
+          negative_prompt: "different face, changed face, plastic skin, smooth skin, beauty filter, airbrushed, blurry, waxy, porcelain, face morphing, identity change"
         }}
       );
       step2Url = extractUrl(step2Raw);
@@ -149,7 +151,7 @@ router.post('/skin-real-8k', requireAuth, checkCredits, upload.single('image'), 
       console.warn('skin-real-8k paso 2 fallback:', err2.message);
     }
 
-    // Paso 3: Real-ESRGAN — escalar a 4K/8K
+    // Paso 3: Real-ESRGAN — escalar a 4K/8K sin tocar la cara
     let finalResult;
     try {
       const t3 = Date.now();
@@ -161,7 +163,6 @@ router.post('/skin-real-8k', requireAuth, checkCredits, upload.single('image'), 
       finalResult = step3Raw;
     } catch (err3) {
       console.warn('skin-real-8k paso 3 fallback:', err3.message);
-      // Devolver resultado del paso 2 si paso 3 falla
       finalResult = step2Url;
     }
 
