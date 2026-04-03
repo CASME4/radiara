@@ -3722,61 +3722,76 @@
       allItems.forEach(function(el) { el.classList.remove('active'); });
       if (clickedEl) clickedEl.classList.add('active');
 
-      var isSliderTool = currentTool !== 'remove-bg' && currentTool !== 'vectorize-ai';
+      var toolId = item.toolId || currentTool;
+      var isSliderTool = toolId !== 'remove-bg' && toolId !== 'vectorize-ai';
       var center = document.querySelector('.tool-center');
 
-      // Hide empty, show content area
+      // 5. Hide placeholder, show content
       document.getElementById('ai-center-empty').style.display = 'none';
       document.getElementById('ai-center-content').style.display = 'block';
       document.getElementById('ai-loading').classList.remove('active');
       center.classList.add('has-result');
 
-      // Download button — always show, use best available image
+      // Update result label
+      var toolName = (tools[toolId] && tools[toolId].title) || toolId;
+      document.getElementById('ai-result-label').textContent = 'Resultado — ' + toolName;
+
+      // 2. Download button — always visible with best available source
       var downloadSrc = (item.fullResult && item.fullResult.length > 10) ? item.fullResult : displaySrc;
       var dateStr = (item.date || '').replace(/[\s:\/,]/g, '-').substring(0, 20);
-      var ext = currentTool === 'vectorize-ai' ? '.svg' : '.png';
+      var ext = toolId === 'vectorize-ai' ? '.svg' : '.png';
       document.getElementById('ai-download-btn').href = downloadSrc;
-      document.getElementById('ai-download-btn').download = 'radiara-resultado-' + dateStr + ext;
+      document.getElementById('ai-download-btn').download = 'radiara-' + toolId + '-' + dateStr + ext;
       document.getElementById('ai-download-btn').classList.add('visible');
 
       if (!isSliderTool) {
-        // Single image display (remove-bg, vectorize-ai)
+        // 3. Single image (remove-bg, vectorize-ai) — no slider
         document.getElementById('ai-result-slider').style.display = 'none';
         document.getElementById('ai-result-single').style.display = 'block';
         document.getElementById('ai-result-img-single').src = displaySrc;
         document.getElementById('ai-result').classList.add('active');
+        // 6. Scroll to top
         center.scrollTop = 0;
       } else {
-        // Slider display (all other tools)
+        // 3. Slider (improve-face, reconstruct-face, product-hd, skin-real-8k)
         document.getElementById('ai-result-single').style.display = 'none';
-        var resultImgEl = document.getElementById('ai-result-img');
-        var origImgEl = document.getElementById('ai-comparison-original');
-        var previewSrc = document.getElementById('ai-preview-img').src;
-        var origSrc = item.originalSrc || (previewSrc && previewSrc !== '' && !previewSrc.endsWith('/') ? previewSrc : null) || item.originalThumb || displaySrc;
-
         document.getElementById('ai-result-slider').style.display = 'none';
         document.getElementById('ai-result').classList.add('active');
 
+        var resultImgEl = document.getElementById('ai-result-img');
+        var origImgEl = document.getElementById('ai-comparison-original');
+        var previewSrc = document.getElementById('ai-preview-img').src;
+        var origSrc = item.originalSrc ||
+          (previewSrc && previewSrc.length > 20 && !previewSrc.endsWith('/') ? previewSrc : null) ||
+          item.originalThumb || displaySrc;
+
+        // onerror fallback: use result for both sides
         origImgEl.onerror = function() { origImgEl.src = displaySrc; };
 
+        // Wait for both images before showing slider
         var loaded = 0;
-        function showSlider() {
+        function onImgReady() {
           loaded++;
           if (loaded < 2) return;
           document.getElementById('ai-result-slider').style.display = 'block';
+          // 4. initSlider resets zoom to 1x
           initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
+          // 6. Scroll to top
           center.scrollTop = 0;
         }
 
-        resultImgEl.onload = showSlider;
-        origImgEl.onload = showSlider;
+        // Clear and set fresh onload handlers
+        resultImgEl.onload = onImgReady;
+        origImgEl.onload = onImgReady;
+        // Force reload by clearing src first
         resultImgEl.src = '';
         origImgEl.src = '';
         setTimeout(function() {
           resultImgEl.src = displaySrc;
           origImgEl.src = origSrc;
-        }, 10);
+        }, 20);
 
+        // Fallback if images load from cache instantly
         setTimeout(function() {
           if (loaded < 2) {
             loaded = 2;
@@ -3784,7 +3799,7 @@
             initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
             center.scrollTop = 0;
           }
-        }, 500);
+        }, 600);
       }
     }
 
