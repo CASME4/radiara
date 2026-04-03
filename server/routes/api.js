@@ -105,15 +105,40 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
   }
 });
 
-// 4. Piel Real — Crystal Upscaler
+// 4. Piel Real — Pipeline: Magic Image Refiner (textura) + Crystal Upscaler (refinado)
 router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
+
+    let step1Url = dataURI;
+    // Paso 1: Magic Image Refiner — agrega textura de piel realista
+    try {
+      const t1 = Date.now();
+      const step1Raw = await replicate.run(
+        "fermatresearch/magic-image-refiner:507ddf6f977a7e30e46c0daefd30de7d563c72322f9e4cf7cbac52ef0f667b13",
+        { input: {
+          image: dataURI,
+          resemblance: 0.85,
+          creativity: 0.35,
+          prompt: "ultra realistic human skin texture, visible pores, individual eyelashes, fine hair follicles, natural skin imperfections, subsurface scattering, realistic lighting on skin, micro details, photorealistic 8k"
+        }}
+      );
+      step1Url = extractUrl(step1Raw);
+      console.log('skin-real paso 1 (refiner):', (Date.now() - t1) + 'ms');
+    } catch (err1) {
+      console.warn('skin-real paso 1 fallback — refiner fallo:', err1.message);
+      // Fallback: skip paso 1, use original image
+    }
+
+    // Paso 2: Crystal Upscaler — escala y refina con textura del paso 1
+    const t2 = Date.now();
     const output = await replicate.run(
       "philz1337x/crystal-upscaler:5d917b1444c89ed91055f3052d27e1ad433a1218599a36544510e1dfa9ac26c8",
-      { input: { image: dataURI, scale_factor: 2 } }
+      { input: { image: step1Url, scale_factor: 2 } }
     );
+    console.log('skin-real paso 2 (crystal):', (Date.now() - t2) + 'ms');
+
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
   } catch (err) {

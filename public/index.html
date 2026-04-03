@@ -2113,7 +2113,7 @@
             <span class="tool-badge badge-ai">IA</span>
             <span class="tool-icon">&#x2728;</span>
             <h3>Piel Real</h3>
-            <p>Modelos IA con piel plastica? Agrega poros, textura y realismo natural.</p>
+            <p>Agrega poros, pestanas, textura y realismo ultra natural. Pipeline IA de 2 pasos.</p>
           </div>
           <div class="tool-card reveal" onclick="openTool('max-quality')">
             <span class="tool-badge badge-ai">IA</span>
@@ -2668,7 +2668,7 @@
       'improve-face': { title: 'Mejorar Rostro', subtitle: 'Subi una foto vieja o borrosa y la IA restaura el rostro.', endpoint: '/api/improve-face', type: 'ai' },
       'reconstruct-face': { title: 'Reconstruir Rostro', subtitle: 'Para fotos con pedazos faltantes, rayones o manchas graves. Reconstruye con IA generativa.', endpoint: '/api/reconstruct-face', type: 'ai' },
       'product-hd': { title: 'Producto HD', subtitle: 'Subi foto de producto y se mejora a alta resolucion.', endpoint: '/api/product-hd', type: 'ai' },
-      'skin-real': { title: 'Piel Real', subtitle: 'Subi una imagen de modelo IA y se agrega textura de piel realista. Tarda 30-60 seg.', endpoint: '/api/skin-real', type: 'ai' },
+      'skin-real': { title: 'Piel Real', subtitle: 'Agrega poros, pestanas, textura y realismo ultra natural. Pipeline IA de 2 pasos.', endpoint: '/api/skin-real', type: 'ai' },
       'max-quality': { title: 'Maxima Calidad', subtitle: 'Restaura y mejora al maximo. Tarda 1-2 minutos.', endpoint: '/api/max-quality', type: 'ai' },
       'remove-bg': { title: 'Remover Fondo', subtitle: 'Elimina el fondo de cualquier imagen automaticamente.', endpoint: '/api/remove-bg', type: 'ai' },
       'vectorize-ai': { title: 'Vectorizar con IA', subtitle: 'Sube imagen y la IA la convierte en SVG vectorial profesional.', endpoint: '/api/vectorize-ai', type: 'ai' },
@@ -2941,7 +2941,12 @@
         var pctObj = { val: 0 };
         var pctEl = document.getElementById('ai-loading-pct');
         var statusEl = document.getElementById('ai-loading-text');
-        var aiMsgs = [
+        var aiMsgs = currentTool === 'skin-real' ? [
+          { at: 0, text: 'Analizando piel...' },
+          { at: 10, text: 'Paso 1: Generando textura...' },
+          { at: 45, text: 'Paso 2: Refinando detalle...' },
+          { at: 75, text: 'Casi listo...' }
+        ] : [
           { at: 0, text: 'Analizando imagen...' },
           { at: 15, text: 'Procesando con IA...' },
           { at: 40, text: 'Mejorando detalles...' },
