@@ -111,7 +111,52 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
   }
 });
 
-// 4. Ultra HD 4K — Pipeline inteligente segun tamano de imagen
+// 4. Piel Real — Nano Banana (textura) + Real-ESRGAN (escala)
+router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
+    const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
+
+    // Paso 1: Nano Banana — regenerar con textura de piel ultra realista
+    const t1 = Date.now();
+    const step1Raw = await replicate.run(
+      "google/nano-banana:5bdc2c7cd642ae33611d8c33f79615f98ff02509ab8db9d8ec1cc6c36d378fba",
+      { input: {
+        prompt: "Using this exact person, create an extreme close-up portrait with hyper-realistic unretouched skin. Visible pore density, slight hyperpigmentation, peach fuzz on cheeks, natural skin oil sheen on forehead and nose, fine lines, subtle microtexture, individual eyelashes, flyaway hairs. Shot on 85mm macro lens, f/2.8, raking light from left side at 45 degrees for maximum texture depth. Unretouched raw photograph look, no beauty filter, no smoothing, no airbrushed appearance. The face identity must be 100% preserved from the reference image.",
+        image_input: [dataURI],
+        aspect_ratio: "match_input_image",
+        output_format: "png"
+      }}
+    );
+    const step1Url = extractUrl(step1Raw);
+    console.log('skin-real paso 1 (nano-banana):', (Date.now() - t1) + 'ms');
+
+    // Paso 2: Real-ESRGAN — escalar manteniendo textura
+    let finalResult;
+    try {
+      const t2 = Date.now();
+      const step2Raw = await replicate.run(
+        "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
+        { input: { image: step1Url, scale: 4, face_enhance: false } }
+      );
+      console.log('skin-real paso 2 (esrgan 4x):', (Date.now() - t2) + 'ms');
+      finalResult = step2Raw;
+    } catch (err2) {
+      console.warn('skin-real paso 2 fallback, devolviendo paso 1:', err2.message);
+      finalResult = step1Url;
+    }
+
+    const base64 = await replicateResultToBase64(finalResult);
+    res.json({ success: true, result: base64 });
+  } catch (err) {
+    console.error('skin-real error:', err.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Error procesando imagen', details: err.message });
+    }
+  }
+});
+
+// 5. Ultra HD 4K — Pipeline inteligente segun tamano de imagen
 const MAX_ESRGAN_PIXELS = 2000000;
 const SMALL_IMAGE_THRESHOLD = 500000;
 
