@@ -1630,10 +1630,14 @@
     /* Single result (no slider, for remove-bg etc) */
     .result-single {
       margin-bottom: 1.5rem;
+      width: 100%;
     }
 
     .result-single img {
+      width: 100%;
       max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
       display: block;
@@ -3727,34 +3731,32 @@
       document.getElementById('ai-loading').classList.remove('active');
       center.classList.add('has-result');
 
-      // Download button only if we have full result
-      var hasFullResult = item.fullResult && item.fullResult.length > 10;
-      if (hasFullResult) {
-        document.getElementById('ai-download-btn').href = item.fullResult;
-        document.getElementById('ai-download-btn').download = 'radiara-' + (item.toolId || currentTool) + '.png';
-        document.getElementById('ai-download-btn').classList.add('visible');
-      } else {
-        document.getElementById('ai-download-btn').classList.remove('visible');
-      }
+      // Download button — always show, use best available image
+      var downloadSrc = (item.fullResult && item.fullResult.length > 10) ? item.fullResult : displaySrc;
+      var dateStr = (item.date || '').replace(/[\s:\/,]/g, '-').substring(0, 20);
+      var ext = currentTool === 'vectorize-ai' ? '.svg' : '.png';
+      document.getElementById('ai-download-btn').href = downloadSrc;
+      document.getElementById('ai-download-btn').download = 'radiara-resultado-' + dateStr + ext;
+      document.getElementById('ai-download-btn').classList.add('visible');
 
       if (!isSliderTool) {
+        // Single image display (remove-bg, vectorize-ai)
         document.getElementById('ai-result-slider').style.display = 'none';
         document.getElementById('ai-result-single').style.display = 'block';
         document.getElementById('ai-result-img-single').src = displaySrc;
         document.getElementById('ai-result').classList.add('active');
         center.scrollTop = 0;
       } else {
+        // Slider display (all other tools)
         document.getElementById('ai-result-single').style.display = 'none';
         var resultImgEl = document.getElementById('ai-result-img');
         var origImgEl = document.getElementById('ai-comparison-original');
-        // Fallback: if no original available, use the result image for both sides
         var previewSrc = document.getElementById('ai-preview-img').src;
         var origSrc = item.originalSrc || (previewSrc && previewSrc !== '' && !previewSrc.endsWith('/') ? previewSrc : null) || item.originalThumb || displaySrc;
 
         document.getElementById('ai-result-slider').style.display = 'none';
         document.getElementById('ai-result').classList.add('active');
 
-        // Set onerror on original: if it fails, use the result image
         origImgEl.onerror = function() { origImgEl.src = displaySrc; };
 
         var loaded = 0;
@@ -3775,7 +3777,6 @@
           origImgEl.src = origSrc;
         }, 10);
 
-        // Fallback timeout
         setTimeout(function() {
           if (loaded < 2) {
             loaded = 2;
