@@ -2934,17 +2934,16 @@
           { at: 40, text: 'Mejorando detalles...' },
           { at: 70, text: 'Casi listo...' }
         ];
+        function updatePct() {
+          var v = Math.round(pctObj.val);
+          pctEl.textContent = v + '%';
+          for (var mi = aiMsgs.length - 1; mi >= 0; mi--) { if (v >= aiMsgs[mi].at) { statusEl.textContent = aiMsgs[mi].text; break; } }
+        }
         progressTween = gsap.timeline();
-        progressTween.to(pctObj, { val: 30, duration: 3, ease: 'power2.out', onUpdate: function() {
-          var v = Math.round(pctObj.val);
-          pctEl.textContent = v + '%';
-          for (var mi = aiMsgs.length - 1; mi >= 0; mi--) { if (v >= aiMsgs[mi].at) { statusEl.textContent = aiMsgs[mi].text; break; } }
-        }});
-        progressTween.to(pctObj, { val: 80, duration: 40, ease: 'none', onUpdate: function() {
-          var v = Math.round(pctObj.val);
-          pctEl.textContent = v + '%';
-          for (var mi = aiMsgs.length - 1; mi >= 0; mi--) { if (v >= aiMsgs[mi].at) { statusEl.textContent = aiMsgs[mi].text; break; } }
-        }});
+        progressTween.to(pctObj, { val: 30, duration: 5, ease: 'power2.out', onUpdate: updatePct });
+        progressTween.to(pctObj, { val: 60, duration: 10, ease: 'none', onUpdate: updatePct });
+        progressTween.to(pctObj, { val: 85, duration: 15, ease: 'none', onUpdate: updatePct });
+        progressTween.to(pctObj, { val: 99, duration: 60, ease: 'power1.in', onUpdate: updatePct });
       } else {
         document.getElementById('process-btn').classList.remove('visible');
         document.getElementById('loading').classList.add('active');
@@ -2980,19 +2979,33 @@
         if (interval) clearInterval(interval);
         if (progressTween) progressTween.kill();
 
-        // Finish progress to 100%
+        // Smooth finish: animate to 100%, show "Listo!", fade out loading
         if (isAILayout) {
-          gsap.to({ val: parseFloat(document.getElementById('ai-loading-pct').textContent) }, {
-            val: 100, duration: 0.6, ease: 'power2.out',
-            onUpdate: function() { document.getElementById('ai-loading-pct').textContent = Math.round(this.targets()[0].val) + '%'; },
-            onComplete: function() { document.getElementById('ai-loading-text').textContent = 'Listo!'; }
+          var curVal = parseFloat(document.getElementById('ai-loading-pct').textContent) || 0;
+          await new Promise(function(resolve) {
+            gsap.to({ val: curVal }, {
+              val: 100, duration: 0.8, ease: 'power2.out',
+              onUpdate: function() {
+                document.getElementById('ai-loading-pct').textContent = Math.round(this.targets()[0].val) + '%';
+              },
+              onComplete: function() {
+                document.getElementById('ai-loading-text').textContent = 'Listo!';
+                setTimeout(resolve, 500);
+              }
+            });
           });
-          await new Promise(function(r) { setTimeout(r, 700); });
+          // Fade out loading
+          await new Promise(function(resolve) {
+            gsap.to('#ai-loading', { opacity: 0, duration: 0.3, onComplete: function() {
+              document.getElementById('ai-loading').classList.remove('active');
+              document.getElementById('ai-loading').style.opacity = '';
+              resolve();
+            }});
+          });
         }
 
         if (data.success) {
           if (isAILayout) {
-            document.getElementById('ai-loading').classList.remove('active');
             document.querySelector('.tool-center').classList.add('has-result');
             document.getElementById('ai-download-btn').href = data.result;
             document.getElementById('ai-download-btn').download = 'radiara-' + currentTool + (currentTool === 'vectorize-ai' ? '.svg' : '.png');
@@ -3009,8 +3022,11 @@
               document.getElementById('ai-result-img').src = data.result;
               initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
             }
-            document.getElementById('ai-result').classList.add('active');
+            var aiResultEl = document.getElementById('ai-result');
+            aiResultEl.style.opacity = '0';
+            aiResultEl.classList.add('active');
             document.querySelector('.tool-center').scrollTop = 0;
+            gsap.to(aiResultEl, { opacity: 1, duration: 0.3, ease: 'power2.out' });
 
             // Save to history
             saveToHistory(currentTool, document.getElementById('ai-preview-img').src, data.result);
