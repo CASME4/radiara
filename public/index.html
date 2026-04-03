@@ -1519,6 +1519,7 @@
       user-select: none;
       -webkit-user-select: none;
       touch-action: none;
+      min-height: 250px;
     }
 
     .comparison-slider img {
@@ -1531,6 +1532,9 @@
 
     .comparison-slider .slider-original {
       display: block;
+      min-height: 250px;
+      object-fit: contain;
+      background: #000;
     }
 
     .comparison-slider .slider-result {
@@ -1545,7 +1549,8 @@
     .comparison-slider .slider-result img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #000;
     }
 
     .comparison-slider .slider-zoom-badge {
@@ -1553,17 +1558,17 @@
       top: 10px;
       right: 10px;
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.7rem;
       font-weight: 600;
       color: #fff;
       background: rgba(0,0,0,0.7);
       backdrop-filter: blur(4px);
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
       z-index: 4;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: opacity 0.25s;
     }
 
     .comparison-slider .slider-zoom-badge.visible { opacity: 1; }
@@ -3883,8 +3888,12 @@
     // COMPARISON SLIDER
     // ==========================================
 
+    // Slider registry — attach event listeners only once per container
+    var _sliderRegistry = {};
+
     function initSlider(sliderId, clipId, lineId, handleId) {
-      var container = document.getElementById(sliderId || 'result-slider');
+      var cId = sliderId || 'result-slider';
+      var container = document.getElementById(cId);
       var handle = document.getElementById(handleId || 'slider-handle');
       var line = document.getElementById(lineId || 'slider-line');
       var clip = document.getElementById(clipId || 'slider-result-clip');
@@ -3894,148 +3903,172 @@
       var resImg = clip ? clip.querySelector('img') : null;
       var badge = container.querySelector('.slider-zoom-badge');
 
-      var dragging = false;
+      // Create or reuse shared state object
+      if (!_sliderRegistry[cId]) {
+        var state = {
+          dragging: false,
+          scale: 1, x: 0, y: 0,
+          panning: false, startX: 0, startY: 0, origX: 0, origY: 0,
+          clip: clip, line: line, handle: handle,
+          origImg: origImg, resImg: resImg, badge: badge, container: container
+        };
+        _sliderRegistry[cId] = state;
 
-      // Zoom state for this slider
-      var sz = { scale: 1, x: 0, y: 0, panning: false, startX: 0, startY: 0, origX: 0, origY: 0 };
+        // ---- Attach listeners ONCE ----
 
-      function applyImgTransform() {
-        var t = 'translate(' + sz.x + 'px,' + sz.y + 'px) scale(' + sz.scale + ')';
-        if (origImg) origImg.style.transform = t;
-        if (resImg) resImg.style.transform = t;
-        // Badge
-        if (badge) {
-          var pct = Math.round(sz.scale * 100);
-          badge.textContent = pct + '%';
-          badge.classList.toggle('visible', sz.scale > 1.01);
+        function applyTransform() {
+          var s = _sliderRegistry[cId];
+          var t = 'translate(' + s.x + 'px,' + s.y + 'px) scale(' + s.scale + ')';
+          if (s.origImg) s.origImg.style.transform = t;
+          if (s.resImg) s.resImg.style.transform = t;
+          if (s.badge) {
+            s.badge.textContent = Math.round(s.scale * 100) + '%';
+            s.badge.classList.toggle('visible', s.scale > 1.01);
+          }
         }
+
+        function setPos(pct) {
+          var s = _sliderRegistry[cId];
+          pct = Math.max(0, Math.min(100, pct));
+          s.clip.style.clipPath = 'inset(0 0 0 ' + pct + '%)';
+          s.line.style.left = pct + '%';
+          s.handle.style.left = pct + '%';
+        }
+
+        function getPct(clientX) {
+          var rect = container.getBoundingClientRect();
+          return ((clientX - rect.left) / rect.width) * 100;
+        }
+
+        // Wheel zoom
+        container.addEventListener('wheel', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var s = _sliderRegistry[cId];
+          var rect = container.getBoundingClientRect();
+          var cx = e.clientX - rect.left;
+          var cy = e.clientY - rect.top;
+          var old = s.scale;
+          s.scale = Math.max(1, Math.min(5, s.scale + (e.deltaY < 0 ? 0.3 : -0.3)));
+          if (s.scale === old) return;
+          var r = s.scale / old;
+          s.x = cx - r * (cx - s.x);
+          s.y = cy - r * (cy - s.y);
+          if (s.scale <= 1) { s.x = 0; s.y = 0; }
+          if (s.origImg) s.origImg.style.transition = 'transform 0.15s ease-out';
+          if (s.resImg) s.resImg.style.transition = 'transform 0.15s ease-out';
+          applyTransform();
+        }, { passive: false });
+
+        // Mousedown
+        container.addEventListener('mousedown', function(e) {
+          var s = _sliderRegistry[cId];
+          if (e.altKey && s.scale > 1) {
+            s.panning = true;
+            s.startX = e.clientX; s.startY = e.clientY;
+            s.origX = s.x; s.origY = s.y;
+            container.style.cursor = 'grabbing';
+            e.preventDefault();
+          } else {
+            s.dragging = true;
+            setPos(getPct(e.clientX));
+          }
+        });
+
+        // Mousemove (document-level)
+        document.addEventListener('mousemove', function(e) {
+          var s = _sliderRegistry[cId];
+          if (s.panning) {
+            e.preventDefault();
+            s.x = s.origX + (e.clientX - s.startX);
+            s.y = s.origY + (e.clientY - s.startY);
+            if (s.origImg) s.origImg.style.transition = 'none';
+            if (s.resImg) s.resImg.style.transition = 'none';
+            applyTransform();
+            return;
+          }
+          if (!s.dragging) return;
+          e.preventDefault();
+          setPos(getPct(e.clientX));
+        });
+
+        // Mouseup (document-level)
+        document.addEventListener('mouseup', function() {
+          var s = _sliderRegistry[cId];
+          if (s.panning) {
+            s.panning = false;
+            container.style.cursor = '';
+            if (s.origImg) s.origImg.style.transition = '';
+            if (s.resImg) s.resImg.style.transition = '';
+          }
+          s.dragging = false;
+        });
+
+        // Dblclick resets zoom
+        container.addEventListener('dblclick', function(e) {
+          e.preventDefault();
+          var s = _sliderRegistry[cId];
+          s.scale = 1; s.x = 0; s.y = 0;
+          if (s.origImg) s.origImg.style.transition = 'transform 0.3s ease-out';
+          if (s.resImg) s.resImg.style.transition = 'transform 0.3s ease-out';
+          applyTransform();
+        });
+
+        // Touch
+        container.addEventListener('touchstart', function(e) {
+          if (e.touches.length === 1) {
+            _sliderRegistry[cId].dragging = true;
+            setPos(getPct(e.touches[0].clientX));
+          }
+        }, { passive: true });
+
+        container.addEventListener('touchmove', function(e) {
+          var s = _sliderRegistry[cId];
+          if (!s.dragging || e.touches.length !== 1) return;
+          e.preventDefault();
+          setPos(getPct(e.touches[0].clientX));
+        }, { passive: false });
+
+        container.addEventListener('touchend', function() {
+          _sliderRegistry[cId].dragging = false;
+        });
       }
 
-      function setPosition(pct) {
+      // Update refs in case DOM elements changed (re-render)
+      var st = _sliderRegistry[cId];
+      st.clip = clip; st.line = line; st.handle = handle;
+      st.origImg = container.querySelector('.slider-original');
+      st.resImg = clip ? clip.querySelector('img') : null;
+      st.badge = container.querySelector('.slider-zoom-badge');
+
+      // Reset zoom
+      st.scale = 1; st.x = 0; st.y = 0; st.dragging = false; st.panning = false;
+      if (st.origImg) st.origImg.style.transform = '';
+      if (st.resImg) st.resImg.style.transform = '';
+      if (st.badge) { st.badge.textContent = '100%'; st.badge.classList.remove('visible'); }
+
+      // Set slider position and run intro animation
+      function setPos(pct) {
         pct = Math.max(0, Math.min(100, pct));
         clip.style.clipPath = 'inset(0 0 0 ' + pct + '%)';
         line.style.left = pct + '%';
         handle.style.left = pct + '%';
       }
 
-      function getPercent(clientX) {
-        var rect = container.getBoundingClientRect();
-        return ((clientX - rect.left) / rect.width) * 100;
-      }
-
-      // Wheel zoom — centered on cursor
-      container.addEventListener('wheel', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var rect = container.getBoundingClientRect();
-        var cursorX = e.clientX - rect.left;
-        var cursorY = e.clientY - rect.top;
-        var oldScale = sz.scale;
-        var delta = e.deltaY < 0 ? 0.3 : -0.3;
-        sz.scale = Math.max(1, Math.min(5, sz.scale + delta));
-        if (sz.scale === oldScale) return;
-        // Adjust pan so zoom centers on cursor
-        var ratio = sz.scale / oldScale;
-        sz.x = cursorX - ratio * (cursorX - sz.x);
-        sz.y = cursorY - ratio * (cursorY - sz.y);
-        // Clamp pan when back at 1x
-        if (sz.scale <= 1) { sz.x = 0; sz.y = 0; }
-        if (origImg) origImg.style.transition = 'transform 0.15s ease-out';
-        if (resImg) resImg.style.transition = 'transform 0.15s ease-out';
-        applyImgTransform();
-      }, { passive: false });
-
-      // Mouse events — slider drag vs Alt+pan
-      container.addEventListener('mousedown', function(e) {
-        if (e.altKey && sz.scale > 1) {
-          // Pan mode
-          sz.panning = true;
-          sz.startX = e.clientX;
-          sz.startY = e.clientY;
-          sz.origX = sz.x;
-          sz.origY = sz.y;
-          container.style.cursor = 'grabbing';
-          e.preventDefault();
-        } else {
-          dragging = true;
-          setPosition(getPercent(e.clientX));
-        }
-      });
-
-      document.addEventListener('mousemove', function(e) {
-        if (sz.panning) {
-          e.preventDefault();
-          sz.x = sz.origX + (e.clientX - sz.startX);
-          sz.y = sz.origY + (e.clientY - sz.startY);
-          if (origImg) origImg.style.transition = 'none';
-          if (resImg) resImg.style.transition = 'none';
-          applyImgTransform();
-          return;
-        }
-        if (!dragging) return;
-        e.preventDefault();
-        setPosition(getPercent(e.clientX));
-      });
-
-      document.addEventListener('mouseup', function() {
-        if (sz.panning) {
-          sz.panning = false;
-          container.style.cursor = '';
-          if (origImg) origImg.style.transition = '';
-          if (resImg) resImg.style.transition = '';
-        }
-        dragging = false;
-      });
-
-      // Double click resets zoom
-      container.addEventListener('dblclick', function(e) {
-        e.preventDefault();
-        sz.scale = 1; sz.x = 0; sz.y = 0;
-        if (origImg) origImg.style.transition = 'transform 0.3s ease-out';
-        if (resImg) resImg.style.transition = 'transform 0.3s ease-out';
-        applyImgTransform();
-      });
-
-      // Touch events (slider drag)
-      container.addEventListener('touchstart', function(e) {
-        if (e.touches.length === 1) {
-          dragging = true;
-          setPosition(getPercent(e.touches[0].clientX));
-        }
-      }, { passive: true });
-
-      container.addEventListener('touchmove', function(e) {
-        if (!dragging || e.touches.length !== 1) return;
-        e.preventDefault();
-        setPosition(getPercent(e.touches[0].clientX));
-      }, { passive: false });
-
-      container.addEventListener('touchend', function() {
-        dragging = false;
-      });
-
-      // Reset zoom when slider re-initializes
-      sz.scale = 1; sz.x = 0; sz.y = 0;
-      applyImgTransform();
-
-      // Intro animation: sweep from right to left and back to center
-      setPosition(95);
+      setPos(95);
       setTimeout(function() {
-        var start = 95;
-        var end = 5;
-        var duration = 800;
-        var startTime = performance.now();
+        var start = 95, end = 5, duration = 800, startTime = performance.now();
         function animateIn(now) {
           var t = Math.min((now - startTime) / duration, 1);
           var ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-          setPosition(start + (end - start) * ease);
+          setPos(start + (end - start) * ease);
           if (t < 1) requestAnimationFrame(animateIn);
           else {
             var s2 = performance.now();
             function animateBack(now2) {
               var t2 = Math.min((now2 - s2) / 600, 1);
               var ease2 = t2 < 0.5 ? 2 * t2 * t2 : 1 - Math.pow(-2 * t2 + 2, 2) / 2;
-              setPosition(5 + (50 - 5) * ease2);
+              setPos(5 + (50 - 5) * ease2);
               if (t2 < 1) requestAnimationFrame(animateBack);
             }
             setTimeout(function() { requestAnimationFrame(animateBack); }, 200);
