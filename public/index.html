@@ -2926,8 +2926,17 @@
       try {
         var formData = new FormData();
         formData.append('image', currentFile);
+        console.log('Fetching:', tool.endpoint, 'method: POST');
         var response = await fetch(tool.endpoint, { method: 'POST', body: formData });
-        var data = await response.json();
+        console.log('Response status:', response.status, 'content-type:', response.headers.get('content-type'));
+        var responseText = await response.text();
+        var data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseErr) {
+          console.error('Response is not JSON:', responseText.substring(0, 300));
+          throw new Error('El servidor devolvio una respuesta invalida (status ' + response.status + ')');
+        }
         if (interval) clearInterval(interval);
         if (progressTween) progressTween.kill();
 
