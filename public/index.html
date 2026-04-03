@@ -4194,21 +4194,20 @@
         div.className = 'hist-item';
         div.setAttribute('data-hist-idx', idx);
         var imgSrc = item.thumbnail || item.thumb || '';
-        var hasResult = item.fullResult && item.fullResult.length > 10;
+        var hasFullResult = item.fullResult && item.fullResult.length > 10;
         div.innerHTML = (imgSrc ? '<img src="' + imgSrc + '">' : '<div style="aspect-ratio:4/3;background:var(--card-hover);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);">&#x1F5BC;</div>') +
-          '<div class="hist-meta">' + item.date + (hasResult ? '' : ' (solo vista)') + '</div>';
-        if (hasResult) {
-          div.onclick = function() { loadHistoryItem(item, div); };
-        } else {
-          div.style.opacity = '0.5';
-          div.style.cursor = 'default';
-        }
+          '<div class="hist-meta">' + item.date + '</div>';
+        if (!hasFullResult) div.style.opacity = '0.6';
+        div.onclick = function() { loadHistoryItem(item, div); };
         grid.appendChild(div);
       });
     }
 
     function loadHistoryItem(item, clickedEl) {
-      if (!item.fullResult) return;
+      // Resolve the best available image: fullResult > thumbnail > thumb
+      var displaySrc = (item.fullResult && item.fullResult.length > 10) ? item.fullResult :
+                       item.thumbnail || item.thumb || '';
+      if (!displaySrc) return;
 
       // Mark active item
       var allItems = document.querySelectorAll('#ai-hist-grid .hist-item');
@@ -4221,19 +4220,24 @@
       document.getElementById('ai-center-content').style.display = 'block';
       document.getElementById('ai-loading').classList.remove('active');
 
-      document.getElementById('ai-download-btn').href = item.fullResult;
-      document.getElementById('ai-download-btn').download = 'radiara-' + (item.toolId || currentTool) + '.png';
-      document.getElementById('ai-download-btn').classList.add('visible');
+      // Download button only if we have full result
+      var hasFullResult = item.fullResult && item.fullResult.length > 10;
+      if (hasFullResult) {
+        document.getElementById('ai-download-btn').href = item.fullResult;
+        document.getElementById('ai-download-btn').download = 'radiara-' + (item.toolId || currentTool) + '.png';
+        document.getElementById('ai-download-btn').classList.add('visible');
+      } else {
+        document.getElementById('ai-download-btn').classList.remove('visible');
+      }
 
       if (!isSliderTool) {
         document.getElementById('ai-result-slider').style.display = 'none';
         document.getElementById('ai-result-single').style.display = 'block';
-        document.getElementById('ai-result-img-single').src = item.fullResult;
+        document.getElementById('ai-result-img-single').src = displaySrc;
       } else {
         document.getElementById('ai-result-single').style.display = 'none';
         document.getElementById('ai-result-slider').style.display = 'block';
-        document.getElementById('ai-result-img').src = item.fullResult;
-        // Use stored original, or current preview, or thumbnail as fallback
+        document.getElementById('ai-result-img').src = displaySrc;
         var origSrc = item.originalSrc || document.getElementById('ai-preview-img').src || item.originalThumb || '';
         if (origSrc) document.getElementById('ai-comparison-original').src = origSrc;
         initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
