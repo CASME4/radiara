@@ -111,39 +111,84 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
   }
 });
 
-// 4. Piel Real — Nano Banana (textura) + Real-ESRGAN (escala)
+// 4. Piel Real — Dos modos: enhance (Topaz/SwinIR) o hyperreal (Nano Banana)
 router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
+    const mode = req.body && req.body.mode ? req.body.mode : 'enhance';
+    console.log('skin-real mode:', mode);
 
-    // Paso 1: Nano Banana — regenerar con textura de piel ultra realista
-    const t1 = Date.now();
-    const step1Raw = await replicate.run(
-      "google/nano-banana:5bdc2c7cd642ae33611d8c33f79615f98ff02509ab8db9d8ec1cc6c36d378fba",
-      { input: {
-        prompt: "Using this exact person, create an extreme close-up portrait with hyper-realistic unretouched skin. Visible pore density, slight hyperpigmentation, peach fuzz on cheeks, natural skin oil sheen on forehead and nose, fine lines, subtle microtexture, individual eyelashes, flyaway hairs. Shot on 85mm macro lens, f/2.8, raking light from left side at 45 degrees for maximum texture depth. Unretouched raw photograph look, no beauty filter, no smoothing, no airbrushed appearance. The face identity must be 100% preserved from the reference image.",
-        image_input: [dataURI],
-        aspect_ratio: "match_input_image",
-        output_format: "png"
-      }}
-    );
-    const step1Url = extractUrl(step1Raw);
-    console.log('skin-real paso 1 (nano-banana):', (Date.now() - t1) + 'ms');
-
-    // Paso 2: Real-ESRGAN — escalar manteniendo textura
     let finalResult;
-    try {
-      const t2 = Date.now();
-      const step2Raw = await replicate.run(
-        "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
-        { input: { image: step1Url, scale: 4, face_enhance: false } }
+
+    if (mode === 'hyperreal') {
+      // MODO HIPERREALISTA: Nano Banana + Real-ESRGAN
+      const t1 = Date.now();
+      const step1Raw = await replicate.run(
+        "google/nano-banana:5bdc2c7cd642ae33611d8c33f79615f98ff02509ab8db9d8ec1cc6c36d378fba",
+        { input: {
+          prompt: "Edit this exact image. Keep the identical pose, scene, background, clothing, hair, and composition completely unchanged. ONLY enhance the skin and eyes to be hyper-realistic: add visible pore density on cheeks forehead and nose, natural skin oil sheen on T-zone, peach fuzz on cheeks and jawline, individual defined eyelashes, realistic eye reflections with catchlights, slight natural hyperpigmentation, fine lines, subtle microtexture. Make the eyes look alive with depth and light. Unretouched raw photography look. Do NOT change the pose, do NOT change the background, do NOT change the face structure or identity. Only enhance skin texture and eye detail to photorealistic extreme.",
+          image_input: [dataURI],
+          aspect_ratio: "match_input_image",
+          output_format: "png"
+        }}
       );
-      console.log('skin-real paso 2 (esrgan 4x):', (Date.now() - t2) + 'ms');
-      finalResult = step2Raw;
-    } catch (err2) {
-      console.warn('skin-real paso 2 fallback, devolviendo paso 1:', err2.message);
-      finalResult = step1Url;
+      const step1Url = extractUrl(step1Raw);
+      console.log('skin-real hyperreal paso 1 (nano-banana):', (Date.now() - t1) + 'ms');
+
+      // Resize seguro + ESRGAN 4x
+      try {
+        const fetchMod = (await import('node-fetch')).default;
+        const dlResp = await fetchMod(step1Url);
+        const dlBuf = Buffer.from(await dlResp.arrayBuffer());
+        const meta = await sharp(dlBuf).metadata();
+        let esrganBuf = dlBuf;
+        if (meta.width * meta.height > 2000000) {
+          const r = Math.sqrt(2000000 / (meta.width * meta.height));
+          esrganBuf = await sharp(dlBuf).resize(Math.floor(meta.width * r), Math.floor(meta.height * r)).png().toBuffer();
+          console.log('skin-real hyperreal: resize for esrgan');
+        }
+        const t2 = Date.now();
+        const step2Raw = await replicate.run(
+          "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
+          { input: { image: toDataURI(esrganBuf, 'image/png'), scale: 4, face_enhance: false } }
+        );
+        console.log('skin-real hyperreal paso 2 (esrgan 4x):', (Date.now() - t2) + 'ms');
+        finalResult = step2Raw;
+      } catch (err2) {
+        console.warn('skin-real hyperreal esrgan fallback:', err2.message);
+        finalResult = step1Url;
+      }
+
+    } else {
+      // MODO ENHANCE: Topaz -> SwinIR -> Real-ESRGAN (fallback chain)
+      const t1 = Date.now();
+      try {
+        const topazRaw = await replicate.run(
+          "topazlabs/image-upscale:2fdc3b86a01d338ae89ad58e5d9241398a8a01de9b0dda41ba8a0434c8a00dc3",
+          { input: { image: dataURI, upscale_factor: 2, enhance_model: "Standard V2", face_enhancement: false } }
+        );
+        console.log('skin-real enhance (topaz):', (Date.now() - t1) + 'ms');
+        finalResult = topazRaw;
+      } catch (topazErr) {
+        console.warn('skin-real enhance topaz failed, trying swinir:', topazErr.message);
+        try {
+          const swinRaw = await replicate.run(
+            "jingyunliang/swinir:660d922d33153019e8c263a3bba265de882e7f4f70396546b6c9c8f9d47a021a",
+            { input: { image: dataURI, task_type: "Real-World Image Super-Resolution-Large" } }
+          );
+          console.log('skin-real enhance (swinir):', (Date.now() - t1) + 'ms');
+          finalResult = swinRaw;
+        } catch (swinErr) {
+          console.warn('skin-real enhance swinir failed, using esrgan:', swinErr.message);
+          const esrganRaw = await replicate.run(
+            "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
+            { input: { image: dataURI, scale: 4, face_enhance: false } }
+          );
+          console.log('skin-real enhance (esrgan fallback):', (Date.now() - t1) + 'ms');
+          finalResult = esrganRaw;
+        }
+      }
     }
 
     const base64 = await replicateResultToBase64(finalResult);

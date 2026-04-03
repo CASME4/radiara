@@ -2117,7 +2117,7 @@
             <span class="tool-badge badge-ai">IA</span>
             <span class="tool-icon">&#x1F52C;</span>
             <h3>Piel Real</h3>
-            <p>Poros, pestanas, textura microscopica. IA regenera tu foto con realismo extremo.</p>
+            <p>Mejora tu foto o dale vida hiperrealista a la piel y ojos. Poros, pestanas y detalle extremo.</p>
           </div>
           <div class="tool-card reveal" onclick="openTool('ultra-hd')">
             <span class="tool-badge badge-ai">IA</span>
@@ -2356,6 +2356,16 @@
           <img id="ai-preview-img" src="">
           <div class="sp-info" id="ai-file-info"></div>
           <button class="sp-change" onclick="aiChangeImage()">Cambiar imagen</button>
+        </div>
+
+        <div id="skin-real-mode-selector" style="display:none;margin-bottom:1rem;">
+          <label style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);display:block;margin-bottom:0.4rem;">Modo</label>
+          <select id="skin-real-mode" onchange="updateSkinRealMode()" style="width:100%;padding:0.6rem 0.8rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-xs);color:var(--text);font-family:var(--sans);font-size:0.85rem;cursor:pointer;">
+            <option value="enhance">&#x2728; Mejorar Foto</option>
+            <option value="hyperreal">&#x1F9EC; Piel Hiperrealista</option>
+          </select>
+          <p id="skin-real-mode-desc" style="font-size:0.72rem;color:var(--text-tertiary);margin-top:0.35rem;line-height:1.4;">Escala y mejora tu foto preservando cada detalle natural</p>
+          <p id="skin-real-mode-credits" style="font-size:0.65rem;color:var(--accent);margin-top:0.2rem;font-family:var(--mono);">2 creditos</p>
         </div>
 
         <div class="sidebar-spacer"></div>
@@ -2665,7 +2675,7 @@
       'improve-face': { title: 'Mejorar Rostro', subtitle: 'Subi una foto vieja o borrosa y la IA restaura el rostro.', endpoint: '/api/improve-face', type: 'ai' },
       'reconstruct-face': { title: 'Reconstruir Rostro', subtitle: 'Para fotos con pedazos faltantes, rayones o manchas graves. Reconstruye con IA generativa.', endpoint: '/api/reconstruct-face', type: 'ai' },
       'product-hd': { title: 'Producto HD', subtitle: 'Subi foto de producto y se mejora a alta resolucion.', endpoint: '/api/product-hd', type: 'ai' },
-      'skin-real': { title: 'Piel Real', subtitle: 'Poros, pestanas, textura microscopica. IA regenera tu foto con realismo extremo.', endpoint: '/api/skin-real', type: 'ai' },
+      'skin-real': { title: 'Piel Real', subtitle: 'Mejora tu foto o dale vida hiperrealista a la piel y ojos. Poros, pestanas y detalle extremo.', endpoint: '/api/skin-real', type: 'ai' },
       'ultra-hd': { title: 'Ultra HD 4K', subtitle: 'Escala cualquier foto a resolucion 4K. Reconstruye detalles en fotos pequenas y preserva textura en fotos grandes.', endpoint: '/api/ultra-hd', type: 'ai' },
       'remove-bg': { title: 'Remover Fondo', subtitle: 'Elimina el fondo de cualquier imagen automaticamente.', endpoint: '/api/remove-bg', type: 'ai' },
       'vectorize-ai': { title: 'Vectorizar con IA', subtitle: 'Sube imagen y la IA la convierte en SVG vectorial profesional.', endpoint: '/api/vectorize-ai', type: 'ai' },
@@ -2727,6 +2737,15 @@
         var centerEl = document.querySelector('.tool-center');
         if (centerEl) centerEl.classList.remove('has-result');
         document.getElementById('ai-file-input').value = '';
+        // Show/hide skin-real mode selector
+        var modeSelector = document.getElementById('skin-real-mode-selector');
+        if (toolId === 'skin-real') {
+          modeSelector.style.display = 'block';
+          document.getElementById('skin-real-mode').value = 'enhance';
+          updateSkinRealMode();
+        } else {
+          modeSelector.style.display = 'none';
+        }
         renderToolHistory();
       }
 
@@ -2894,10 +2913,15 @@
         var pctObj = { val: 0 };
         var pctEl = document.getElementById('ai-loading-pct');
         var statusEl = document.getElementById('ai-loading-text');
-        var aiMsgs = currentTool === 'skin-real' ? [
-          { at: 0, text: 'Regenerando textura de piel...' },
-          { at: 35, text: 'Aplicando detalle microscopico...' },
-          { at: 65, text: 'Escalando a maxima resolucion...' },
+        var skinMode = currentTool === 'skin-real' ? (document.getElementById('skin-real-mode') || {}).value : '';
+        var aiMsgs = (currentTool === 'skin-real' && skinMode === 'hyperreal') ? [
+          { at: 0, text: 'Analizando piel y ojos...' },
+          { at: 25, text: 'Aplicando textura hiperrealista...' },
+          { at: 60, text: 'Escalando a maxima resolucion...' },
+          { at: 85, text: 'Casi listo...' }
+        ] : currentTool === 'skin-real' ? [
+          { at: 0, text: 'Mejorando con IA profesional...' },
+          { at: 50, text: 'Preservando textura natural...' },
           { at: 85, text: 'Casi listo...' }
         ] : currentTool === 'ultra-hd' ? [
           { at: 0, text: 'Analizando imagen...' },
@@ -2939,6 +2963,10 @@
       try {
         var formData = new FormData();
         formData.append('image', currentFile);
+        if (currentTool === 'skin-real') {
+          var skinMode = document.getElementById('skin-real-mode');
+          formData.append('mode', skinMode ? skinMode.value : 'enhance');
+        }
         console.log('Fetching:', tool.endpoint, 'method: POST');
         var response = await fetch(tool.endpoint, { method: 'POST', body: formData });
         console.log('Response status:', response.status, 'content-type:', response.headers.get('content-type'));
@@ -3967,6 +3995,24 @@
     });
 
     // Double click on AI slider resets zoom (handled inside initSlider)
+
+    // ==========================================
+    // SKIN REAL MODE SELECTOR
+    // ==========================================
+
+    function updateSkinRealMode() {
+      var sel = document.getElementById('skin-real-mode');
+      var desc = document.getElementById('skin-real-mode-desc');
+      var credits = document.getElementById('skin-real-mode-credits');
+      if (!sel) return;
+      if (sel.value === 'hyperreal') {
+        desc.textContent = 'Misma foto, misma pose. Solo la piel y ojos cobran vida con detalle extremo';
+        credits.textContent = '3 creditos';
+      } else {
+        desc.textContent = 'Escala y mejora tu foto preservando cada detalle natural';
+        credits.textContent = '2 creditos';
+      }
+    }
 
     // Init
     updateHeaderAuth();
