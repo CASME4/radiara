@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const Replicate = require('replicate');
+const sharp = require('sharp');
 require('dotenv').config();
 
 const { requireAuth, checkCredits } = require('../middleware/auth');
@@ -111,17 +112,43 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
 });
 
 // 4. Ultra HD 4K — Real-ESRGAN 4x, preserva textura fielmente
+const MAX_ESRGAN_PIXELS = 2000000; // ~2MP limit for Real-ESRGAN GPU
+
 router.post('/ultra-hd', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
-    const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
+
+    // Check image dimensions and resize if needed
+    const metadata = await sharp(req.file.buffer).metadata();
+    const origW = metadata.width;
+    const origH = metadata.height;
+    const origPixels = origW * origH;
+
+    let inputBuffer = req.file.buffer;
+    let inputW = origW;
+    let inputH = origH;
+
+    if (origPixels > MAX_ESRGAN_PIXELS) {
+      const ratio = Math.sqrt(MAX_ESRGAN_PIXELS / origPixels);
+      inputW = Math.floor(origW * ratio);
+      inputH = Math.floor(origH * ratio);
+      inputBuffer = await sharp(req.file.buffer)
+        .resize(inputW, inputH, { fit: 'inside', withoutEnlargement: true })
+        .png()
+        .toBuffer();
+      console.log('ultra-hd resize: ' + origW + 'x' + origH + ' (' + (origPixels / 1e6).toFixed(1) + 'MP) -> ' + inputW + 'x' + inputH);
+    } else {
+      console.log('ultra-hd no resize needed: ' + origW + 'x' + origH + ' (' + (origPixels / 1e6).toFixed(1) + 'MP)');
+    }
+
+    const dataURI = toDataURI(inputBuffer, 'image/png');
 
     const t1 = Date.now();
     const output = await replicate.run(
       "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
       { input: { image: dataURI, scale: 4, face_enhance: false } }
     );
-    console.log('ultra-hd (esrgan 4x):', (Date.now() - t1) + 'ms');
+    console.log('ultra-hd (esrgan 4x):', (Date.now() - t1) + 'ms -> resultado final: ' + (inputW * 4) + 'x' + (inputH * 4));
 
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
