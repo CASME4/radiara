@@ -1139,6 +1139,10 @@
       position: relative;
     }
 
+    .tool-center.has-result {
+      align-items: flex-start;
+    }
+
     .tool-center .center-empty {
       text-align: center;
       color: var(--text-tertiary);
@@ -2712,6 +2716,8 @@
         document.getElementById('ai-center-content').style.display = 'none';
         document.getElementById('ai-loading').classList.remove('active');
         document.getElementById('ai-result').classList.remove('active');
+        var centerEl = document.querySelector('.tool-center');
+        if (centerEl) centerEl.classList.remove('has-result');
         document.getElementById('ai-file-input').value = '';
         renderToolHistory();
       }
@@ -2975,6 +2981,7 @@
         if (data.success) {
           if (isAILayout) {
             document.getElementById('ai-loading').classList.remove('active');
+            document.querySelector('.tool-center').classList.add('has-result');
             document.getElementById('ai-download-btn').href = data.result;
             document.getElementById('ai-download-btn').download = 'radiara-' + currentTool + '.png';
             document.getElementById('ai-download-btn').classList.add('visible');
@@ -2991,6 +2998,7 @@
               initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
             }
             document.getElementById('ai-result').classList.add('active');
+            document.querySelector('.tool-center').scrollTop = 0;
 
             // Save to history
             saveToHistory(currentTool, document.getElementById('ai-preview-img').src, data.result);
@@ -4073,6 +4081,8 @@
         document.getElementById('ai-center-content').style.display = 'none';
         document.getElementById('ai-result').classList.remove('active');
         document.getElementById('ai-download-btn').classList.remove('visible');
+        var ce = document.querySelector('.tool-center');
+        if (ce) ce.classList.remove('has-result');
       };
       reader.readAsDataURL(file);
     }
@@ -4204,7 +4214,6 @@
     }
 
     function loadHistoryItem(item, clickedEl) {
-      // Resolve the best available image: fullResult > thumbnail > thumb
       var displaySrc = (item.fullResult && item.fullResult.length > 10) ? item.fullResult :
                        item.thumbnail || item.thumb || '';
       if (!displaySrc) return;
@@ -4215,10 +4224,13 @@
       if (clickedEl) clickedEl.classList.add('active');
 
       var isSliderTool = currentTool !== 'remove-bg' && currentTool !== 'vectorize-ai';
+      var center = document.querySelector('.tool-center');
 
+      // Hide empty, show content area
       document.getElementById('ai-center-empty').style.display = 'none';
       document.getElementById('ai-center-content').style.display = 'block';
       document.getElementById('ai-loading').classList.remove('active');
+      center.classList.add('has-result');
 
       // Download button only if we have full result
       var hasFullResult = item.fullResult && item.fullResult.length > 10;
@@ -4234,16 +4246,49 @@
         document.getElementById('ai-result-slider').style.display = 'none';
         document.getElementById('ai-result-single').style.display = 'block';
         document.getElementById('ai-result-img-single').src = displaySrc;
+        document.getElementById('ai-result').classList.add('active');
+        center.scrollTop = 0;
       } else {
+        // Wait for result image to load so the slider sizes correctly
         document.getElementById('ai-result-single').style.display = 'none';
-        document.getElementById('ai-result-slider').style.display = 'block';
-        document.getElementById('ai-result-img').src = displaySrc;
-        var origSrc = item.originalSrc || document.getElementById('ai-preview-img').src || item.originalThumb || '';
-        if (origSrc) document.getElementById('ai-comparison-original').src = origSrc;
-        initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
-      }
+        var resultImgEl = document.getElementById('ai-result-img');
+        var origImgEl = document.getElementById('ai-comparison-original');
+        var origSrc = item.originalSrc || document.getElementById('ai-preview-img').src || item.originalThumb || displaySrc;
 
-      document.getElementById('ai-result').classList.add('active');
+        var loaded = 0;
+        function onBothLoaded() {
+          loaded++;
+          if (loaded < 2) return;
+          document.getElementById('ai-result-slider').style.display = 'block';
+          document.getElementById('ai-result').classList.add('active');
+          initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
+          center.scrollTop = 0;
+        }
+
+        // Hide slider until images are ready
+        document.getElementById('ai-result-slider').style.display = 'none';
+        document.getElementById('ai-result').classList.add('active');
+
+        resultImgEl.onload = onBothLoaded;
+        origImgEl.onload = onBothLoaded;
+        // In case images are cached and onload doesn't fire
+        resultImgEl.src = '';
+        origImgEl.src = '';
+        setTimeout(function() {
+          resultImgEl.src = displaySrc;
+          origImgEl.src = origSrc;
+        }, 10);
+
+        // Fallback if images load instantly (cached)
+        setTimeout(function() {
+          if (loaded < 2) {
+            loaded = 2;
+            document.getElementById('ai-result-slider').style.display = 'block';
+            initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
+            center.scrollTop = 0;
+          }
+        }, 500);
+      }
     }
 
     function clearToolHistory() {
