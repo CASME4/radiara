@@ -147,17 +147,17 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
             upscale: 2,
             a_prompt: "Extreme macro photography shot on Canon EOS R5 with 100mm f/2.8L macro lens at ISO 100. Microscopic skin detail: individually visible pores with depth and shadow on nose bridge, cheeks, forehead and chin. Natural sebum oil sheen reflecting light on T-zone. Visible vellus hair (peach fuzz) on cheeks and jawline catching sidelight. Each eyelash individually defined and separated. Iris showing radial fibers, collarette ring, and bright catchlight reflection. Teeth showing individual texture and subtle translucency. Lips with natural moisture, fine vertical lines and slight color variation. Hair with individual strand definition, natural flyaways and light interaction. Skin showing subsurface scattering where light penetrates. 32K ultra high definition resolution, photojournalistic unretouched raw quality.",
             n_prompt: "painting, oil painting, illustration, drawing, art, sketch, cartoon, CG Style, 3D render, unreal engine, blurry, plastic skin, smooth skin, airbrushed, beauty filter, waxy, porcelain, doll-like, deformed, low quality, lowres, over-smooth, frames, watermark",
-            s_cfg: 6.0,
-            s_stage2: 1.2,
+            s_cfg: 9.0,
+            s_stage2: 1.5,
             s_churn: 5,
-            s_noise: 1.003,
-            edm_steps: 60,
+            s_noise: 1.005,
+            edm_steps: 70,
             min_size: 1024,
             color_fix_type: "Wavelet"
           }}
         );
         supirUrl = extractUrl(supirRaw);
-        console.log('skin-real hyperreal paso 1 (supir-v0q 2x, 60 steps):', (Date.now() - t1) + 'ms');
+        console.log('skin-real hyperreal paso 1 (supir-v0q 2x, 70 steps):', (Date.now() - t1) + 'ms');
       } catch (supirErr) {
         console.warn('skin-real hyperreal supir-v0q failed, trying supir-v0f:', supirErr.message);
         // Fallback 1: SUPIR-v0F (lighter model)
@@ -169,11 +169,11 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
               upscale: 2,
               a_prompt: "Extreme macro photography, hyper detailed skin pores, peach fuzz, individual eyelashes, iris fibers, natural skin oil sheen, 32K ultra HD, unretouched raw photograph",
               n_prompt: "painting, illustration, cartoon, blurry, plastic skin, smooth skin, airbrushed, deformed, low quality",
-              s_cfg: 6.0,
-              s_stage2: 1.0,
+              s_cfg: 9.0,
+              s_stage2: 1.5,
               s_churn: 5,
-              s_noise: 1.003,
-              edm_steps: 50,
+              s_noise: 1.005,
+              edm_steps: 60,
               min_size: 1024,
               color_fix_type: "Wavelet"
             }}
