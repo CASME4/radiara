@@ -1,3 +1,4 @@
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -37,7 +38,7 @@ app.use(function(err, req, res, next) {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log('Server started - Ultra HD endpoint ready');
+const server = http.createServer(app);
+server.listen(PORT, () => {
   console.log('RADIARA v1.2.0 corriendo en http://localhost:' + PORT);
 });
