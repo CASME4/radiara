@@ -1292,6 +1292,11 @@
       border-color: var(--accent);
     }
 
+    .tool-history .hist-item.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
     .tool-history .hist-item img {
       width: 100%;
       aspect-ratio: 4/3;
@@ -4098,7 +4103,7 @@
 
     function saveToHistory(toolId, originalSrc, resultData) {
       try {
-        // Create a real 150px thumbnail via canvas, then save
+        // Create thumbnail via canvas, then save with full result
         var img = new Image();
         img.onload = function() {
           var canvas = document.createElement('canvas');
@@ -4109,6 +4114,20 @@
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           var thumb = canvas.toDataURL('image/jpeg', 0.6);
 
+          // Also create a smaller original thumbnail if available
+          var origThumb = '';
+          if (originalSrc && originalSrc.startsWith('data:')) {
+            var oc = document.createElement('canvas');
+            var oi = document.getElementById('ai-preview-img');
+            if (oi && oi.naturalWidth) {
+              var os = Math.min(150 / oi.naturalWidth, 150 / oi.naturalHeight, 1);
+              oc.width = Math.round(oi.naturalWidth * os);
+              oc.height = Math.round(oi.naturalHeight * os);
+              oc.getContext('2d').drawImage(oi, 0, 0, oc.width, oc.height);
+              origThumb = oc.toDataURL('image/jpeg', 0.6);
+            }
+          }
+
           var key = 'radiara_history_' + toolId;
           var history = [];
           try { var d = localStorage.getItem(key); if(d) history = JSON.parse(d); } catch(e) {}
@@ -4116,19 +4135,36 @@
           history.unshift({
             id: Date.now(),
             thumbnail: thumb,
+            originalThumb: origThumb,
+            fullResult: resultData,
+            originalSrc: originalSrc || '',
             date: new Date().toLocaleString('es-GT'),
             toolId: toolId
           });
 
           if (history.length > 10) history = history.slice(0, 10);
 
-          try {
-            localStorage.setItem(key, JSON.stringify(history));
-          } catch(e) {
-            // localStorage full — remove oldest entries and retry
-            if (history.length > 5) history = history.slice(0, 5);
-            try { localStorage.setItem(key, JSON.stringify(history)); } catch(e2) {}
+          // Try to save; if too large, reduce entries or drop fullResult from old items
+          function trySave(h) {
+            try {
+              localStorage.setItem(key, JSON.stringify(h));
+              return true;
+            } catch(e) { return false; }
           }
+
+          if (!trySave(history)) {
+            // Drop fullResult/originalSrc from older entries to save space
+            for (var i = 1; i < history.length; i++) {
+              history[i].fullResult = '';
+              history[i].originalSrc = '';
+            }
+            if (!trySave(history)) {
+              // Still too big, keep only 3 entries
+              history = history.slice(0, 3);
+              trySave(history);
+            }
+          }
+
           renderToolHistory();
         };
         img.src = resultData;
@@ -4153,18 +4189,32 @@
       empty.style.display = 'none';
       clearBtn.style.display = 'block';
 
-      history.forEach(function(item) {
+      history.forEach(function(item, idx) {
         var div = document.createElement('div');
         div.className = 'hist-item';
+        div.setAttribute('data-hist-idx', idx);
         var imgSrc = item.thumbnail || item.thumb || '';
+        var hasResult = item.fullResult && item.fullResult.length > 10;
         div.innerHTML = (imgSrc ? '<img src="' + imgSrc + '">' : '<div style="aspect-ratio:4/3;background:var(--card-hover);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);">&#x1F5BC;</div>') +
-          '<div class="hist-meta">' + item.date + '</div>';
+          '<div class="hist-meta">' + item.date + (hasResult ? '' : ' (solo vista)') + '</div>';
+        if (hasResult) {
+          div.onclick = function() { loadHistoryItem(item, div); };
+        } else {
+          div.style.opacity = '0.5';
+          div.style.cursor = 'default';
+        }
         grid.appendChild(div);
       });
     }
 
-    function loadHistoryItem(item) {
+    function loadHistoryItem(item, clickedEl) {
       if (!item.fullResult) return;
+
+      // Mark active item
+      var allItems = document.querySelectorAll('#ai-hist-grid .hist-item');
+      allItems.forEach(function(el) { el.classList.remove('active'); });
+      if (clickedEl) clickedEl.classList.add('active');
+
       var isSliderTool = currentTool !== 'remove-bg' && currentTool !== 'vectorize-ai';
 
       document.getElementById('ai-center-empty').style.display = 'none';
@@ -4172,7 +4222,7 @@
       document.getElementById('ai-loading').classList.remove('active');
 
       document.getElementById('ai-download-btn').href = item.fullResult;
-      document.getElementById('ai-download-btn').download = 'radiara-' + currentTool + '.png';
+      document.getElementById('ai-download-btn').download = 'radiara-' + (item.toolId || currentTool) + '.png';
       document.getElementById('ai-download-btn').classList.add('visible');
 
       if (!isSliderTool) {
@@ -4183,8 +4233,8 @@
         document.getElementById('ai-result-single').style.display = 'none';
         document.getElementById('ai-result-slider').style.display = 'block';
         document.getElementById('ai-result-img').src = item.fullResult;
-        // Original might not be available from history
-        var origSrc = document.getElementById('ai-preview-img').src;
+        // Use stored original, or current preview, or thumbnail as fallback
+        var origSrc = item.originalSrc || document.getElementById('ai-preview-img').src || item.originalThumb || '';
         if (origSrc) document.getElementById('ai-comparison-original').src = origSrc;
         initSlider('ai-result-slider', 'ai-slider-result-clip', 'ai-slider-line', 'ai-slider-handle');
       }
@@ -4193,6 +4243,7 @@
     }
 
     function clearToolHistory() {
+      if (!confirm('Borrar todo el historial de esta herramienta?')) return;
       localStorage.removeItem(getHistoryKey());
       renderToolHistory();
     }
