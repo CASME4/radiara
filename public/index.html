@@ -1637,6 +1637,13 @@
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
       display: block;
+      background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+        linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+        linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+      background-color: #111;
     }
 
     .download-btn {
@@ -2988,7 +2995,7 @@
             document.getElementById('ai-loading').classList.remove('active');
             document.querySelector('.tool-center').classList.add('has-result');
             document.getElementById('ai-download-btn').href = data.result;
-            document.getElementById('ai-download-btn').download = 'radiara-' + currentTool + '.png';
+            document.getElementById('ai-download-btn').download = 'radiara-' + currentTool + (currentTool === 'vectorize-ai' ? '.svg' : '.png');
             document.getElementById('ai-download-btn').classList.add('visible');
 
             if (currentTool === 'remove-bg' || currentTool === 'vectorize-ai') {
