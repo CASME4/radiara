@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/api', apiRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'RADIARA online', version: '1.0.0' });
+  res.json({ status: 'RADIARA online', version: '1.1.0', endpoints: ['improve-face','reconstruct-face','product-hd','skin-real-8k','remove-bg','vectorize-ai'] });
 });
 
 const PORT = process.env.PORT || 3000;
