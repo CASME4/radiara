@@ -105,44 +105,65 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
   }
 });
 
-// 4. Piel Real — Pipeline: Magic Image Refiner (textura) + Crystal Upscaler (refinado)
-router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+// 4. Piel Real 8K — Pipeline: CodeFormer + Magic Image Refiner + Real-ESRGAN
+router.post('/skin-real-8k', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
 
+    // Paso 1: CodeFormer — restaurar rostro preservando identidad
     let step1Url = dataURI;
-    // Paso 1: Magic Image Refiner — agrega textura de piel realista
     try {
       const t1 = Date.now();
       const step1Raw = await replicate.run(
-        "fermatresearch/magic-image-refiner:507ddf6f977a7e30e46c0daefd30de7d563c72322f9e4cf7cbac52ef0f667b13",
-        { input: {
-          image: dataURI,
-          resemblance: 0.85,
-          creativity: 0.35,
-          prompt: "ultra realistic human skin texture, visible pores, individual eyelashes, fine hair follicles, natural skin imperfections, subsurface scattering, realistic lighting on skin, micro details, photorealistic 8k"
-        }}
+        "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
+        { input: { image: dataURI, fidelity: 0.7, background_enhance: true, face_upsample: true, upscale: 1 } }
       );
       step1Url = extractUrl(step1Raw);
-      console.log('skin-real paso 1 (refiner):', (Date.now() - t1) + 'ms');
+      console.log('skin-real-8k paso 1 (codeformer):', (Date.now() - t1) + 'ms');
     } catch (err1) {
-      console.warn('skin-real paso 1 fallback — refiner fallo:', err1.message);
-      // Fallback: skip paso 1, use original image
+      console.warn('skin-real-8k paso 1 fallback:', err1.message);
     }
 
-    // Paso 2: Crystal Upscaler — escala y refina con textura del paso 1
-    const t2 = Date.now();
-    const output = await replicate.run(
-      "philz1337x/crystal-upscaler:5d917b1444c89ed91055f3052d27e1ad433a1218599a36544510e1dfa9ac26c8",
-      { input: { image: step1Url, scale_factor: 2 } }
-    );
-    console.log('skin-real paso 2 (crystal):', (Date.now() - t2) + 'ms');
+    // Paso 2: Magic Image Refiner — agregar textura de piel ultra realista
+    let step2Url = step1Url;
+    try {
+      const t2 = Date.now();
+      const step2Raw = await replicate.run(
+        "fermatresearch/magic-image-refiner:507ddf6f977a7e30e46c0daefd30de7d563c72322f9e4cf7cbac52ef0f667b13",
+        { input: {
+          image: step1Url,
+          resemblance: 0.95,
+          creativity: 0.2,
+          prompt: "ultra realistic human skin texture, visible pores, individual eyelashes, fine hair follicles, natural skin oil, subsurface scattering, photorealistic 8k detail"
+        }}
+      );
+      step2Url = extractUrl(step2Raw);
+      console.log('skin-real-8k paso 2 (refiner):', (Date.now() - t2) + 'ms');
+    } catch (err2) {
+      console.warn('skin-real-8k paso 2 fallback:', err2.message);
+    }
 
-    const base64 = await replicateResultToBase64(output);
+    // Paso 3: Real-ESRGAN — escalar a 4K/8K
+    let finalResult;
+    try {
+      const t3 = Date.now();
+      const step3Raw = await replicate.run(
+        "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
+        { input: { image: step2Url, scale: 4, face_enhance: false } }
+      );
+      console.log('skin-real-8k paso 3 (esrgan):', (Date.now() - t3) + 'ms');
+      finalResult = step3Raw;
+    } catch (err3) {
+      console.warn('skin-real-8k paso 3 fallback:', err3.message);
+      // Devolver resultado del paso 2 si paso 3 falla
+      finalResult = step2Url;
+    }
+
+    const base64 = await replicateResultToBase64(finalResult);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('skin-real error:', err.message);
+    console.error('skin-real-8k error:', err.message);
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
   }
 });
@@ -164,41 +185,7 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
   }
 });
 
-// 6. Maxima Calidad — Pipeline de 3 pasos: CodeFormer -> Crystal Upscaler -> Real-ESRGAN 4K
-router.post('/max-quality', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
-    const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
-
-    // Paso 1: CodeFormer — face restore only (fidelity 0.5, no upscale)
-    const step1Raw = await replicate.run(
-      "sczhou/codeformer:cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2",
-      { input: { image: dataURI, fidelity: 0.5, background_enhance: true, face_upsample: true, upscale: 1 } }
-    );
-    const step1Url = extractUrl(step1Raw);
-
-    // Paso 2: Crystal Upscaler — skin texture + 2x upscale
-    const step2Raw = await replicate.run(
-      "philz1337x/crystal-upscaler:5d917b1444c89ed91055f3052d27e1ad433a1218599a36544510e1dfa9ac26c8",
-      { input: { image: step1Url, scale_factor: 2 } }
-    );
-    const step2Url = extractUrl(step2Raw);
-
-    // Paso 3: Real-ESRGAN — 4x upscale to 4K with face enhance
-    const output = await replicate.run(
-      "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
-      { input: { image: step2Url, scale: 4, face_enhance: true } }
-    );
-    const base64 = await replicateResultToBase64(output);
-
-    res.json({ success: true, result: base64 });
-  } catch (err) {
-    console.error('max-quality error:', err.message);
-    res.status(500).json({ error: 'Error procesando imagen', details: err.message });
-  }
-});
-
-// 7. Vectorizar con IA — Vectorizer.AI API
+// 6. Vectorizar con IA — Vectorizer.AI API
 router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
