@@ -2223,7 +2223,7 @@
           </div>
         </div>
 
-        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Las herramientas basicas cuestan 1 credito. Mejorar Rostro cuesta 2 creditos. Reconstruir Rostro cuesta 3 creditos. Piel Real 8K cuesta 4 creditos.</p>
+        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Las herramientas basicas cuestan 1 credito. Mejorar Rostro cuesta 2 creditos. Reconstruir Rostro y Piel Real 8K cuestan 3 creditos.</p>
 
         <div class="credits-section reveal">
           <div class="credits-label">O compra creditos sueltos</div>
@@ -2888,9 +2888,8 @@
         var pctEl = document.getElementById('ai-loading-pct');
         var statusEl = document.getElementById('ai-loading-text');
         var aiMsgs = currentTool === 'skin-real-8k' ? [
-          { at: 0, text: 'Paso 1: Restaurando rostro...' },
-          { at: 20, text: 'Paso 2: Generando textura de piel real...' },
-          { at: 55, text: 'Paso 3: Escalando a maxima resolucion...' },
+          { at: 0, text: 'Paso 1: Mejorando nitidez y detalle...' },
+          { at: 40, text: 'Paso 2: Escalando a maxima resolucion...' },
           { at: 80, text: 'Casi listo, finalizando...' }
         ] : [
           { at: 0, text: 'Analizando imagen...' },
