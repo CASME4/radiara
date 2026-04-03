@@ -2229,7 +2229,7 @@
           </div>
         </div>
 
-        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Las herramientas basicas cuestan 1 credito. Mejorar Rostro y Ultra HD 4K cuestan 2 creditos. Reconstruir Rostro cuesta 3 creditos. Piel Real Hiperrealista cuesta 4 creditos.</p>
+        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Las herramientas basicas cuestan 1 credito. Mejorar Rostro y Ultra HD 4K cuestan 2 creditos. Reconstruir Rostro cuesta 3 creditos. Piel Real Hiperrealista cuesta 5 creditos.</p>
 
         <div class="credits-section reveal">
           <div class="credits-label">O compra creditos sueltos</div>
@@ -2915,10 +2915,9 @@
         var statusEl = document.getElementById('ai-loading-text');
         var skinMode = currentTool === 'skin-real' ? (document.getElementById('skin-real-mode') || {}).value : '';
         var aiMsgs = (currentTool === 'skin-real' && skinMode === 'hyperreal') ? [
-          { at: 0, text: 'Analizando estructura facial...' },
-          { at: 25, text: 'Reconstruyendo textura de piel microscopica...' },
-          { at: 60, text: 'Aplicando detalle fotorealista...' },
-          { at: 85, text: 'Casi listo...' }
+          { at: 0, text: 'Paso 1: Reconstruyendo textura microscopica con SUPIR...' },
+          { at: 45, text: 'Paso 2: Escalando a resolucion 8K...' },
+          { at: 80, text: 'Finalizando detalle extremo...' }
         ] : currentTool === 'skin-real' ? [
           { at: 0, text: 'Mejorando con IA profesional...' },
           { at: 50, text: 'Preservando textura natural...' },
@@ -4007,7 +4006,7 @@
       if (!sel) return;
       if (sel.value === 'hyperreal') {
         desc.textContent = 'Misma foto, misma pose. Solo la piel y ojos cobran vida con detalle extremo';
-        credits.textContent = '4 creditos';
+        credits.textContent = '5 creditos';
       } else {
         desc.textContent = 'Escala y mejora tu foto preservando cada detalle natural';
         credits.textContent = '2 creditos';

@@ -134,32 +134,33 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
     let finalResult;
 
     if (mode === 'hyperreal') {
-      // MODO HIPERREALISTA: SUPIR-v0F (max 1MP input, outputs 2x)
-      const supirSafe = await resizeForModel(req.file.buffer, 1000000);
+      // MODO HIPERREALISTA: SUPIR-v0F (1.5MP, 80 steps, high cfg) + Real-ESRGAN 4x → 8K
+      const supirSafe = await resizeForModel(req.file.buffer, 1500000);
       const supirURI = toDataURI(supirSafe.buffer, 'image/png');
       const t1 = Date.now();
+      let supirUrl = null;
       try {
         const supirRaw = await replicate.run(
           "cjwbw/supir-v0f:b9c26267b41f3617099b53f09f2d894a621ebf4a59b632bfedb5031eeabd8959",
           { input: {
             image: supirURI,
             upscale: 2,
-            a_prompt: "Cinematic, highly detailed, taken using a Canon EOS R camera with 85mm macro lens, hyper detailed photo-realistic maximum detail, 32k, ultra HD, extreme meticulous detailing, skin pore detailing, visible individual pores, peach fuzz, natural skin oil sheen, individual eyelashes, realistic eye reflections, hyper sharpness, perfect without deformations, unretouched raw photography",
-            n_prompt: "painting, illustration, drawing, art, sketch, oil painting, cartoon, CG Style, 3D render, unreal engine, blurry, plastic skin, smooth skin, airbrushed, beauty filter, waxy, porcelain, doll-like, deformed",
-            s_cfg: 4.0,
+            a_prompt: "Extreme macro photography, Canon EOS R5 with 100mm macro lens, f/2.8, ISO 100. Hyper detailed skin with visible individual pores on nose cheeks and forehead, natural skin oil sheen, peach fuzz hair on face, individual eyelashes with mascara detail, realistic eye iris texture with visible fibers and catchlight reflections, detailed teeth texture, lip texture with natural moisture, individual hair strands, skin pore detailing at microscopic level, subsurface scattering on skin, 32K ultra HD, maximum photographic detail, unretouched raw photograph",
+            n_prompt: "painting, illustration, drawing, art, sketch, oil painting, cartoon, CG Style, 3D render, unreal engine, blurry, plastic skin, smooth skin, airbrushed, beauty filter, waxy, porcelain, doll-like, deformed, low quality, lowres",
+            s_cfg: 7.0,
             s_stage2: 1.0,
             s_churn: 5,
-            s_noise: 1.01,
-            edm_steps: 50,
+            s_noise: 1.003,
+            edm_steps: 80,
             min_size: 1024,
             color_fix_type: "Wavelet"
           }}
         );
-        console.log('skin-real hyperreal (supir-v0f 2x):', (Date.now() - t1) + 'ms');
-        finalResult = supirRaw;
+        supirUrl = extractUrl(supirRaw);
+        console.log('skin-real hyperreal paso 1 (supir-v0f 2x, 80 steps):', (Date.now() - t1) + 'ms');
       } catch (supirErr) {
         console.warn('skin-real hyperreal supir failed, trying controlnet-tile:', supirErr.message);
-        // Fallback 1: ControlNet tile (max 1.5MP)
+        // Fallback: ControlNet tile (max 1.5MP)
         try {
           const tileSafe = await resizeForModel(req.file.buffer, 1500000);
           const tileURI = toDataURI(tileSafe.buffer, 'image/png');
@@ -173,20 +174,42 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
               creativity: 0.35
             }}
           );
+          supirUrl = extractUrl(tileRaw);
           console.log('skin-real hyperreal (controlnet-tile fallback):', (Date.now() - t1) + 'ms');
-          finalResult = tileRaw;
         } catch (tileErr) {
-          console.warn('skin-real hyperreal controlnet-tile failed, using esrgan:', tileErr.message);
-          // Fallback 2: Real-ESRGAN (max 2MP)
-          const esrganSafe = await resizeForModel(req.file.buffer, 2000000);
+          console.warn('skin-real hyperreal controlnet-tile also failed:', tileErr.message);
+        }
+      }
+
+      // Paso 2: Real-ESRGAN 4x para escalar a 8K
+      if (supirUrl) {
+        try {
+          const fetchMod = (await import('node-fetch')).default;
+          const dlResp = await fetchMod(supirUrl);
+          const dlBuf = Buffer.from(await dlResp.arrayBuffer());
+          const esrganSafe = await resizeForModel(dlBuf, 2000000);
           const esrganURI = toDataURI(esrganSafe.buffer, 'image/png');
+          const t2 = Date.now();
           const esrganRaw = await replicate.run(
             "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
             { input: { image: esrganURI, scale: 4, face_enhance: false } }
           );
-          console.log('skin-real hyperreal (esrgan final fallback):', (Date.now() - t1) + 'ms');
+          console.log('skin-real hyperreal paso 2 (esrgan 4x):', (Date.now() - t2) + 'ms');
           finalResult = esrganRaw;
+        } catch (esrganErr) {
+          console.warn('skin-real hyperreal esrgan failed, returning supir result:', esrganErr.message);
+          finalResult = supirUrl;
         }
+      } else {
+        // All failed, last resort: ESRGAN on original
+        const esrganSafe = await resizeForModel(req.file.buffer, 2000000);
+        const esrganURI = toDataURI(esrganSafe.buffer, 'image/png');
+        const esrganRaw = await replicate.run(
+          "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
+          { input: { image: esrganURI, scale: 4, face_enhance: false } }
+        );
+        console.log('skin-real hyperreal (esrgan last resort):', (Date.now() - t1) + 'ms');
+        finalResult = esrganRaw;
       }
 
     } else {
