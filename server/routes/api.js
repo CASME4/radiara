@@ -46,6 +46,19 @@ async function replicateResultToBase64(output) {
   return 'data:' + contentType + ';base64,' + buffer.toString('base64');
 }
 
+// Resize helper — proportionally resize buffer if it exceeds maxPixels
+async function resizeForModel(buffer, maxPixels) {
+  const meta = await sharp(buffer).metadata();
+  const pixels = meta.width * meta.height;
+  if (pixels <= maxPixels) return { buffer, w: meta.width, h: meta.height, resized: false };
+  const ratio = Math.sqrt(maxPixels / pixels);
+  const w = Math.floor(meta.width * ratio);
+  const h = Math.floor(meta.height * ratio);
+  const resized = await sharp(buffer).resize(w, h, { fit: 'inside', withoutEnlargement: true }).png().toBuffer();
+  console.log('resizeForModel: ' + meta.width + 'x' + meta.height + ' (' + (pixels/1e6).toFixed(1) + 'MP) -> ' + w + 'x' + h + ' (max ' + (maxPixels/1e6).toFixed(1) + 'MP)');
+  return { buffer: resized, w, h, resized: true };
+}
+
 // 1. Mejorar Rostro — CodeFormer solo (fotos borrosas/viejas normales)
 router.post('/improve-face', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
@@ -111,24 +124,25 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
   }
 });
 
-// 4. Piel Real — Dos modos: enhance (Topaz/SwinIR) o hyperreal (Nano Banana)
+// 4. Piel Real — Dos modos: enhance (Topaz/SwinIR) o hyperreal (SUPIR-v0F)
 router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
-    const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
     const mode = req.body && req.body.mode ? req.body.mode : 'enhance';
     console.log('skin-real mode:', mode);
 
     let finalResult;
 
     if (mode === 'hyperreal') {
-      // MODO HIPERREALISTA: SUPIR-v0F (restauracion fotorealista con detalle de piel)
+      // MODO HIPERREALISTA: SUPIR-v0F (max 1MP input, outputs 2x)
+      const supirSafe = await resizeForModel(req.file.buffer, 1000000);
+      const supirURI = toDataURI(supirSafe.buffer, 'image/png');
       const t1 = Date.now();
       try {
         const supirRaw = await replicate.run(
           "cjwbw/supir-v0f:b9c26267b41f3617099b53f09f2d894a621ebf4a59b632bfedb5031eeabd8959",
           { input: {
-            image: dataURI,
+            image: supirURI,
             upscale: 2,
             a_prompt: "Cinematic, highly detailed, taken using a Canon EOS R camera with 85mm macro lens, hyper detailed photo-realistic maximum detail, 32k, ultra HD, extreme meticulous detailing, skin pore detailing, visible individual pores, peach fuzz, natural skin oil sheen, individual eyelashes, realistic eye reflections, hyper sharpness, perfect without deformations, unretouched raw photography",
             n_prompt: "painting, illustration, drawing, art, sketch, oil painting, cartoon, CG Style, 3D render, unreal engine, blurry, plastic skin, smooth skin, airbrushed, beauty filter, waxy, porcelain, doll-like, deformed",
@@ -145,11 +159,14 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
         finalResult = supirRaw;
       } catch (supirErr) {
         console.warn('skin-real hyperreal supir failed, trying controlnet-tile:', supirErr.message);
+        // Fallback 1: ControlNet tile (max 1.5MP)
         try {
+          const tileSafe = await resizeForModel(req.file.buffer, 1500000);
+          const tileURI = toDataURI(tileSafe.buffer, 'image/png');
           const tileRaw = await replicate.run(
-            "batouresearch/high-resolution-controlnet-tile",
+            "batouresearch/high-resolution-controlnet-tile:8e6a54d7b2848c48dc741a109d3fb0ea2a7f554eb4becd39a25cc532536ea975",
             { input: {
-              image: dataURI,
+              image: tileURI,
               prompt: "hyper detailed photo-realistic, skin pore detailing, visible pores, peach fuzz, natural skin oil sheen, individual eyelashes, realistic eye reflections, unretouched raw photography, 32k ultra HD",
               negative_prompt: "painting, illustration, cartoon, blurry, plastic skin, smooth skin, airbrushed, beauty filter, deformed",
               resemblance: 0.85,
@@ -160,9 +177,12 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
           finalResult = tileRaw;
         } catch (tileErr) {
           console.warn('skin-real hyperreal controlnet-tile failed, using esrgan:', tileErr.message);
+          // Fallback 2: Real-ESRGAN (max 2MP)
+          const esrganSafe = await resizeForModel(req.file.buffer, 2000000);
+          const esrganURI = toDataURI(esrganSafe.buffer, 'image/png');
           const esrganRaw = await replicate.run(
             "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
-            { input: { image: dataURI, scale: 4, face_enhance: false } }
+            { input: { image: esrganURI, scale: 4, face_enhance: false } }
           );
           console.log('skin-real hyperreal (esrgan final fallback):', (Date.now() - t1) + 'ms');
           finalResult = esrganRaw;
@@ -170,12 +190,14 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
       }
 
     } else {
-      // MODO ENHANCE: Topaz -> SwinIR -> Real-ESRGAN (fallback chain)
+      // MODO ENHANCE: Topaz -> SwinIR -> Real-ESRGAN (all with resize safety)
+      const enhanceSafe = await resizeForModel(req.file.buffer, 2000000);
+      const enhanceURI = toDataURI(enhanceSafe.buffer, 'image/png');
       const t1 = Date.now();
       try {
         const topazRaw = await replicate.run(
           "topazlabs/image-upscale:2fdc3b86a01d338ae89ad58e5d9241398a8a01de9b0dda41ba8a0434c8a00dc3",
-          { input: { image: dataURI, upscale_factor: 2, enhance_model: "Standard V2", face_enhancement: false } }
+          { input: { image: enhanceURI, upscale_factor: 2, enhance_model: "Standard V2", face_enhancement: false } }
         );
         console.log('skin-real enhance (topaz):', (Date.now() - t1) + 'ms');
         finalResult = topazRaw;
@@ -184,7 +206,7 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
         try {
           const swinRaw = await replicate.run(
             "jingyunliang/swinir:660d922d33153019e8c263a3bba265de882e7f4f70396546b6c9c8f9d47a021a",
-            { input: { image: dataURI, task_type: "Real-World Image Super-Resolution-Large" } }
+            { input: { image: enhanceURI, task_type: "Real-World Image Super-Resolution-Large" } }
           );
           console.log('skin-real enhance (swinir):', (Date.now() - t1) + 'ms');
           finalResult = swinRaw;
@@ -192,7 +214,7 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
           console.warn('skin-real enhance swinir failed, using esrgan:', swinErr.message);
           const esrganRaw = await replicate.run(
             "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
-            { input: { image: dataURI, scale: 4, face_enhance: false } }
+            { input: { image: enhanceURI, scale: 4, face_enhance: false } }
           );
           console.log('skin-real enhance (esrgan fallback):', (Date.now() - t1) + 'ms');
           finalResult = esrganRaw;
@@ -211,19 +233,12 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
 });
 
 // 5. Ultra HD 4K — Pipeline inteligente segun tamano de imagen
-const MAX_ESRGAN_PIXELS = 2000000;
 const SMALL_IMAGE_THRESHOLD = 500000;
 
 async function safeResizeForEsrgan(buffer) {
-  const meta = await sharp(buffer).metadata();
-  const pixels = meta.width * meta.height;
-  if (pixels <= MAX_ESRGAN_PIXELS) return { buffer, w: meta.width, h: meta.height, resized: false };
-  const ratio = Math.sqrt(MAX_ESRGAN_PIXELS / pixels);
-  const w = Math.floor(meta.width * ratio);
-  const h = Math.floor(meta.height * ratio);
-  const resized = await sharp(buffer).resize(w, h, { fit: 'inside', withoutEnlargement: true }).png().toBuffer();
-  return { buffer: resized, w, h, resized: true };
+  return resizeForModel(buffer, 2000000);
 }
+
 
 router.post('/ultra-hd', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
