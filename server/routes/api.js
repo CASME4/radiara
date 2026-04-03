@@ -35,8 +35,13 @@ async function replicateResultToBase64(output) {
   const fetch = (await import('node-fetch')).default;
   console.log('Downloading from:', url);
   const response = await fetch(url);
-  const buffer = await response.buffer();
+  if (!response.ok) {
+    throw new Error('Download failed: ' + response.status + ' ' + response.statusText);
+  }
+  const arrayBuf = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuf);
   const contentType = response.headers.get('content-type') || 'image/png';
+  console.log('Downloaded:', (buffer.length / 1024 / 1024).toFixed(2) + 'MB, type:', contentType);
   return 'data:' + contentType + ';base64,' + buffer.toString('base64');
 }
 
@@ -161,10 +166,13 @@ router.post('/skin-real-8k', requireAuth, checkCredits, upload.single('image'), 
     }
 
     const base64 = await replicateResultToBase64(finalResult);
+    console.log('skin-real-8k sending response, base64 length:', base64.length);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('skin-real-8k error:', err.message);
-    res.status(500).json({ error: 'Error procesando imagen', details: err.message });
+    console.error('skin-real-8k error:', err.message, err.stack);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Error procesando imagen', details: err.message });
+    }
   }
 });
 

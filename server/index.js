@@ -28,6 +28,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'RADIARA online', version: '1.1.0', endpoints: ['improve-face','reconstruct-face','product-hd','skin-real-8k','remove-bg','vectorize-ai'] });
 });
 
+// Global error handler — always return JSON, never HTML
+app.use(function(err, req, res, next) {
+  console.error('Global error handler:', err.message, err.stack);
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Error interno del servidor', details: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('RADIARA corriendo en http://localhost:' + PORT);
