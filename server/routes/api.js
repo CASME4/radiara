@@ -110,46 +110,23 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
   }
 });
 
-// 4. Piel Real 8K — Pipeline: Crystal Upscaler (nitidez) + Real-ESRGAN (escala 8x total)
-router.post('/skin-real-8k', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+// 4. Ultra HD 4K — Real-ESRGAN 4x, preserva textura fielmente
+router.post('/ultra-hd', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
 
-    // Paso 1: Crystal Upscaler — nitidez y detalle preservando poros y textura
-    let step1Url = dataURI;
-    try {
-      const t1 = Date.now();
-      const step1Raw = await replicate.run(
-        "philz1337x/crystal-upscaler:5d917b1444c89ed91055f3052d27e1ad433a1218599a36544510e1dfa9ac26c8",
-        { input: { image: dataURI, scale_factor: 2 } }
-      );
-      step1Url = extractUrl(step1Raw);
-      console.log('skin-real-8k paso 1 (crystal 2x):', (Date.now() - t1) + 'ms');
-    } catch (err1) {
-      console.warn('skin-real-8k paso 1 fallback:', err1.message);
-    }
+    const t1 = Date.now();
+    const output = await replicate.run(
+      "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
+      { input: { image: dataURI, scale: 4, face_enhance: false } }
+    );
+    console.log('ultra-hd (esrgan 4x):', (Date.now() - t1) + 'ms');
 
-    // Paso 2: Real-ESRGAN — escalar a 8K manteniendo toda la textura
-    let finalResult;
-    try {
-      const t2 = Date.now();
-      const step2Raw = await replicate.run(
-        "nightmareai/real-esrgan:b3ef194191d13140337468c916c2c5b96dd0cb06dffc032a022a31807f6a5ea8",
-        { input: { image: step1Url, scale: 4, face_enhance: false } }
-      );
-      console.log('skin-real-8k paso 2 (esrgan 4x):', (Date.now() - t2) + 'ms');
-      finalResult = step2Raw;
-    } catch (err2) {
-      console.warn('skin-real-8k paso 2 fallback:', err2.message);
-      finalResult = step1Url;
-    }
-
-    const base64 = await replicateResultToBase64(finalResult);
-    console.log('skin-real-8k sending response, base64 length:', base64.length);
+    const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('skin-real-8k error:', err.message, err.stack);
+    console.error('ultra-hd error:', err.message);
     if (!res.headersSent) {
       res.status(500).json({ error: 'Error procesando imagen', details: err.message });
     }

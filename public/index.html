@@ -2113,11 +2113,11 @@
             <h3>Producto HD</h3>
             <p>Nitidez profesional 4x para e-commerce. Perfumes, joyeria, bolsas, cualquier producto.</p>
           </div>
-          <div class="tool-card reveal" onclick="openTool('skin-real-8k')">
+          <div class="tool-card reveal" onclick="openTool('ultra-hd')">
             <span class="tool-badge badge-ai">IA</span>
             <span class="tool-icon">&#x1F52C;</span>
-            <h3>Piel Real 8K</h3>
-            <p>Poros, pestanas, textura de piel ultra realista. Pipeline premium de 3 pasos con detalle 8K.</p>
+            <h3>Ultra HD 4K</h3>
+            <p>Escala tu foto a resolucion 4K preservando cada poro, pestana y detalle. Sin suavizar, sin cambiar tu cara.</p>
           </div>
           <div class="tool-card reveal" onclick="openTool('remove-bg')">
             <span class="tool-badge badge-ai">IA</span>
@@ -2223,7 +2223,7 @@
           </div>
         </div>
 
-        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Las herramientas basicas cuestan 1 credito. Mejorar Rostro cuesta 2 creditos. Reconstruir Rostro y Piel Real 8K cuestan 3 creditos.</p>
+        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Las herramientas basicas cuestan 1 credito. Mejorar Rostro y Ultra HD 4K cuestan 2 creditos. Reconstruir Rostro cuesta 3 creditos.</p>
 
         <div class="credits-section reveal">
           <div class="credits-label">O compra creditos sueltos</div>
@@ -2452,7 +2452,7 @@
         <li><span class="log-email">maria@gmail.com</span> <span class="log-tool">improve-face</span> <span class="log-time">hace 3 min</span></li>
         <li><span class="log-email">carlos@outlook.com</span> <span class="log-tool">product-hd</span> <span class="log-time">hace 8 min</span></li>
         <li><span class="log-email">ana@empresa.com</span> <span class="log-tool">remove-bg</span> <span class="log-time">hace 15 min</span></li>
-        <li><span class="log-email">diego@studio.co</span> <span class="log-tool">skin-real-8k</span> <span class="log-time">hace 22 min</span></li>
+        <li><span class="log-email">diego@studio.co</span> <span class="log-tool">ultra-hd</span> <span class="log-time">hace 22 min</span></li>
       </ul>
     </div>
   </div>
@@ -2659,7 +2659,7 @@
       'improve-face': { title: 'Mejorar Rostro', subtitle: 'Subi una foto vieja o borrosa y la IA restaura el rostro.', endpoint: '/api/improve-face', type: 'ai' },
       'reconstruct-face': { title: 'Reconstruir Rostro', subtitle: 'Para fotos con pedazos faltantes, rayones o manchas graves. Reconstruye con IA generativa.', endpoint: '/api/reconstruct-face', type: 'ai' },
       'product-hd': { title: 'Producto HD', subtitle: 'Subi foto de producto y se mejora a alta resolucion.', endpoint: '/api/product-hd', type: 'ai' },
-      'skin-real-8k': { title: 'Piel Real 8K', subtitle: 'Textura ultra realista con poros, pestanas y detalle 8K. Pipeline de 3 pasos.', endpoint: '/api/skin-real-8k', type: 'ai' },
+      'ultra-hd': { title: 'Ultra HD 4K', subtitle: 'Escala tu foto a resolucion 4K preservando cada poro, pestana y detalle.', endpoint: '/api/ultra-hd', type: 'ai' },
       'remove-bg': { title: 'Remover Fondo', subtitle: 'Elimina el fondo de cualquier imagen automaticamente.', endpoint: '/api/remove-bg', type: 'ai' },
       'vectorize-ai': { title: 'Vectorizar con IA', subtitle: 'Sube imagen y la IA la convierte en SVG vectorial profesional.', endpoint: '/api/vectorize-ai', type: 'ai' },
       'converter': { title: 'Conversor Universal', subtitle: 'Converti entre cualquier formato de imagen. Todo en tu navegador.', type: 'browser', converter: true },
@@ -2887,10 +2887,10 @@
         var pctObj = { val: 0 };
         var pctEl = document.getElementById('ai-loading-pct');
         var statusEl = document.getElementById('ai-loading-text');
-        var aiMsgs = currentTool === 'skin-real-8k' ? [
-          { at: 0, text: 'Paso 1: Mejorando nitidez y detalle...' },
-          { at: 40, text: 'Paso 2: Escalando a maxima resolucion...' },
-          { at: 80, text: 'Casi listo, finalizando...' }
+        var aiMsgs = currentTool === 'ultra-hd' ? [
+          { at: 0, text: 'Escalando imagen a maxima resolucion...' },
+          { at: 50, text: 'Preservando textura y detalles...' },
+          { at: 80, text: 'Casi listo...' }
         ] : [
           { at: 0, text: 'Analizando imagen...' },
           { at: 15, text: 'Procesando con IA...' },
@@ -3261,7 +3261,7 @@
       { icon: '&#x1F9D1;', tool: 'Mejorar Rostro', date: '28 Mar 2026', status: 'Completado' },
       { icon: '&#x1F48E;', tool: 'Producto HD', date: '27 Mar 2026', status: 'Completado' },
       { icon: '&#x1F532;', tool: 'Remover Fondo', date: '25 Mar 2026', status: 'Completado' },
-      { icon: '&#x2728;', tool: 'Piel Real 8K', date: '24 Mar 2026', status: 'Completado' },
+      { icon: '&#x2728;', tool: 'Ultra HD 4K', date: '24 Mar 2026', status: 'Completado' },
       { icon: '&#x1F48E;', tool: 'Producto HD', date: '20 Mar 2026', status: 'Completado' },
     ];
 
@@ -3761,7 +3761,7 @@
         // 6. Scroll to top
         center.scrollTop = 0;
       } else {
-        // 3. Slider (improve-face, reconstruct-face, product-hd, skin-real-8k)
+        // 3. Slider (improve-face, reconstruct-face, product-hd, ultra-hd)
         document.getElementById('ai-result-single').style.display = 'none';
         document.getElementById('ai-result-slider').style.display = 'none';
         document.getElementById('ai-result').classList.add('active');
