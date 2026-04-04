@@ -504,37 +504,100 @@
     }
 
     /* Vector download buttons */
-    .vector-download-row {
+    .vector-download-area {
       display: none;
-      flex-wrap: wrap;
-      gap: 8px;
       margin-top: 0.75rem;
     }
 
-    .vector-download-row.visible { display: flex; }
+    .vector-download-area.visible { display: block; }
+
+    .vector-dl-main {
+      display: block;
+      width: 100%;
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #000;
+      background: var(--green);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      margin-bottom: 0.5rem;
+    }
+
+    .vector-dl-main:hover { background: #16a34a; }
+
+    .vector-dl-formats {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
 
     .vector-dl-btn {
       font-family: var(--sans);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
-      padding: 0.5rem 1rem;
+      padding: 0.35rem 0.75rem;
       border-radius: 100px;
       border: 1px solid var(--border);
       background: transparent;
-      color: var(--text-secondary);
+      color: var(--text-tertiary);
       cursor: pointer;
       transition: all 0.2s;
-      text-decoration: none;
     }
 
     .vector-dl-btn:hover { border-color: var(--border-hover); color: var(--text); }
 
-    .vector-dl-btn.primary {
-      border-color: var(--accent);
-      color: var(--accent);
+    /* Vector result zoom */
+    .vector-result-wrap {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      cursor: zoom-in;
+      margin-bottom: 1rem;
     }
 
-    .vector-dl-btn.primary:hover { background: var(--accent); color: #fff; }
+    .vector-result-wrap.zoomed { cursor: grab; }
+    .vector-result-wrap.panning { cursor: grabbing; }
+
+    .vector-result-wrap img {
+      display: block;
+      width: 100%;
+      will-change: transform;
+      transition: transform 0.15s ease-out;
+      pointer-events: none;
+      background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+        linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+        linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+      background-color: #111;
+    }
+
+    .vector-zoom-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      padding: 4px 10px;
+      border-radius: 6px;
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .vector-zoom-badge.visible { opacity: 1; }
 
     /* ===== SECTIONS SHARED ===== */
     .section-container {
@@ -2430,12 +2493,14 @@
 
         <button class="sidebar-process-btn" id="ai-process-btn" onclick="processImage()">Procesar con IA</button>
         <a class="sidebar-download-btn" id="ai-download-btn" download>&#x2B07; Descargar</a>
-        <div class="vector-download-row" id="vector-download-row">
-          <button class="vector-dl-btn primary" onclick="downloadVector('svg')">SVG</button>
-          <button class="vector-dl-btn" onclick="downloadVector('png')">PNG</button>
-          <button class="vector-dl-btn" onclick="downloadVector('jpg')">JPG</button>
-          <button class="vector-dl-btn" onclick="downloadVector('webp')">WebP</button>
-          <button class="vector-dl-btn" onclick="downloadVector('pdf')">PDF</button>
+        <div class="vector-download-area" id="vector-download-area">
+          <button class="vector-dl-main" onclick="downloadVector('svg')">&#x2B07; Descargar SVG</button>
+          <div class="vector-dl-formats">
+            <button class="vector-dl-btn" onclick="downloadVector('png')">PNG</button>
+            <button class="vector-dl-btn" onclick="downloadVector('jpg')">JPG</button>
+            <button class="vector-dl-btn" onclick="downloadVector('webp')">WebP</button>
+            <button class="vector-dl-btn" onclick="downloadVector('pdf')">PDF</button>
+          </div>
         </div>
       </div>
 
@@ -2469,7 +2534,10 @@
               <span class="slider-zoom-badge" id="ai-slider-zoom-badge">100%</span>
             </div>
             <div id="ai-result-single" class="result-single" style="display:none;">
-              <img id="ai-result-img-single" src="">
+              <div class="vector-result-wrap" id="vector-result-wrap">
+                <img id="ai-result-img-single" src="">
+                <span class="vector-zoom-badge" id="vector-zoom-badge">100%</span>
+              </div>
             </div>
           </div>
         </div>
@@ -2793,7 +2861,7 @@
         document.getElementById('ai-preview').classList.remove('active');
         document.getElementById('ai-process-btn').classList.remove('visible');
         document.getElementById('ai-download-btn').classList.remove('visible');
-        document.getElementById('vector-download-row').classList.remove('visible');
+        document.getElementById('vector-download-area').classList.remove('visible');
         document.getElementById('ai-center-empty').style.display = 'block';
         document.getElementById('ai-center-content').style.display = 'none';
         document.getElementById('ai-loading').classList.remove('active');
@@ -3067,10 +3135,10 @@
             document.querySelector('.tool-center').classList.add('has-result');
             if (currentTool === 'vectorize-ai') {
               document.getElementById('ai-download-btn').classList.remove('visible');
-              document.getElementById('vector-download-row').classList.add('visible');
+              document.getElementById('vector-download-area').classList.add('visible');
               window._lastVectorSvgBase64 = data.result;
             } else {
-              document.getElementById('vector-download-row').classList.remove('visible');
+              document.getElementById('vector-download-area').classList.remove('visible');
               document.getElementById('ai-download-btn').href = data.result;
               document.getElementById('ai-download-btn').download = 'radiara-' + currentTool + '.png';
               document.getElementById('ai-download-btn').classList.add('visible');
@@ -4150,6 +4218,78 @@
       };
       img.src = svgBase64;
     }
+
+    // ==========================================
+    // VECTOR RESULT ZOOM
+    // ==========================================
+
+    (function() {
+      var wrap = document.getElementById('vector-result-wrap');
+      var badge = document.getElementById('vector-zoom-badge');
+      if (!wrap) return;
+
+      var vz = { scale: 1, x: 0, y: 0, panning: false, sx: 0, sy: 0, ox: 0, oy: 0 };
+
+      function applyVZ() {
+        var img = wrap.querySelector('img');
+        if (img) img.style.transform = 'translate(' + vz.x + 'px,' + vz.y + 'px) scale(' + vz.scale + ')';
+        if (badge) {
+          badge.textContent = Math.round(vz.scale * 100) + '%';
+          badge.classList.toggle('visible', vz.scale > 1.01);
+        }
+        wrap.classList.toggle('zoomed', vz.scale > 1.01);
+      }
+
+      wrap.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var rect = wrap.getBoundingClientRect();
+        var cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+        var old = vz.scale;
+        vz.scale = Math.max(1, Math.min(5, vz.scale + (e.deltaY < 0 ? 0.3 : -0.3)));
+        if (vz.scale === old) return;
+        var r = vz.scale / old;
+        vz.x = cx - r * (cx - vz.x);
+        vz.y = cy - r * (cy - vz.y);
+        if (vz.scale <= 1) { vz.x = 0; vz.y = 0; }
+        applyVZ();
+      }, { passive: false });
+
+      wrap.addEventListener('mousedown', function(e) {
+        if (vz.scale <= 1) return;
+        vz.panning = true;
+        vz.sx = e.clientX; vz.sy = e.clientY;
+        vz.ox = vz.x; vz.oy = vz.y;
+        wrap.classList.add('panning');
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!vz.panning) return;
+        vz.x = vz.ox + (e.clientX - vz.sx);
+        vz.y = vz.oy + (e.clientY - vz.sy);
+        var img = wrap.querySelector('img');
+        if (img) img.style.transition = 'none';
+        applyVZ();
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (vz.panning) {
+          vz.panning = false;
+          wrap.classList.remove('panning');
+          var img = wrap.querySelector('img');
+          if (img) img.style.transition = '';
+        }
+      });
+
+      wrap.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        vz.scale = 1; vz.x = 0; vz.y = 0;
+        var img = wrap.querySelector('img');
+        if (img) img.style.transition = 'transform 0.3s ease-out';
+        applyVZ();
+      });
+    })();
 
     // Init
     updateHeaderAuth();
