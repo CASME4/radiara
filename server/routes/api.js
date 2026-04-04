@@ -285,9 +285,9 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
 
-    // Resize to max 1000px and flatten transparency to white
+    // Resize to max 800px and flatten transparency to white
     let imgBuf = await sharp(req.file.buffer)
-      .resize(1000, 1000, { fit: 'inside', withoutEnlargement: true })
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
       .flatten({ background: { r: 255, g: 255, b: 255 } })
       .png()
       .toBuffer();
@@ -295,14 +295,14 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     const meta = await sharp(imgBuf).metadata();
     console.log('vectorize: ' + meta.width + 'x' + meta.height);
 
-    // Posterize with 60s timeout
+    // Posterize with 30s timeout
     const svg = await new Promise(function(resolve, reject) {
       const timeout = setTimeout(function() {
         reject(new Error('TIMEOUT'));
-      }, 60000);
+      }, 30000);
 
       potrace.posterize(imgBuf, {
-        steps: 6,
+        steps: 4,
         optTolerance: 0.5,
         turdSize: 4,
         optCurve: true,
@@ -324,7 +324,7 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     console.error('vectorize-ai error:', err.message);
     if (!res.headersSent) {
       if (err.message === 'TIMEOUT') {
-        return res.status(408).json({ error: 'La imagen es muy compleja para vectorizar. Proba con una imagen mas simple (logos, iconos, ilustraciones).' });
+        return res.status(408).json({ error: 'La imagen es muy compleja. Proba con una imagen mas simple (logos, iconos).' });
       }
       res.status(500).json({ error: 'Error procesando imagen', details: err.message });
     }
