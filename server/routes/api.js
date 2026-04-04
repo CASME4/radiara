@@ -280,49 +280,38 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
 // 6. Vectorizar — sharp + potrace (color posterize o B/W trace)
 const potrace = require('potrace');
 
-// Color quantization helper: median cut to find N dominant colors
-function quantizeColors(rawPixels, channels, pixelCount, numColors) {
-  // Collect pixel samples
-  const step = Math.max(1, Math.floor(pixelCount / 10000));
-  const samples = [];
-  for (let i = 0; i < pixelCount; i += step) {
-    const idx = i * channels;
-    samples.push([rawPixels[idx], rawPixels[idx+1], rawPixels[idx+2]]);
-  }
-
-  // Median cut
-  let buckets = [samples];
-  while (buckets.length < numColors) {
-    let best = -1, bestRange = -1;
-    for (let b = 0; b < buckets.length; b++) {
-      if (buckets[b].length < 2) continue;
-      const ranges = [0,1,2].map(ch => {
-        let mn = 255, mx = 0;
-        for (const p of buckets[b]) { if (p[ch] < mn) mn = p[ch]; if (p[ch] > mx) mx = p[ch]; }
-        return mx - mn;
-      });
-      const maxR = Math.max(...ranges);
-      if (maxR > bestRange) { bestRange = maxR; best = b; }
+// Extract real dominant colors by frequency (not averaging like Median Cut)
+// Groups similar colors (within threshold per channel) and picks the most frequent
+function extractRealColors(rgbBuffer, alphaBuffer, pixelCount, numColors, threshold) {
+  threshold = threshold || 15;
+  // Group colors by similarity
+  const groups = []; // { r, g, b, count }
+  for (let i = 0; i < pixelCount; i++) {
+    // Skip transparent pixels
+    if (alphaBuffer && alphaBuffer[i] < 128) continue;
+    const idx = i * 3;
+    const r = rgbBuffer[idx], g = rgbBuffer[idx+1], b = rgbBuffer[idx+2];
+    let found = false;
+    for (let gi = 0; gi < groups.length; gi++) {
+      const grp = groups[gi];
+      if (Math.abs(r - grp.r) <= threshold && Math.abs(g - grp.g) <= threshold && Math.abs(b - grp.b) <= threshold) {
+        grp.count++;
+        found = true;
+        break;
+      }
     }
-    if (best === -1) break;
-    const bucket = buckets[best];
-    const ranges = [0,1,2].map(ch => {
-      let mn = 255, mx = 0;
-      for (const p of bucket) { if (p[ch] < mn) mn = p[ch]; if (p[ch] > mx) mx = p[ch]; }
-      return mx - mn;
-    });
-    const sortCh = ranges.indexOf(Math.max(...ranges));
-    bucket.sort((a, b) => a[sortCh] - b[sortCh]);
-    const mid = Math.floor(bucket.length / 2);
-    buckets.splice(best, 1, bucket.slice(0, mid), bucket.slice(mid));
+    if (!found) {
+      groups.push({ r, g, b, count: 1 });
+    }
   }
-
-  return buckets.map(b => {
-    let r = 0, g = 0, bl = 0;
-    for (const p of b) { r += p[0]; g += p[1]; bl += p[2]; }
-    const n = b.length || 1;
-    return [Math.round(r/n), Math.round(g/n), Math.round(bl/n)];
-  });
+  // Sort by frequency descending and take top N
+  groups.sort((a, b) => b.count - a.count);
+  const total = groups.reduce((s, g) => s + g.count, 0) || 1;
+  return groups.slice(0, numColors).map(g => ({
+    color: [g.r, g.g, g.b],
+    count: g.count,
+    pct: ((g.count / total) * 100).toFixed(1)
+  }));
 }
 
 router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
@@ -330,9 +319,9 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
 
-    // Resize to max 1200px for better detail
+    // Resize to max 1600px for tracing detail
     let imgBuf = await sharp(req.file.buffer)
-      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
       .png()
       .toBuffer();
 
@@ -340,10 +329,11 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     const w = meta.width, h = meta.height;
     const hasAlpha = meta.channels === 4;
 
-    // Check if image has significant transparency
+    // Check transparency
     let hasTransparentBg = false;
+    let alphaRaw = null;
     if (hasAlpha) {
-      const alphaRaw = await sharp(imgBuf).extractChannel(3).raw().toBuffer();
+      alphaRaw = await sharp(imgBuf).extractChannel(3).raw().toBuffer();
       let transparentCount = 0;
       for (let i = 0; i < alphaRaw.length; i++) { if (alphaRaw[i] < 128) transparentCount++; }
       hasTransparentBg = transparentCount > alphaRaw.length * 0.05;
@@ -352,15 +342,31 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     const rawPixels = await sharp(imgBuf).removeAlpha().raw().toBuffer();
     const pixelCount = w * h;
 
-    // Find dominant colors via median cut (10 colors for accurate reproduction)
-    const numLayers = 10;
-    const palette = quantizeColors(rawPixels, 3, pixelCount, numLayers);
-    console.log('vectorize: ' + w + 'x' + h + ', palette:', palette.map(c => '#' + c.map(v => v.toString(16).padStart(2,'0')).join('')));
+    // Extract real colors on a small thumbnail for speed
+    const thumbSize = 200;
+    const thumbBuf = await sharp(req.file.buffer)
+      .resize(thumbSize, thumbSize, { fit: 'inside', withoutEnlargement: true })
+      .png()
+      .toBuffer();
+    const thumbMeta = await sharp(thumbBuf).metadata();
+    const thumbRgb = await sharp(thumbBuf).removeAlpha().raw().toBuffer();
+    let thumbAlpha = null;
+    if (thumbMeta.channels === 4) {
+      thumbAlpha = await sharp(thumbBuf).extractChannel(3).raw().toBuffer();
+    }
+    const thumbPixels = thumbMeta.width * thumbMeta.height;
 
-    // Sort palette: biggest area first (background)
+    const colorResults = extractRealColors(thumbRgb, thumbAlpha, thumbPixels, 10, 15);
+    const palette = colorResults.map(c => c.color);
+    console.log('vectorize: ' + w + 'x' + h + ', palette:', colorResults.map(c =>
+      '#' + c.color.map(v => v.toString(16).padStart(2,'0')).join('') + ' (' + c.pct + '%)'
+    ).join(', '));
+
+    // Assign each full-res pixel to nearest palette color
     const layerPixelCounts = palette.map(() => 0);
     const assignment = new Uint8Array(pixelCount);
     for (let i = 0; i < pixelCount; i++) {
+      if (alphaRaw && alphaRaw[i] < 128) { assignment[i] = 255; continue; }
       const idx = i * 3;
       let bestDist = Infinity, bestLayer = 0;
       for (let l = 0; l < palette.length; l++) {
@@ -384,10 +390,10 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
       if (l === bgLayer) continue;
       if (layerPixelCounts[l] < pixelCount * 0.005) continue; // skip tiny layers
 
-      // Create B/W mask for this layer
-      const mask = Buffer.alloc(w * h);
+      // Create B/W mask for this layer (transparent pixels = white/background)
+      const mask = Buffer.alloc(w * h, 255);
       for (let i = 0; i < pixelCount; i++) {
-        mask[i] = assignment[i] === l ? 0 : 255; // 0=black=foreground for potrace
+        if (assignment[i] === l) mask[i] = 0; // 0=black=foreground for potrace
       }
       const maskPng = await sharp(mask, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
 
@@ -397,9 +403,9 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
         const timeout = setTimeout(() => reject(new Error('TIMEOUT')), 15000);
         potrace.trace(maskPng, {
           turdSize: 10,
-          optTolerance: 0.8,
+          optTolerance: 2.0,
           optCurve: true,
-          alphaMax: 1.3,
+          alphaMax: 1.5,
           color: color,
           background: 'transparent'
         }, function(err, svg) {
