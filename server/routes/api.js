@@ -338,12 +338,22 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
 
     const meta = await sharp(imgBuf).metadata();
     const w = meta.width, h = meta.height;
-    const ch = meta.channels || 3;
+    const hasAlpha = meta.channels === 4;
+
+    // Check if image has significant transparency
+    let hasTransparentBg = false;
+    if (hasAlpha) {
+      const alphaRaw = await sharp(imgBuf).extractChannel(3).raw().toBuffer();
+      let transparentCount = 0;
+      for (let i = 0; i < alphaRaw.length; i++) { if (alphaRaw[i] < 128) transparentCount++; }
+      hasTransparentBg = transparentCount > alphaRaw.length * 0.05;
+    }
+
     const rawPixels = await sharp(imgBuf).removeAlpha().raw().toBuffer();
     const pixelCount = w * h;
 
-    // Find dominant colors via median cut
-    const numLayers = 6;
+    // Find dominant colors via median cut (8 colors for better accuracy)
+    const numLayers = 8;
     const palette = quantizeColors(rawPixels, 3, pixelCount, numLayers);
     console.log('vectorize: ' + w + 'x' + h + ', palette:', palette.map(c => '#' + c.map(v => v.toString(16).padStart(2,'0')).join('')));
 
@@ -386,8 +396,10 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
       const layerSvg = await new Promise(function(resolve, reject) {
         const timeout = setTimeout(() => reject(new Error('TIMEOUT')), 15000);
         potrace.trace(maskPng, {
-          turdSize: 3,
-          optTolerance: 0.3,
+          turdSize: 5,
+          optTolerance: 0.4,
+          optCurve: true,
+          alphaMax: 1.2,
           color: color,
           background: 'transparent'
         }, function(err, svg) {
@@ -402,10 +414,11 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
       svgPaths.push(...paths);
     }
 
-    // Build combined SVG with transparent background
+    // Build combined SVG
     const bgColor = '#' + palette[bgLayer].map(v => v.toString(16).padStart(2, '0')).join('');
+    const bgRect = hasTransparentBg ? '' : '<rect width="100%" height="100%" fill="' + bgColor + '"/>';
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
-      '<rect width="100%" height="100%" fill="' + bgColor + '"/>' +
+      bgRect +
       svgPaths.join('') +
       '</svg>';
 
