@@ -388,7 +388,8 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     const svgPaths = [];
     for (let l = 0; l < palette.length; l++) {
       if (l === bgLayer) continue;
-      if (layerPixelCounts[l] < pixelCount * 0.005) continue; // skip tiny layers
+      if (layerPixelCounts[l] < pixelCount * 0.001) continue; // skip layers with less than 0.1% pixels
+      console.log('  layer ' + l + ': ' + color + ' — ' + layerPixelCounts[l] + ' px (' + ((layerPixelCounts[l]/pixelCount)*100).toFixed(1) + '%)');
 
       // Create B/W mask for this layer (transparent pixels = white/background)
       const mask = Buffer.alloc(w * h, 255);
@@ -402,10 +403,11 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
       const layerSvg = await new Promise(function(resolve, reject) {
         const timeout = setTimeout(() => reject(new Error('TIMEOUT')), 15000);
         potrace.trace(maskPng, {
-          turdSize: 10,
-          optTolerance: 2.0,
+          turdSize: 3,
+          optTolerance: 0.6,
           optCurve: true,
-          alphaMax: 1.5,
+          alphaMax: 1.2,
+          turnPolicy: 'minority',
           color: color,
           background: 'transparent'
         }, function(err, svg) {
