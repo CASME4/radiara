@@ -280,65 +280,138 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
 // 6. Vectorizar — sharp + potrace (color posterize o B/W trace)
 const potrace = require('potrace');
 
+// Color quantization helper: median cut to find N dominant colors
+function quantizeColors(rawPixels, channels, pixelCount, numColors) {
+  // Collect pixel samples
+  const step = Math.max(1, Math.floor(pixelCount / 10000));
+  const samples = [];
+  for (let i = 0; i < pixelCount; i += step) {
+    const idx = i * channels;
+    samples.push([rawPixels[idx], rawPixels[idx+1], rawPixels[idx+2]]);
+  }
+
+  // Median cut
+  let buckets = [samples];
+  while (buckets.length < numColors) {
+    let best = -1, bestRange = -1;
+    for (let b = 0; b < buckets.length; b++) {
+      if (buckets[b].length < 2) continue;
+      const ranges = [0,1,2].map(ch => {
+        let mn = 255, mx = 0;
+        for (const p of buckets[b]) { if (p[ch] < mn) mn = p[ch]; if (p[ch] > mx) mx = p[ch]; }
+        return mx - mn;
+      });
+      const maxR = Math.max(...ranges);
+      if (maxR > bestRange) { bestRange = maxR; best = b; }
+    }
+    if (best === -1) break;
+    const bucket = buckets[best];
+    const ranges = [0,1,2].map(ch => {
+      let mn = 255, mx = 0;
+      for (const p of bucket) { if (p[ch] < mn) mn = p[ch]; if (p[ch] > mx) mx = p[ch]; }
+      return mx - mn;
+    });
+    const sortCh = ranges.indexOf(Math.max(...ranges));
+    bucket.sort((a, b) => a[sortCh] - b[sortCh]);
+    const mid = Math.floor(bucket.length / 2);
+    buckets.splice(best, 1, bucket.slice(0, mid), bucket.slice(mid));
+  }
+
+  return buckets.map(b => {
+    let r = 0, g = 0, bl = 0;
+    for (const p of b) { r += p[0]; g += p[1]; bl += p[2]; }
+    const n = b.length || 1;
+    return [Math.round(r/n), Math.round(g/n), Math.round(bl/n)];
+  });
+}
+
 router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
 
-    // Resize to max 800px for performance
+    // Resize to max 800px
     let imgBuf = await sharp(req.file.buffer)
       .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
       .png()
       .toBuffer();
 
-    // Count unique colors to detect simple images (logos, icons)
-    const { channels } = await sharp(imgBuf).stats();
-    const rawPixels = await sharp(imgBuf).raw().toBuffer();
     const meta = await sharp(imgBuf).metadata();
-    const colorSet = new Set();
-    const pixelCount = meta.width * meta.height;
-    const sampleStep = Math.max(1, Math.floor(pixelCount / 5000)); // sample ~5000 pixels
-    for (let i = 0; i < pixelCount && colorSet.size < 20; i += sampleStep) {
-      const idx = i * channels.length;
-      colorSet.add(rawPixels[idx] + ',' + rawPixels[idx+1] + ',' + rawPixels[idx+2]);
+    const w = meta.width, h = meta.height;
+    const ch = meta.channels || 3;
+    const rawPixels = await sharp(imgBuf).removeAlpha().raw().toBuffer();
+    const pixelCount = w * h;
+
+    // Find dominant colors via median cut
+    const numLayers = 6;
+    const palette = quantizeColors(rawPixels, 3, pixelCount, numLayers);
+    console.log('vectorize: ' + w + 'x' + h + ', palette:', palette.map(c => '#' + c.map(v => v.toString(16).padStart(2,'0')).join('')));
+
+    // Sort palette: biggest area first (background)
+    const layerPixelCounts = palette.map(() => 0);
+    const assignment = new Uint8Array(pixelCount);
+    for (let i = 0; i < pixelCount; i++) {
+      const idx = i * 3;
+      let bestDist = Infinity, bestLayer = 0;
+      for (let l = 0; l < palette.length; l++) {
+        const dr = rawPixels[idx] - palette[l][0], dg = rawPixels[idx+1] - palette[l][1], db = rawPixels[idx+2] - palette[l][2];
+        const dist = dr*dr + dg*dg + db*db;
+        if (dist < bestDist) { bestDist = dist; bestLayer = l; }
+      }
+      assignment[i] = bestLayer;
+      layerPixelCounts[bestLayer]++;
     }
-    const isSimple = colorSet.size < 10;
-    const mode = isSimple ? 'trace' : 'posterize';
-    console.log('vectorize: ' + meta.width + 'x' + meta.height + ', unique colors sampled: ' + colorSet.size + ', mode: ' + mode);
 
-    // Vectorize with 30s timeout
-    const svg = await new Promise(function(resolve, reject) {
-      const timeout = setTimeout(function() {
-        reject(new Error('TIMEOUT'));
-      }, 30000);
+    // Find background layer (most pixels)
+    let bgLayer = 0;
+    for (let l = 1; l < palette.length; l++) {
+      if (layerPixelCounts[l] > layerPixelCounts[bgLayer]) bgLayer = l;
+    }
 
-      function done(err, svg) {
-        clearTimeout(timeout);
-        if (err) reject(err);
-        else resolve(svg);
+    // Trace each color layer (skip background)
+    const svgPaths = [];
+    for (let l = 0; l < palette.length; l++) {
+      if (l === bgLayer) continue;
+      if (layerPixelCounts[l] < pixelCount * 0.005) continue; // skip tiny layers
+
+      // Create B/W mask for this layer
+      const mask = Buffer.alloc(w * h);
+      for (let i = 0; i < pixelCount; i++) {
+        mask[i] = assignment[i] === l ? 0 : 255; // 0=black=foreground for potrace
       }
+      const maskPng = await sharp(mask, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
 
-      if (isSimple) {
-        potrace.trace(imgBuf, {
-          turdSize: 2,
-          optTolerance: 0.2,
-          color: '#000000',
-          background: '#ffffff'
-        }, done);
-      } else {
-        potrace.posterize(imgBuf, {
-          steps: 4,
-          fillStrategy: potrace.Posterizer.FILL_MEAN,
-          rangeDistribution: potrace.Posterizer.RANGES_AUTO,
-          turdSize: 5,
-          optTolerance: 0.5
-        }, done);
-      }
-    });
+      const color = '#' + palette[l].map(v => v.toString(16).padStart(2, '0')).join('');
 
-    const pathCount = (svg.match(/<path/g) || []).length;
+      const layerSvg = await new Promise(function(resolve, reject) {
+        const timeout = setTimeout(() => reject(new Error('TIMEOUT')), 15000);
+        potrace.trace(maskPng, {
+          turdSize: 3,
+          optTolerance: 0.3,
+          color: color,
+          background: 'transparent'
+        }, function(err, svg) {
+          clearTimeout(timeout);
+          if (err) reject(err);
+          else resolve(svg);
+        });
+      });
+
+      // Extract just the <path> elements
+      const paths = layerSvg.match(/<path[^>]*\/>/g) || [];
+      svgPaths.push(...paths);
+    }
+
+    // Build combined SVG with transparent background
+    const bgColor = '#' + palette[bgLayer].map(v => v.toString(16).padStart(2, '0')).join('');
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
+      '<rect width="100%" height="100%" fill="' + bgColor + '"/>' +
+      svgPaths.join('') +
+      '</svg>';
+
+    const pathCount = svgPaths.length;
     const sizeKB = (Buffer.byteLength(svg) / 1024).toFixed(1);
-    console.log('vectorize done:', (Date.now() - t1) + 'ms, ' + pathCount + ' paths, ' + sizeKB + 'KB');
+    console.log('vectorize done:', (Date.now() - t1) + 'ms, ' + pathCount + ' paths, ' + sizeKB + 'KB, ' + palette.length + ' colors');
 
     const svgBase64 = 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
     res.json({ success: true, result: svgBase64 });
