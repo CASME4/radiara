@@ -26,7 +26,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/api', apiRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'RADIARA online', version: '1.3.0', endpoints: ['improve-face','reconstruct-face','product-hd','skin-real','ultra-hd','remove-bg','vectorize-ai'] });
+  res.json({ status: 'RADIARA online', version: '1.4.0', endpoints: ['improve-face','reconstruct-face','product-hd','skin-real','remove-bg','vectorize-ai'] });
 });
 
 // Global error handler — always return JSON, never HTML
