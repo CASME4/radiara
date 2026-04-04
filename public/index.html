@@ -750,6 +750,35 @@
     .pricing-section {
       border-top: 1px solid var(--border);
       background: var(--bg-subtle);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pricing-bg-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(6rem, 15vw, 10rem);
+      font-weight: 900;
+      color: rgba(255,255,255,0.03);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: -0.03em;
+      z-index: 0;
+    }
+
+    .pricing-blob {
+      position: absolute;
+      bottom: -20%;
+      left: -10%;
+      width: 500px;
+      height: 500px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(168,85,247,0.08));
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .pricing-toggle {
@@ -817,15 +846,16 @@
     }
 
     .pricing-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
       padding: 2rem 1.5rem;
       display: flex;
       flex-direction: column;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
-      backdrop-filter: blur(10px);
     }
 
     .pricing-card:hover {
@@ -834,13 +864,13 @@
     }
 
     .pricing-card.featured {
-      border-color: var(--accent);
-      background: rgba(255,68,68,0.03);
-      box-shadow: 0 0 40px rgba(255,68,68,0.06), 0 0 80px rgba(255,68,68,0.03);
+      border-color: rgba(100,200,255,0.3);
+      background: rgba(100,200,255,0.04);
+      box-shadow: 0 0 30px rgba(100,200,255,0.06), 0 0 60px rgba(100,200,255,0.03);
     }
 
     .pricing-card.featured:hover {
-      box-shadow: 0 0 50px rgba(255,68,68,0.1), 0 0 100px rgba(255,68,68,0.05);
+      box-shadow: 0 0 50px rgba(100,200,255,0.1), 0 0 100px rgba(100,200,255,0.05);
     }
 
     .pricing-popular {
@@ -898,19 +928,25 @@
       font-size: 0.88rem;
       color: var(--text-secondary);
       padding: 0.4rem 0;
-      padding-left: 1.5rem;
+      padding-left: 1.8rem;
       position: relative;
     }
 
     .pricing-card .plan-features li::before {
-      content: '';
+      content: '\2713';
+      width: 18px;
+      height: 18px;
+      background: rgba(34,197,94,0.12);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: #22c55e;
       position: absolute;
       left: 0;
       top: 50%;
       transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2322c55e'%3E%3Cpath d='M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z'/%3E%3C/svg%3E") no-repeat center;
     }
 
     .pricing-btn {
@@ -920,7 +956,7 @@
       text-align: center;
       text-decoration: none;
       padding: 0.75rem 1.5rem;
-      border-radius: var(--radius-sm);
+      border-radius: 12px;
       border: 1px solid var(--border);
       color: var(--text);
       background: transparent;
@@ -935,9 +971,11 @@
     }
 
     .pricing-btn.btn-primary {
-      background: var(--text);
-      border-color: var(--text);
-      color: var(--bg);
+      background: #fff;
+      color: #09090b;
+      border-color: #fff;
+      font-weight: 700;
+      border-radius: 12px;
     }
 
     .pricing-btn.btn-primary:hover {
@@ -949,6 +987,7 @@
       border-color: var(--green);
       color: #000;
       font-weight: 700;
+      border-radius: 12px;
     }
 
     .pricing-btn.btn-green:hover {
@@ -2135,6 +2174,59 @@
       .checkout-view { padding: 5rem 1.5rem 2rem; }
       .navbar-inner { padding: 0 1rem; }
     }
+    /* ===== LEGAL PAGES ===== */
+    .legal-page {
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: var(--bg);
+      overflow-y: auto;
+      padding: 2rem;
+    }
+
+    .legal-container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 4rem 0;
+    }
+
+    .legal-container h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .legal-container h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .legal-container p {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 1rem;
+      font-size: 0.92rem;
+    }
+
+    .legal-container a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .legal-container a:hover { text-decoration: underline; }
+
+    .legal-date {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      margin-bottom: 2rem;
+    }
+
   </style>
 </head>
 <body>
@@ -2284,17 +2376,12 @@
     <!-- PRICING -->
     <section id="precios" class="pricing-section">
       <div class="section-container">
-        <div class="section-header reveal">
+        <div class="pricing-bg-text">Pricing</div>
+        <div class="pricing-blob"></div>
+        <div class="section-header reveal" style="position: relative; z-index: 1;">
           <span class="section-label">Precios</span>
           <h2 class="section-title">Precios simples,<br>sin sorpresas</h2>
           <p class="section-subtitle">Elegi el plan que se ajuste a tu flujo de trabajo.</p>
-        </div>
-
-        <div class="pricing-toggle reveal">
-          <span class="pricing-toggle-label active" id="toggle-monthly" onclick="setPricingPeriod('monthly')">Mensual</span>
-          <button class="pricing-toggle-switch" id="pricing-switch" onclick="togglePricing()"></button>
-          <span class="pricing-toggle-label" id="toggle-annual" onclick="setPricingPeriod('annual')">Anual</span>
-          <span class="pricing-save-badge">Ahorra 20%</span>
         </div>
 
         <div class="pricing-grid" id="pricing-grid">
@@ -2338,7 +2425,7 @@
 
           <div class="pricing-card reveal">
             <div class="plan-name">Business</div>
-            <div class="plan-price" data-monthly="39" data-annual="31">$39 <span>/mes</span></div>
+            <div class="plan-price" data-monthly="39" data-annual="30">$39 <span>/mes</span></div>
             <div class="plan-period price-period">Facturado mensualmente</div>
             <ul class="plan-features">
               <li>300 creditos por mes</li>
@@ -2350,7 +2437,14 @@
           </div>
         </div>
 
-        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Las herramientas basicas cuestan 1 credito. Mejorar Rostro cuesta 2 creditos. Reconstruir Rostro cuesta 3 creditos. Piel Real Hiperrealista cuesta 5 creditos.</p>
+        <div class="pricing-toggle reveal">
+          <span class="pricing-toggle-label active" id="toggle-monthly" onclick="setPricingPeriod('monthly')">Mensual</span>
+          <button class="pricing-toggle-switch" id="pricing-switch" onclick="togglePricing()"></button>
+          <span class="pricing-toggle-label" id="toggle-annual" onclick="setPricingPeriod('annual')">Anual</span>
+          <span class="pricing-save-badge">Ahorra 20%</span>
+        </div>
+
+        <p class="reveal" style="text-align:center;font-size:0.8rem;color:var(--text-tertiary);max-width:600px;margin:0 auto 3rem;line-height:1.6;">Herramientas basicas: 1 credito. Mejorar Rostro: 2 creditos. Reconstruir Rostro y Piel Real: 3-5 creditos.</p>
 
         <div class="credits-section reveal">
           <div class="credits-label">O compra creditos sueltos</div>
@@ -2384,14 +2478,14 @@
             <h4>Producto</h4>
             <a href="#herramientas">Herramientas</a>
             <a href="#precios">Precios</a>
-            <a href="#api">API</a>
-            <a href="#">Changelog</a>
+            <a href="#" onclick="openLegalPage('legal-api');return false;">API</a>
+            <a href="#" onclick="openLegalPage('legal-changelog');return false;">Changelog</a>
           </div>
           <div class="footer-col">
             <h4>Legal</h4>
-            <a href="#">Terminos de servicio</a>
-            <a href="#">Politica de privacidad</a>
-            <a href="#">Cookies</a>
+            <a href="#" onclick="openLegalPage('legal-terms');return false;">Terminos de servicio</a>
+            <a href="#" onclick="openLegalPage('legal-privacy');return false;">Politica de privacidad</a>
+            <a href="#" onclick="openLegalPage('legal-cookies');return false;">Cookies</a>
           </div>
           <div class="footer-col">
             <h4>Contacto</h4>
@@ -2403,8 +2497,8 @@
         <div class="footer-bottom">
           <p>&copy; 2026 RADIARA. Todos los derechos reservados.</p>
           <div class="footer-bottom-links">
-            <a href="#">Privacidad</a>
-            <a href="#">Terminos</a>
+            <a href="#" onclick="openLegalPage('legal-privacy');return false;">Privacidad</a>
+            <a href="#" onclick="openLegalPage('legal-terms');return false;">Terminos</a>
           </div>
         </div>
       </div>
@@ -2614,6 +2708,118 @@
     <div class="zoom-hint">Rueda para zoom &middot; Arrastra para mover</div>
   </div>
 
+  <!-- LEGAL PAGES -->
+  <div class="legal-page" id="legal-terms" style="display:none;">
+    <div class="legal-container">
+      <button class="back-btn" onclick="closeLegalPage('legal-terms')">&#8592; Volver</button>
+      <h1>Terminos de Servicio</h1>
+      <p class="legal-date">Ultima actualizacion: Abril 2026</p>
+
+      <h2>1. Descripcion del Servicio</h2>
+      <p>RADIARA es una suite de procesamiento de imagenes con inteligencia artificial. Ofrecemos herramientas para restaurar, mejorar, vectorizar y transformar imagenes.</p>
+
+      <h2>2. Uso Aceptable</h2>
+      <p>Al usar RADIARA, aceptas no subir contenido ilegal, no abusar del servicio, no revender creditos, y no usar el servicio para generar contenido danino.</p>
+
+      <h2>3. Propiedad Intelectual</h2>
+      <p>Las imagenes procesadas pertenecen al usuario. RADIARA no reclama derechos sobre las imagenes que procesas. Conservas todos los derechos sobre tu contenido.</p>
+
+      <h2>4. Limitaciones</h2>
+      <p>El servicio se proporciona "tal cual", sin garantias. RADIARA no garantiza resultados especificos del procesamiento de imagenes.</p>
+
+      <h2>5. Pagos y Reembolsos</h2>
+      <p>Los creditos no son reembolsables. Las suscripciones se pueden cancelar en cualquier momento. Al cancelar, mantienes acceso hasta el final del periodo pagado.</p>
+
+      <h2>6. Modificaciones</h2>
+      <p>RADIARA puede modificar estos terminos con aviso previo de 30 dias. El uso continuado del servicio constituye aceptacion de los nuevos terminos.</p>
+
+      <h2>7. Contacto</h2>
+      <p>Para consultas: <a href="mailto:hola@radiara.com">hola@radiara.com</a></p>
+    </div>
+  </div>
+
+  <div class="legal-page" id="legal-privacy" style="display:none;">
+    <div class="legal-container">
+      <button class="back-btn" onclick="closeLegalPage('legal-privacy')">&#8592; Volver</button>
+      <h1>Politica de Privacidad</h1>
+      <p class="legal-date">Ultima actualizacion: Abril 2026</p>
+
+      <h2>Datos que Recopilamos</h2>
+      <p>Email y nombre al crear cuenta. Imagenes subidas para procesamiento (eliminadas automaticamente despues de 24 horas).</p>
+
+      <h2>Como Usamos los Datos</h2>
+      <p>Para procesar tus imagenes con IA y gestionar tu cuenta. No vendemos datos a terceros.</p>
+
+      <h2>Almacenamiento</h2>
+      <p>Las imagenes se procesan en servidores seguros (Railway/Replicate) y se eliminan despues del procesamiento. No almacenamos imagenes permanentemente.</p>
+
+      <h2>Tus Derechos</h2>
+      <p>Acceso, rectificacion y eliminacion de tus datos. Contactanos en <a href="mailto:hola@radiara.com">hola@radiara.com</a></p>
+    </div>
+  </div>
+
+  <div class="legal-page" id="legal-cookies" style="display:none;">
+    <div class="legal-container">
+      <button class="back-btn" onclick="closeLegalPage('legal-cookies')">&#8592; Volver</button>
+      <h1>Politica de Cookies</h1>
+      <p class="legal-date">Ultima actualizacion: Abril 2026</p>
+
+      <h2>Cookies Esenciales</h2>
+      <p>Usamos cookies esenciales para sesion de usuario y preferencias. Estas cookies son necesarias para el funcionamiento del servicio.</p>
+
+      <h2>Cookies Analiticas</h2>
+      <p>Podemos usar Google Analytics en el futuro para mejorar el servicio. Sera opcional.</p>
+
+      <h2>Como Desactivar Cookies</h2>
+      <p>Podes desactivar cookies desde la configuracion de tu navegador. Ten en cuenta que algunas funciones pueden dejar de funcionar.</p>
+    </div>
+  </div>
+
+  <div class="legal-page" id="legal-api" style="display:none;">
+    <div class="legal-container">
+      <button class="back-btn" onclick="closeLegalPage('legal-api')">&#8592; Volver</button>
+      <h1>API de RADIARA</h1>
+      <p class="legal-date" style="color:var(--accent);">Proximamente</p>
+
+      <h2>Integra RADIARA en tu Aplicacion</h2>
+      <p>Procesamiento de imagenes con IA directamente desde tu app via REST API.</p>
+
+      <h2>Endpoints Disponibles</h2>
+      <ul style="list-style:none;padding:0;">
+        <li style="padding:0.5rem 0;font-family:var(--mono);font-size:0.85rem;color:var(--text-secondary);">POST /api/improve-face — Mejorar Rostro</li>
+        <li style="padding:0.5rem 0;font-family:var(--mono);font-size:0.85rem;color:var(--text-secondary);">POST /api/product-hd — Producto HD</li>
+        <li style="padding:0.5rem 0;font-family:var(--mono);font-size:0.85rem;color:var(--text-secondary);">POST /api/skin-real — Piel Real</li>
+        <li style="padding:0.5rem 0;font-family:var(--mono);font-size:0.85rem;color:var(--text-secondary);">POST /api/remove-bg — Remover Fondo</li>
+        <li style="padding:0.5rem 0;font-family:var(--mono);font-size:0.85rem;color:var(--text-secondary);">POST /api/vectorize-ai — Vectorizar</li>
+      </ul>
+
+      <h2>Pricing</h2>
+      <p>Incluido en el plan Business. Contactanos para acceso anticipado: <a href="mailto:hola@radiara.com">hola@radiara.com</a></p>
+    </div>
+  </div>
+
+  <div class="legal-page" id="legal-changelog" style="display:none;">
+    <div class="legal-container">
+      <button class="back-btn" onclick="closeLegalPage('legal-changelog')">&#8592; Volver</button>
+      <h1>Changelog</h1>
+
+      <div style="margin-bottom:2rem;">
+        <h2 style="color:var(--green);">v1.4.0 — Abril 2026</h2>
+        <p>Vectorizacion con Recraft AI, Piel Real con SUPIR y modos enhance/hyperreal, hero premium con Playfair Display, comparador antes/despues con zoom, historial por herramienta, descarga multi-formato para vectores.</p>
+      </div>
+
+      <div style="margin-bottom:2rem;">
+        <h2 style="color:var(--text-secondary);">v1.1.0 — Abril 2026</h2>
+        <p>6 herramientas IA, 3-panel layout, slider interactivo, Crystal Upscaler, background removal con 851-labs, Conversor Universal gratuito.</p>
+      </div>
+
+      <div style="margin-bottom:2rem;">
+        <h2 style="color:var(--text-tertiary);">v1.0.0 — Marzo 2026</h2>
+        <p>Lanzamiento inicial con CodeFormer, Real-ESRGAN, dark theme, GSAP animations, responsive design.</p>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ==========================================
     // GSAP ANIMATIONS
@@ -2794,7 +3000,7 @@
       var prices = {
         'Starter': { monthly: '$9/mes', annual: '$7/mes (anual)' },
         'Pro': { monthly: '$19/mes', annual: '$15/mes (anual)' },
-        'Business': { monthly: '$39/mes', annual: '$31/mes (anual)' }
+        'Business': { monthly: '$39/mes', annual: '$30/mes (anual)' }
       };
       return isAnnual ? prices[planName].annual : prices[planName].monthly;
     }
@@ -4290,6 +4496,17 @@
         applyVZ();
       });
     })();
+
+    function openLegalPage(id) {
+      document.getElementById(id).style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      window.scrollTo(0, 0);
+    }
+
+    function closeLegalPage(id) {
+      document.getElementById(id).style.display = 'none';
+      document.body.style.overflow = '';
+    }
 
     // Init
     updateHeaderAuth();
