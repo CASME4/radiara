@@ -330,9 +330,9 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
 
-    // Resize to max 800px
+    // Resize to max 1200px for better detail
     let imgBuf = await sharp(req.file.buffer)
-      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
       .png()
       .toBuffer();
 
@@ -352,8 +352,8 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     const rawPixels = await sharp(imgBuf).removeAlpha().raw().toBuffer();
     const pixelCount = w * h;
 
-    // Find dominant colors via median cut (8 colors for better accuracy)
-    const numLayers = 8;
+    // Find dominant colors via median cut (10 colors for accurate reproduction)
+    const numLayers = 10;
     const palette = quantizeColors(rawPixels, 3, pixelCount, numLayers);
     console.log('vectorize: ' + w + 'x' + h + ', palette:', palette.map(c => '#' + c.map(v => v.toString(16).padStart(2,'0')).join('')));
 
@@ -396,10 +396,10 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
       const layerSvg = await new Promise(function(resolve, reject) {
         const timeout = setTimeout(() => reject(new Error('TIMEOUT')), 15000);
         potrace.trace(maskPng, {
-          turdSize: 5,
-          optTolerance: 0.4,
+          turdSize: 10,
+          optTolerance: 0.8,
           optCurve: true,
-          alphaMax: 1.2,
+          alphaMax: 1.3,
           color: color,
           background: 'transparent'
         }, function(err, svg) {

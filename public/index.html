@@ -10,9 +10,10 @@
   <meta property="og:image" content="/assets/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -318,9 +319,10 @@
     .hero {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 8rem 2rem 6rem;
+      padding: 10rem 2rem 6rem;
       text-align: center;
       position: relative;
+      overflow: hidden;
     }
 
     .hero-glow {
@@ -328,14 +330,35 @@
       top: -200px;
       left: 50%;
       transform: translateX(-50%);
-      width: 800px;
-      height: 600px;
+      width: 900px;
+      height: 700px;
       background: radial-gradient(ellipse at center,
-        rgba(255,68,68,0.08) 0%,
-        rgba(168,85,247,0.04) 40%,
+        rgba(168,85,247,0.1) 0%,
+        rgba(255,68,68,0.06) 30%,
+        rgba(59,130,246,0.04) 50%,
         transparent 70%);
       pointer-events: none;
       z-index: 0;
+    }
+
+    .hero-blob {
+      position: absolute;
+      top: 5%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(255,68,68,0.1), rgba(59,130,246,0.12));
+      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+      filter: blur(80px);
+      animation: blob-morph 12s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes blob-morph {
+      0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(0deg) scale(1); }
+      33% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; transform: rotate(20deg) scale(1.05); }
+      66% { border-radius: 50% 60% 30% 60% / 50% 70% 30% 50%; transform: rotate(-10deg) scale(0.95); }
     }
 
     .hero-content {
@@ -347,13 +370,15 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.4rem 1rem;
-      background: var(--card);
-      border: 1px solid var(--border);
+      padding: 0.4rem 1.2rem;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 100px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-secondary);
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
     }
 
     .hero-badge .badge-dot {
@@ -371,12 +396,12 @@
     }
 
     .hero h1 {
-      font-family: var(--sans);
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
-      font-weight: 800;
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-      margin-bottom: 1.5rem;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      margin-bottom: 2rem;
     }
 
     .hero h1 .hero-word {
@@ -387,19 +412,24 @@
     .hero h1 .accent-word { color: var(--accent); }
 
     .hero h1 .gradient-word {
+      font-size: clamp(3.5rem, 9vw, 7rem);
+      font-weight: 900;
       background: linear-gradient(135deg, var(--accent), var(--purple), var(--blue));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      display: block;
+      line-height: 1.0;
+      padding-bottom: 0.1em;
     }
 
     .hero-subtitle {
-      color: var(--text-secondary);
-      font-size: clamp(1rem, 2vw, 1.2rem);
-      max-width: 600px;
-      margin: 0 auto 2.5rem;
+      color: var(--text-tertiary);
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      max-width: 550px;
+      margin: 0 auto 3rem;
       line-height: 1.7;
-      font-weight: 400;
+      font-weight: 300;
       opacity: 0;
     }
 
@@ -415,43 +445,44 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.85rem 2rem;
-      background: var(--text);
-      color: var(--bg);
+      padding: 1rem 2.5rem;
+      background: #fff;
+      color: #09090b;
       font-family: var(--sans);
-      font-size: 0.9rem;
-      font-weight: 600;
+      font-size: 0.95rem;
+      font-weight: 700;
       border: none;
       border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s;
       text-decoration: none;
     }
 
     .hero-btn-primary:hover {
       background: #e4e4e7;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(255,255,255,0.1);
     }
 
     .hero-btn-secondary {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.85rem 2rem;
+      padding: 1rem 2.5rem;
       background: transparent;
       color: var(--text-secondary);
       font-family: var(--sans);
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 500;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s;
       text-decoration: none;
     }
 
     .hero-btn-secondary:hover {
-      border-color: var(--border-hover);
+      border-color: rgba(255,255,255,0.2);
       color: var(--text);
     }
 
@@ -459,18 +490,51 @@
       display: inline-flex;
       align-items: center;
       gap: 0.6rem;
-      margin-top: 3rem;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
+      margin-top: 4rem;
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
       opacity: 0;
     }
 
     .hero-counter .counter-number {
       font-family: var(--mono);
       font-weight: 600;
-      color: var(--text);
+      color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
     }
+
+    /* Vector download buttons */
+    .vector-download-row {
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 0.75rem;
+    }
+
+    .vector-download-row.visible { display: flex; }
+
+    .vector-dl-btn {
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .vector-dl-btn:hover { border-color: var(--border-hover); color: var(--text); }
+
+    .vector-dl-btn.primary {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .vector-dl-btn.primary:hover { background: var(--accent); color: #fff; }
 
     /* ===== SECTIONS SHARED ===== */
     .section-container {
@@ -2062,6 +2126,7 @@
     <!-- HERO -->
     <section class="hero" id="hero">
       <div class="hero-glow" id="hero-glow"></div>
+      <div class="hero-blob"></div>
       <div class="hero-content">
         <div class="hero-badge">
           <span class="badge-dot"></span>
@@ -2070,10 +2135,9 @@
         <h1>
           <span class="hero-word">Restaura.</span>
           <span class="hero-word">Mejora.</span>
-          <br>
           <span class="hero-word gradient-word">Convierte.</span>
         </h1>
-        <p class="hero-subtitle">Suite de herramientas de imagen con IA. Restaura fotos viejas, mejora productos, arregla piel de modelos IA, y converti entre cualquier formato.</p>
+        <p class="hero-subtitle">Herramientas de imagen con inteligencia artificial. Restaura rostros, mejora productos, agrega textura de piel, y vectoriza.</p>
         <div class="hero-actions">
           <a href="#herramientas" class="hero-btn-primary">Empezar gratis</a>
           <a href="#precios" class="hero-btn-secondary">Ver precios</a>
@@ -2366,6 +2430,13 @@
 
         <button class="sidebar-process-btn" id="ai-process-btn" onclick="processImage()">Procesar con IA</button>
         <a class="sidebar-download-btn" id="ai-download-btn" download>&#x2B07; Descargar</a>
+        <div class="vector-download-row" id="vector-download-row">
+          <button class="vector-dl-btn primary" onclick="downloadVector('svg')">SVG</button>
+          <button class="vector-dl-btn" onclick="downloadVector('png')">PNG</button>
+          <button class="vector-dl-btn" onclick="downloadVector('jpg')">JPG</button>
+          <button class="vector-dl-btn" onclick="downloadVector('webp')">WebP</button>
+          <button class="vector-dl-btn" onclick="downloadVector('pdf')">PDF</button>
+        </div>
       </div>
 
       <div class="tool-center">
@@ -2722,6 +2793,7 @@
         document.getElementById('ai-preview').classList.remove('active');
         document.getElementById('ai-process-btn').classList.remove('visible');
         document.getElementById('ai-download-btn').classList.remove('visible');
+        document.getElementById('vector-download-row').classList.remove('visible');
         document.getElementById('ai-center-empty').style.display = 'block';
         document.getElementById('ai-center-content').style.display = 'none';
         document.getElementById('ai-loading').classList.remove('active');
@@ -2993,9 +3065,16 @@
         if (data.success) {
           if (isAILayout) {
             document.querySelector('.tool-center').classList.add('has-result');
-            document.getElementById('ai-download-btn').href = data.result;
-            document.getElementById('ai-download-btn').download = 'radiara-' + currentTool + (currentTool === 'vectorize-ai' ? '.svg' : '.png');
-            document.getElementById('ai-download-btn').classList.add('visible');
+            if (currentTool === 'vectorize-ai') {
+              document.getElementById('ai-download-btn').classList.remove('visible');
+              document.getElementById('vector-download-row').classList.add('visible');
+              window._lastVectorSvgBase64 = data.result;
+            } else {
+              document.getElementById('vector-download-row').classList.remove('visible');
+              document.getElementById('ai-download-btn').href = data.result;
+              document.getElementById('ai-download-btn').download = 'radiara-' + currentTool + '.png';
+              document.getElementById('ai-download-btn').classList.add('visible');
+            }
 
             if (currentTool === 'remove-bg' || currentTool === 'vectorize-ai') {
               document.getElementById('ai-result-slider').style.display = 'none';
@@ -4012,6 +4091,64 @@
         desc.textContent = 'Escala y mejora tu foto preservando cada detalle natural';
         credits.textContent = '2 creditos';
       }
+    }
+
+    // ==========================================
+    // VECTOR DOWNLOAD FORMATS
+    // ==========================================
+
+    function downloadVector(format) {
+      var svgBase64 = window._lastVectorSvgBase64;
+      if (!svgBase64) return;
+      var ts = Date.now();
+      var fname = 'radiara-vector-' + ts;
+
+      if (format === 'svg') {
+        var a = document.createElement('a');
+        a.href = svgBase64;
+        a.download = fname + '.svg';
+        a.click();
+        return;
+      }
+
+      // Render SVG to canvas for raster formats
+      var img = new Image();
+      img.onload = function() {
+        var cw = 2000;
+        var ch = Math.round(cw * (img.height / img.width));
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        var ctx = canvas.getContext('2d');
+
+        if (format === 'jpg') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, cw, ch);
+        }
+
+        ctx.drawImage(img, 0, 0, cw, ch);
+
+        if (format === 'pdf') {
+          try {
+            var jsPDF = window.jspdf.jsPDF;
+            var orientation = cw > ch ? 'landscape' : 'portrait';
+            var pdf = new jsPDF({ orientation: orientation, unit: 'px', format: [cw, ch] });
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, cw, ch);
+            pdf.save(fname + '.pdf');
+          } catch(e) { alert('Error generando PDF: ' + e.message); }
+          return;
+        }
+
+        var mime = format === 'jpg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png';
+        var ext = format === 'jpg' ? '.jpg' : format === 'webp' ? '.webp' : '.png';
+        canvas.toBlob(function(blob) {
+          if (!blob) { alert('Tu navegador no soporta ' + format.toUpperCase()); return; }
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url; a.download = fname + ext; a.click();
+          setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+        }, mime, 0.92);
+      };
+      img.src = svgBase64;
     }
 
     // Init
