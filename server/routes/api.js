@@ -285,58 +285,69 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
 
-    // Resize to max 1200px for performance
-    const meta = await sharp(req.file.buffer).metadata();
-    const maxDim = 1200;
-    let imgBuf = req.file.buffer;
-    if (meta.width > maxDim || meta.height > maxDim) {
-      imgBuf = await sharp(req.file.buffer)
-        .resize(maxDim, maxDim, { fit: 'inside', withoutEnlargement: true })
-        .png()
-        .toBuffer();
+    // Resize to max 800px for performance
+    let imgBuf = await sharp(req.file.buffer)
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .png()
+      .toBuffer();
+
+    // Count unique colors to detect simple images (logos, icons)
+    const { channels } = await sharp(imgBuf).stats();
+    const rawPixels = await sharp(imgBuf).raw().toBuffer();
+    const meta = await sharp(imgBuf).metadata();
+    const colorSet = new Set();
+    const pixelCount = meta.width * meta.height;
+    const sampleStep = Math.max(1, Math.floor(pixelCount / 5000)); // sample ~5000 pixels
+    for (let i = 0; i < pixelCount && colorSet.size < 20; i += sampleStep) {
+      const idx = i * channels.length;
+      colorSet.add(rawPixels[idx] + ',' + rawPixels[idx+1] + ',' + rawPixels[idx+2]);
     }
+    const isSimple = colorSet.size < 10;
+    const mode = isSimple ? 'trace' : 'posterize';
+    console.log('vectorize: ' + meta.width + 'x' + meta.height + ', unique colors sampled: ' + colorSet.size + ', mode: ' + mode);
 
-    // Detect if image has few colors (logo/icon) or many (photo)
-    const { dominant } = await sharp(imgBuf).stats();
-    const isSimple = meta.width < 600 && meta.height < 600;
-
-    // Use posterize for color images, trace for simple B/W
+    // Vectorize with 30s timeout
     const svg = await new Promise(function(resolve, reject) {
+      const timeout = setTimeout(function() {
+        reject(new Error('TIMEOUT'));
+      }, 30000);
+
+      function done(err, svg) {
+        clearTimeout(timeout);
+        if (err) reject(err);
+        else resolve(svg);
+      }
+
       if (isSimple) {
-        // Simple image: B/W trace with potrace
         potrace.trace(imgBuf, {
           turdSize: 2,
           optTolerance: 0.2,
           color: '#000000',
           background: '#ffffff'
-        }, function(err, svg) {
-          if (err) reject(err);
-          else resolve(svg);
-        });
+        }, done);
       } else {
-        // Complex image: color posterize
         potrace.posterize(imgBuf, {
-          steps: 6,
+          steps: 4,
           fillStrategy: potrace.Posterizer.FILL_MEAN,
           rangeDistribution: potrace.Posterizer.RANGES_AUTO,
-          turdSize: 4,
-          optTolerance: 0.4
-        }, function(err, svg) {
-          if (err) reject(err);
-          else resolve(svg);
-        });
+          turdSize: 5,
+          optTolerance: 0.5
+        }, done);
       }
     });
 
     const pathCount = (svg.match(/<path/g) || []).length;
     const sizeKB = (Buffer.byteLength(svg) / 1024).toFixed(1);
-    console.log('vectorize:', (Date.now() - t1) + 'ms, ' + pathCount + ' paths, ' + sizeKB + 'KB, mode: ' + (isSimple ? 'trace' : 'posterize'));
+    console.log('vectorize done:', (Date.now() - t1) + 'ms, ' + pathCount + ' paths, ' + sizeKB + 'KB');
 
     const svgBase64 = 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
     res.json({ success: true, result: svgBase64 });
   } catch (err) {
     console.error('vectorize-ai error:', err.message);
     if (!res.headersSent) {
+      if (err.message === 'TIMEOUT') {
+        return res.status(408).json({ error: 'La imagen es muy compleja para vectorizar. Proba con una imagen mas simple (logos, iconos, ilustraciones).' });
+      }
       res.status(500).json({ error: 'Error procesando imagen', details: err.message });
     }
   }
