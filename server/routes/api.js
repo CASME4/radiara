@@ -285,26 +285,39 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
 
-    // Resize to max 1000px, keep as PNG (preserve alpha if present)
-    const imgBuf = await sharp(req.file.buffer)
-      .resize(1000, 1000, { fit: 'inside', withoutEnlargement: true })
+    // Resize to 800px and posterize colors for clean flat areas
+    let imgBuf = await sharp(req.file.buffer)
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
       .png()
       .toBuffer();
 
     const meta = await sharp(imgBuf).metadata();
-    console.log('vectorize: ' + meta.width + 'x' + meta.height);
+    const w = meta.width, h = meta.height;
+
+    // Posterize: round each RGB channel to nearest multiple of 32 (8 levels per channel)
+    const raw = await sharp(imgBuf).ensureAlpha().raw().toBuffer();
+    const posterized = Buffer.from(raw);
+    for (let i = 0; i < posterized.length; i += 4) {
+      posterized[i]   = Math.round(posterized[i]   / 32) * 32; // R
+      posterized[i+1] = Math.round(posterized[i+1] / 32) * 32; // G
+      posterized[i+2] = Math.round(posterized[i+2] / 32) * 32; // B
+      // Alpha (i+3) stays unchanged
+    }
+    imgBuf = await sharp(posterized, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+
+    console.log('vectorize: ' + w + 'x' + h + ', colorPrecision: 3 (8 colors), layerDifference: 32');
 
     let svg = await vectorize(imgBuf, {
       colorMode: ColorMode.Color,
-      colorPrecision: 8,
-      filterSpeckle: 6,
+      colorPrecision: 3,
+      filterSpeckle: 8,
       spliceThreshold: 45,
       cornerThreshold: 120,
       hierarchical: Hierarchical.Stacked,
       mode: PathSimplifyMode.Spline,
-      layerDifference: 6,
-      lengthThreshold: 4,
-      maxIterations: 2,
+      layerDifference: 32,
+      lengthThreshold: 5,
+      maxIterations: 10,
       pathPrecision: 3
     });
 
