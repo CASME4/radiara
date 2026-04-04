@@ -277,64 +277,61 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
   }
 });
 
-// 6. Vectorizar — @neplex/vectorizer (VTracer, native color support)
-const { vectorize, ColorMode, Hierarchical, PathSimplifyMode } = require('@neplex/vectorizer');
+// 6. Vectorizar — recraft-ai/recraft-vectorize (Replicate) with VTracer fallback
+const { vectorize: vtraceVectorize, ColorMode, Hierarchical, PathSimplifyMode } = require('@neplex/vectorizer');
 
 router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
+    const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
 
-    // Resize to 800px and posterize colors for clean flat areas
-    let imgBuf = await sharp(req.file.buffer)
-      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-      .png()
-      .toBuffer();
+    let svgText;
 
-    const meta = await sharp(imgBuf).metadata();
-    const w = meta.width, h = meta.height;
+    // Primary: recraft-ai/recraft-vectorize (AI-powered, best quality)
+    try {
+      console.log('vectorize: using recraft-ai/recraft-vectorize');
+      const output = await replicate.run(
+        "recraft-ai/recraft-vectorize:060005b7c1316233bd3a4fc353fc23dcc0675fade3ad880b7d8d1d44e99f400e",
+        { input: { image: dataURI } }
+      );
+      const svgUrl = extractUrl(output);
+      console.log('vectorize recraft done:', (Date.now() - t1) + 'ms');
 
-    // Posterize: round each RGB channel to nearest multiple of 32 (8 levels per channel)
-    const raw = await sharp(imgBuf).ensureAlpha().raw().toBuffer();
-    const posterized = Buffer.from(raw);
-    for (let i = 0; i < posterized.length; i += 4) {
-      posterized[i]   = Math.round(posterized[i]   / 32) * 32; // R
-      posterized[i+1] = Math.round(posterized[i+1] / 32) * 32; // G
-      posterized[i+2] = Math.round(posterized[i+2] / 32) * 32; // B
-      // Alpha (i+3) stays unchanged
+      // Download SVG from URL
+      const fetchMod = (await import('node-fetch')).default;
+      const svgResp = await fetchMod(svgUrl);
+      svgText = await svgResp.text();
+    } catch (recraftErr) {
+      console.warn('vectorize recraft failed, using VTracer fallback:', recraftErr.message);
+
+      // Fallback: @neplex/vectorizer (local, no API needed)
+      const imgBuf = await sharp(req.file.buffer)
+        .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+        .png()
+        .toBuffer();
+
+      svgText = await vtraceVectorize(imgBuf, {
+        colorMode: ColorMode.Color,
+        colorPrecision: 6,
+        filterSpeckle: 4,
+        spliceThreshold: 45,
+        cornerThreshold: 60,
+        hierarchical: Hierarchical.Stacked,
+        mode: PathSimplifyMode.Spline,
+        layerDifference: 16,
+        lengthThreshold: 4,
+        maxIterations: 4,
+        pathPrecision: 3
+      });
+      console.log('vectorize vtrace fallback done:', (Date.now() - t1) + 'ms');
     }
-    imgBuf = await sharp(posterized, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
 
-    console.log('vectorize: ' + w + 'x' + h + ', colorPrecision: 3 (8 colors), layerDifference: 32');
+    const sizeKB = (Buffer.byteLength(svgText) / 1024).toFixed(1);
+    const pathCount = (svgText.match(/<path/g) || []).length;
+    console.log('vectorize result:', pathCount + ' paths, ' + sizeKB + 'KB');
 
-    let svg = await vectorize(imgBuf, {
-      colorMode: ColorMode.Color,
-      colorPrecision: 3,
-      filterSpeckle: 8,
-      spliceThreshold: 45,
-      cornerThreshold: 120,
-      hierarchical: Hierarchical.Stacked,
-      mode: PathSimplifyMode.Spline,
-      layerDifference: 32,
-      lengthThreshold: 5,
-      maxIterations: 10,
-      pathPrecision: 3
-    });
-
-    // Clean SVG: remove visible control points, markers, circles
-    svg = svg.replace(/<circle[^>]*\/>/g, '');
-    svg = svg.replace(/<circle[^>]*>[\s\S]*?<\/circle>/g, '');
-    svg = svg.replace(/<marker[^>]*>[\s\S]*?<\/marker>/g, '');
-    svg = svg.replace(/\s*marker-start="[^"]*"/g, '');
-    svg = svg.replace(/\s*marker-mid="[^"]*"/g, '');
-    svg = svg.replace(/\s*marker-end="[^"]*"/g, '');
-    svg = svg.replace(/<defs>\s*<\/defs>/g, '');
-
-    const sizeKB = (Buffer.byteLength(svg) / 1024).toFixed(1);
-    const pathCount = (svg.match(/<path/g) || []).length;
-    console.log('vectorize done:', (Date.now() - t1) + 'ms, ' + pathCount + ' paths, ' + sizeKB + 'KB');
-
-    const svgBase64 = 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
+    const svgBase64 = 'data:image/svg+xml;base64,' + Buffer.from(svgText).toString('base64');
     res.json({ success: true, result: svgBase64 });
   } catch (err) {
     console.error('vectorize-ai error:', err.message);
