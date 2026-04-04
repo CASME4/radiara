@@ -277,142 +277,46 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
   }
 });
 
-// 6. Vectorizar — quantize palette + potrace.trace per color layer
-const potrace = require('potrace');
-const quantize = require('quantize');
+// 6. Vectorizar — @neplex/vectorizer (VTracer, native color support)
+const { vectorize, ColorMode, Hierarchical, PathSimplifyMode } = require('@neplex/vectorizer');
 
 router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
 
-    // Check if image has alpha channel
-    const origMeta = await sharp(req.file.buffer).metadata();
-    const hasAlpha = origMeta.channels === 4;
-
-    // Resize to max 800px
-    let pipeline = sharp(req.file.buffer).resize(800, 800, { fit: 'inside', withoutEnlargement: true });
-    if (!hasAlpha) {
-      pipeline = pipeline.flatten({ background: { r: 255, g: 255, b: 255 } });
-    }
-    let imgBuf = await pipeline.png().toBuffer();
+    // Resize to max 1000px, keep as PNG (preserve alpha if present)
+    const imgBuf = await sharp(req.file.buffer)
+      .resize(1000, 1000, { fit: 'inside', withoutEnlargement: true })
+      .png()
+      .toBuffer();
 
     const meta = await sharp(imgBuf).metadata();
-    const w = meta.width, h = meta.height;
-    const pixelCount = w * h;
+    console.log('vectorize: ' + meta.width + 'x' + meta.height);
 
-    // Get raw pixels: RGB for colors, alpha separately if present
-    const rawRgb = await sharp(imgBuf).removeAlpha().raw().toBuffer();
-    let alphaRaw = null;
-    if (hasAlpha) {
-      alphaRaw = await sharp(imgBuf).extractChannel(3).raw().toBuffer();
-    }
-
-    // Build pixel array for quantize — skip transparent pixels
-    const sampleStep = Math.max(1, Math.floor(pixelCount / 20000));
-    const pixelArray = [];
-    for (let i = 0; i < pixelCount; i += sampleStep) {
-      if (alphaRaw && alphaRaw[i] < 128) continue;
-      const idx = i * 3;
-      pixelArray.push([rawRgb[idx], rawRgb[idx+1], rawRgb[idx+2]]);
-    }
-
-    const colorMap = quantize(pixelArray, 6);
-    const palette = colorMap.palette();
-    console.log('vectorize: ' + w + 'x' + h + ', alpha: ' + hasAlpha + ', palette:', palette.map(function(c) {
-      return '#' + c.map(function(v) { return v.toString(16).padStart(2, '0'); }).join('');
-    }));
-
-    // Assign each pixel to nearest palette color — transparent pixels get 255 (unassigned)
-    const assignment = new Uint8Array(pixelCount);
-    const layerCounts = new Array(palette.length).fill(0);
-    for (let i = 0; i < pixelCount; i++) {
-      if (alphaRaw && alphaRaw[i] < 128) { assignment[i] = 255; continue; }
-      const idx = i * 3;
-      const r = rawRgb[idx], g = rawRgb[idx+1], b = rawRgb[idx+2];
-      let bestDist = Infinity, bestL = 0;
-      for (let l = 0; l < palette.length; l++) {
-        const dr = r - palette[l][0], dg = g - palette[l][1], db = b - palette[l][2];
-        const dist = dr*dr + dg*dg + db*db;
-        if (dist < bestDist) { bestDist = dist; bestL = l; }
-      }
-      assignment[i] = bestL;
-      layerCounts[bestL]++;
-    }
-
-    // Detect background layer (only for opaque images)
-    let bgLayer = -1;
-    if (!hasAlpha) {
-      const corners = [0, w-1, (h-1)*w, (h-1)*w + w-1];
-      const cornerColors = {};
-      for (const ci of corners) {
-        const l = assignment[ci];
-        if (l < 255) cornerColors[l] = (cornerColors[l] || 0) + 1;
-      }
-      let bgCornerCount = 0;
-      for (const l in cornerColors) {
-        if (cornerColors[l] > bgCornerCount) { bgCornerCount = cornerColors[l]; bgLayer = parseInt(l); }
-      }
-      if (bgCornerCount < 3) {
-        bgLayer = layerCounts.indexOf(Math.max(...layerCounts));
-      }
-    }
-
-    console.log('vectorize: background: ' + (hasAlpha ? 'transparent' : '#' + palette[bgLayer].map(function(v) { return v.toString(16).padStart(2, '0'); }).join('')));
-
-    // Trace each color layer
-    const svgPaths = [];
-    for (let l = 0; l < palette.length; l++) {
-      if (l === bgLayer) continue;
-
-      const mask = Buffer.alloc(pixelCount, 255);
-      for (let i = 0; i < pixelCount; i++) {
-        if (assignment[i] === l) mask[i] = 0;
-      }
-      const maskPng = await sharp(mask, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
-
-      const hex = '#' + palette[l].map(function(v) { return v.toString(16).padStart(2, '0'); }).join('');
-
-      const layerSvg = await new Promise(function(resolve, reject) {
-        const timeout = setTimeout(function() { reject(new Error('TIMEOUT')); }, 30000);
-        potrace.trace(maskPng, {
-          turdSize: 4,
-          optTolerance: 0.5,
-          optCurve: true,
-          alphaMax: 1.2,
-          color: hex,
-          background: 'transparent'
-        }, function(err, svg) {
-          clearTimeout(timeout);
-          if (err) reject(err);
-          else resolve(svg);
-        });
-      });
-
-      const paths = layerSvg.match(/<path[^>]*\/>/g) || [];
-      svgPaths.push.apply(svgPaths, paths);
-    }
-
-    // Build final SVG — transparent bg for alpha images, colored rect for opaque
-    let bgRect = '';
-    if (!hasAlpha && bgLayer >= 0) {
-      const bgHex = '#' + palette[bgLayer].map(function(v) { return v.toString(16).padStart(2, '0'); }).join('');
-      bgRect = '<rect width="100%" height="100%" fill="' + bgHex + '"/>';
-    }
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
-      bgRect + svgPaths.join('') + '</svg>';
+    const svg = await vectorize(imgBuf, {
+      colorMode: ColorMode.Color,
+      colorPrecision: 8,
+      filterSpeckle: 4,
+      spliceThreshold: 45,
+      cornerThreshold: 60,
+      hierarchical: Hierarchical.Stacked,
+      mode: PathSimplifyMode.Spline,
+      layerDifference: 6,
+      lengthThreshold: 4,
+      maxIterations: 2,
+      pathPrecision: 5
+    });
 
     const sizeKB = (Buffer.byteLength(svg) / 1024).toFixed(1);
-    console.log('vectorize done:', (Date.now() - t1) + 'ms, ' + svgPaths.length + ' paths, ' + sizeKB + 'KB');
+    const pathCount = (svg.match(/<path/g) || []).length;
+    console.log('vectorize done:', (Date.now() - t1) + 'ms, ' + pathCount + ' paths, ' + sizeKB + 'KB');
 
     const svgBase64 = 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
     res.json({ success: true, result: svgBase64 });
   } catch (err) {
     console.error('vectorize-ai error:', err.message);
     if (!res.headersSent) {
-      if (err.message === 'TIMEOUT') {
-        return res.status(408).json({ error: 'La imagen es muy compleja. Proba con una imagen mas simple (logos, iconos).' });
-      }
       res.status(500).json({ error: 'Error procesando imagen', details: err.message });
     }
   }

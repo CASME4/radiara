@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@neplex/vectorizer": "^0.0.5",
     "@supabase/supabase-js": "^2.101.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
