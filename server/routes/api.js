@@ -286,39 +286,50 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
 
-    // Resize to max 800px, flatten transparency to white
-    let imgBuf = await sharp(req.file.buffer)
-      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-      .flatten({ background: { r: 255, g: 255, b: 255 } })
-      .png()
-      .toBuffer();
+    // Check if image has alpha channel
+    const origMeta = await sharp(req.file.buffer).metadata();
+    const hasAlpha = origMeta.channels === 4;
+
+    // Resize to max 800px
+    let pipeline = sharp(req.file.buffer).resize(800, 800, { fit: 'inside', withoutEnlargement: true });
+    if (!hasAlpha) {
+      pipeline = pipeline.flatten({ background: { r: 255, g: 255, b: 255 } });
+    }
+    let imgBuf = await pipeline.png().toBuffer();
 
     const meta = await sharp(imgBuf).metadata();
     const w = meta.width, h = meta.height;
-    const rawPixels = await sharp(imgBuf).removeAlpha().raw().toBuffer();
     const pixelCount = w * h;
 
-    // Build pixel array for quantize (sample for speed, full for assignment)
+    // Get raw pixels: RGB for colors, alpha separately if present
+    const rawRgb = await sharp(imgBuf).removeAlpha().raw().toBuffer();
+    let alphaRaw = null;
+    if (hasAlpha) {
+      alphaRaw = await sharp(imgBuf).extractChannel(3).raw().toBuffer();
+    }
+
+    // Build pixel array for quantize — skip transparent pixels
     const sampleStep = Math.max(1, Math.floor(pixelCount / 20000));
     const pixelArray = [];
     for (let i = 0; i < pixelCount; i += sampleStep) {
+      if (alphaRaw && alphaRaw[i] < 128) continue;
       const idx = i * 3;
-      pixelArray.push([rawPixels[idx], rawPixels[idx+1], rawPixels[idx+2]]);
+      pixelArray.push([rawRgb[idx], rawRgb[idx+1], rawRgb[idx+2]]);
     }
 
-    // Extract 6 dominant colors
     const colorMap = quantize(pixelArray, 6);
     const palette = colorMap.palette();
-    console.log('vectorize: ' + w + 'x' + h + ', palette:', palette.map(function(c) {
+    console.log('vectorize: ' + w + 'x' + h + ', alpha: ' + hasAlpha + ', palette:', palette.map(function(c) {
       return '#' + c.map(function(v) { return v.toString(16).padStart(2, '0'); }).join('');
     }));
 
-    // Assign each pixel to nearest palette color
+    // Assign each pixel to nearest palette color — transparent pixels get 255 (unassigned)
     const assignment = new Uint8Array(pixelCount);
     const layerCounts = new Array(palette.length).fill(0);
     for (let i = 0; i < pixelCount; i++) {
+      if (alphaRaw && alphaRaw[i] < 128) { assignment[i] = 255; continue; }
       const idx = i * 3;
-      const r = rawPixels[idx], g = rawPixels[idx+1], b = rawPixels[idx+2];
+      const r = rawRgb[idx], g = rawRgb[idx+1], b = rawRgb[idx+2];
       let bestDist = Infinity, bestL = 0;
       for (let l = 0; l < palette.length; l++) {
         const dr = r - palette[l][0], dg = g - palette[l][1], db = b - palette[l][2];
@@ -329,29 +340,31 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
       layerCounts[bestL]++;
     }
 
-    // Detect background: color of corners or largest layer
-    const corners = [0, w-1, (h-1)*w, (h-1)*w + w-1];
-    const cornerColors = {};
-    for (const ci of corners) {
-      const l = assignment[ci];
-      cornerColors[l] = (cornerColors[l] || 0) + 1;
+    // Detect background layer (only for opaque images)
+    let bgLayer = -1;
+    if (!hasAlpha) {
+      const corners = [0, w-1, (h-1)*w, (h-1)*w + w-1];
+      const cornerColors = {};
+      for (const ci of corners) {
+        const l = assignment[ci];
+        if (l < 255) cornerColors[l] = (cornerColors[l] || 0) + 1;
+      }
+      let bgCornerCount = 0;
+      for (const l in cornerColors) {
+        if (cornerColors[l] > bgCornerCount) { bgCornerCount = cornerColors[l]; bgLayer = parseInt(l); }
+      }
+      if (bgCornerCount < 3) {
+        bgLayer = layerCounts.indexOf(Math.max(...layerCounts));
+      }
     }
-    let bgLayer = 0;
-    let bgCornerCount = 0;
-    for (const l in cornerColors) {
-      if (cornerColors[l] > bgCornerCount) { bgCornerCount = cornerColors[l]; bgLayer = parseInt(l); }
-    }
-    // Fallback: if corner detection is ambiguous, use largest layer
-    if (bgCornerCount < 3) {
-      bgLayer = layerCounts.indexOf(Math.max(...layerCounts));
-    }
+
+    console.log('vectorize: background: ' + (hasAlpha ? 'transparent' : '#' + palette[bgLayer].map(function(v) { return v.toString(16).padStart(2, '0'); }).join('')));
 
     // Trace each color layer
     const svgPaths = [];
     for (let l = 0; l < palette.length; l++) {
       if (l === bgLayer) continue;
 
-      // Create binary mask: pixels of this color = black, rest = white
       const mask = Buffer.alloc(pixelCount, 255);
       for (let i = 0; i < pixelCount; i++) {
         if (assignment[i] === l) mask[i] = 0;
@@ -380,12 +393,14 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
       svgPaths.push.apply(svgPaths, paths);
     }
 
-    // Build final SVG
-    const bgHex = '#' + palette[bgLayer].map(function(v) { return v.toString(16).padStart(2, '0'); }).join('');
+    // Build final SVG — transparent bg for alpha images, colored rect for opaque
+    let bgRect = '';
+    if (!hasAlpha && bgLayer >= 0) {
+      const bgHex = '#' + palette[bgLayer].map(function(v) { return v.toString(16).padStart(2, '0'); }).join('');
+      bgRect = '<rect width="100%" height="100%" fill="' + bgHex + '"/>';
+    }
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
-      '<rect width="100%" height="100%" fill="' + bgHex + '"/>' +
-      svgPaths.join('') +
-      '</svg>';
+      bgRect + svgPaths.join('') + '</svg>';
 
     const sizeKB = (Buffer.byteLength(svg) / 1024).toFixed(1);
     console.log('vectorize done:', (Date.now() - t1) + 'ms, ' + svgPaths.length + ' paths, ' + sizeKB + 'KB');
