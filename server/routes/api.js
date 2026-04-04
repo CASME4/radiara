@@ -277,46 +277,68 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
   }
 });
 
-// 6. Vectorizar con IA — Vectorizer.AI API
+// 6. Vectorizar — sharp + potrace (color posterize o B/W trace)
+const potrace = require('potrace');
+
 router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
+    const t1 = Date.now();
 
-    const apiKey = process.env.API_VECTORIZER_KEY;
-    if (!apiKey || apiKey === 'placeholder-key') {
-      return res.status(503).json({ error: 'Vectorizer AI no configurado. Contacta al administrador.' });
+    // Resize to max 1200px for performance
+    const meta = await sharp(req.file.buffer).metadata();
+    const maxDim = 1200;
+    let imgBuf = req.file.buffer;
+    if (meta.width > maxDim || meta.height > maxDim) {
+      imgBuf = await sharp(req.file.buffer)
+        .resize(maxDim, maxDim, { fit: 'inside', withoutEnlargement: true })
+        .png()
+        .toBuffer();
     }
 
-    const FormData = (await import('form-data')).default;
-    const fetch = (await import('node-fetch')).default;
+    // Detect if image has few colors (logo/icon) or many (photo)
+    const { dominant } = await sharp(imgBuf).stats();
+    const isSimple = meta.width < 600 && meta.height < 600;
 
-    const form = new FormData();
-    form.append('image', req.file.buffer, {
-      filename: req.file.originalname || 'image.png',
-      contentType: req.file.mimetype
+    // Use posterize for color images, trace for simple B/W
+    const svg = await new Promise(function(resolve, reject) {
+      if (isSimple) {
+        // Simple image: B/W trace with potrace
+        potrace.trace(imgBuf, {
+          turdSize: 2,
+          optTolerance: 0.2,
+          color: '#000000',
+          background: '#ffffff'
+        }, function(err, svg) {
+          if (err) reject(err);
+          else resolve(svg);
+        });
+      } else {
+        // Complex image: color posterize
+        potrace.posterize(imgBuf, {
+          steps: 6,
+          fillStrategy: potrace.Posterizer.FILL_MEAN,
+          rangeDistribution: potrace.Posterizer.RANGES_AUTO,
+          turdSize: 4,
+          optTolerance: 0.4
+        }, function(err, svg) {
+          if (err) reject(err);
+          else resolve(svg);
+        });
+      }
     });
-    form.append('output.format', 'svg');
 
-    const response = await fetch('https://api.vectorizer.ai/api/v1/vectorize', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Basic ' + Buffer.from('vk_' + apiKey + ':').toString('base64'),
-        ...form.getHeaders()
-      },
-      body: form
-    });
+    const pathCount = (svg.match(/<path/g) || []).length;
+    const sizeKB = (Buffer.byteLength(svg) / 1024).toFixed(1);
+    console.log('vectorize:', (Date.now() - t1) + 'ms, ' + pathCount + ' paths, ' + sizeKB + 'KB, mode: ' + (isSimple ? 'trace' : 'posterize'));
 
-    if (!response.ok) {
-      const errText = await response.text();
-      return res.status(response.status).json({ error: 'Error de Vectorizer AI', details: errText });
-    }
-
-    const svgText = await response.text();
-    const svgBase64 = 'data:image/svg+xml;base64,' + Buffer.from(svgText).toString('base64');
+    const svgBase64 = 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
     res.json({ success: true, result: svgBase64 });
   } catch (err) {
     console.error('vectorize-ai error:', err.message);
-    res.status(500).json({ error: 'Error procesando imagen', details: err.message });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Error procesando imagen', details: err.message });
+    }
   }
 });
 
