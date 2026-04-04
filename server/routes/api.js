@@ -294,19 +294,28 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     const meta = await sharp(imgBuf).metadata();
     console.log('vectorize: ' + meta.width + 'x' + meta.height);
 
-    const svg = await vectorize(imgBuf, {
+    let svg = await vectorize(imgBuf, {
       colorMode: ColorMode.Color,
       colorPrecision: 8,
-      filterSpeckle: 4,
+      filterSpeckle: 6,
       spliceThreshold: 45,
-      cornerThreshold: 60,
+      cornerThreshold: 120,
       hierarchical: Hierarchical.Stacked,
       mode: PathSimplifyMode.Spline,
       layerDifference: 6,
       lengthThreshold: 4,
       maxIterations: 2,
-      pathPrecision: 5
+      pathPrecision: 3
     });
+
+    // Clean SVG: remove visible control points, markers, circles
+    svg = svg.replace(/<circle[^>]*\/>/g, '');
+    svg = svg.replace(/<circle[^>]*>[\s\S]*?<\/circle>/g, '');
+    svg = svg.replace(/<marker[^>]*>[\s\S]*?<\/marker>/g, '');
+    svg = svg.replace(/\s*marker-start="[^"]*"/g, '');
+    svg = svg.replace(/\s*marker-mid="[^"]*"/g, '');
+    svg = svg.replace(/\s*marker-end="[^"]*"/g, '');
+    svg = svg.replace(/<defs>\s*<\/defs>/g, '');
 
     const sizeKB = (Buffer.byteLength(svg) / 1024).toFixed(1);
     const pathCount = (svg.match(/<path/g) || []).length;
