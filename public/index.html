@@ -699,23 +699,48 @@
       border-top: 1px solid var(--border);
     }
 
+    .tools-section .section-label {
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      background: linear-gradient(135deg, #FF6B35, #F472B6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tools-section .section-label.green {
+      background: linear-gradient(135deg, #10B981, #22c55e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tools-section .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      color: #fff;
+    }
+
     .tools-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
       margin-bottom: 3rem;
     }
 
     .tool-card {
-      background: var(--card);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: var(--radius);
-      padding: 1.75rem;
+      padding: 2rem 2rem 1.75rem;
+      min-height: 220px;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
       will-change: transform;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
 
     .tool-card::before {
@@ -726,56 +751,84 @@
       opacity: 0;
       transition: opacity 0.4s;
       background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-        rgba(255,68,68,0.06), transparent 40%);
+        var(--card-accent-glow, rgba(255,68,68,0.06)), transparent 40%);
       pointer-events: none;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-4px);
+      background: rgba(255,255,255,0.07);
+      border-color: var(--card-accent, rgba(255,255,255,0.12));
+      box-shadow:
+        0 0 30px var(--card-accent-glow, rgba(255,68,68,0.15)),
+        0 20px 40px rgba(0,0,0,0.3);
     }
 
     .tool-card:hover::before { opacity: 1; }
 
-    .tool-card.free::before {
-      background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-        rgba(34,197,94,0.06), transparent 40%);
+    .tool-card:hover .tool-icon-img {
+      transform: scale(1.1);
     }
 
     .tool-badge {
       font-family: var(--mono);
-      font-size: 0.65rem;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 0.25rem 0.65rem;
-      border-radius: 100px;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 20px;
       display: inline-block;
       margin-bottom: 1.25rem;
     }
 
     .badge-ai {
-      background: var(--accent-soft);
-      color: var(--accent);
+      background: linear-gradient(135deg, #FF6B35, #FF3D00);
+      color: #fff;
     }
 
     .badge-free {
-      background: var(--green-soft);
-      color: var(--green);
+      background: linear-gradient(135deg, #10B981, #059669);
+      color: #fff;
     }
 
-    .tool-icon {
-      font-size: 2.5rem;
+    .tool-icon-img {
+      width: 48px;
+      height: 48px;
       margin-bottom: 1rem;
       display: block;
+      image-rendering: auto;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .tool-card h3 {
-      font-size: 1.15rem;
-      font-weight: 800;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
       margin-bottom: 0.5rem;
       letter-spacing: -0.02em;
     }
 
     .tool-card p {
-      color: #b4b4bd;
-      font-size: 0.88rem;
+      color: rgba(255,255,255,0.55);
+      font-size: 14px;
       line-height: 1.6;
+    }
+
+    .tool-credits {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 0.75rem;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      font-family: var(--mono);
+    }
+
+    .tool-credits svg {
+      width: 14px;
+      height: 14px;
+      opacity: 0.5;
     }
 
     .tool-card .formats {
@@ -793,6 +846,15 @@
       padding: 1rem 1.5rem;
       text-align: center;
       margin-top: 1rem;
+    }
+
+    @media (max-width: 1024px) {
+      .tools-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .tools-grid { grid-template-columns: 1fr; }
+      .tool-card { padding: 1.5rem; min-height: auto; }
     }
 
     .privacy-note p {
@@ -2195,7 +2257,6 @@
     @media (max-width: 600px) {
       .hero { padding: 5rem 1.5rem 4rem; min-height: auto; }
       .section-container { padding: 4rem 1.5rem; }
-      .tools-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
       .credits-grid { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
@@ -2371,41 +2432,47 @@
         </div>
 
         <div class="tools-grid" id="ai-tools-grid">
-          <div class="tool-card reveal" onclick="openTool('improve-face')">
+          <div class="tool-card reveal" style="--card-accent: rgba(255,107,53,0.35); --card-accent-glow: rgba(255,107,53,0.12);" onclick="openTool('improve-face')">
             <span class="tool-badge badge-ai">IA</span>
-            <span class="tool-icon">&#x1FA84;</span>
+            <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1fa84.png" alt="Mejorar Rostro" width="48" height="48">
             <h3>Mejorar Rostro</h3>
             <p>Fotos viejas o borrosas cobran vida. Restaura rostros con claridad impresionante.</p>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" onclick="openTool('reconstruct-face')">
+          <div class="tool-card reveal" style="--card-accent: rgba(168,85,247,0.35); --card-accent-glow: rgba(168,85,247,0.12);" onclick="openTool('reconstruct-face')">
             <span class="tool-badge badge-ai">IA</span>
-            <span class="tool-icon">&#x1F9EC;</span>
+            <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f9ec.png" alt="Reconstruir Rostro" width="48" height="48">
             <h3>Reconstruir Rostro</h3>
             <p>Pedazos faltantes, rayones o manchas graves. La IA regenera lo que falta.</p>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" onclick="openTool('product-hd')">
+          <div class="tool-card reveal" style="--card-accent: rgba(59,130,246,0.35); --card-accent-glow: rgba(59,130,246,0.12);" onclick="openTool('product-hd')">
             <span class="tool-badge badge-ai">IA</span>
-            <span class="tool-icon">&#x1F48E;</span>
+            <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f48e.png" alt="Producto HD" width="48" height="48">
             <h3>Producto HD</h3>
             <p>Nitidez profesional 4x para e-commerce. Perfumes, joyeria, bolsas, cualquier producto.</p>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" onclick="openTool('skin-real')">
+          <div class="tool-card reveal" style="--card-accent: rgba(244,114,182,0.35); --card-accent-glow: rgba(244,114,182,0.12);" onclick="openTool('skin-real')">
             <span class="tool-badge badge-ai">IA</span>
-            <span class="tool-icon">&#x1F52C;</span>
+            <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f90c.png" alt="Piel Real" width="48" height="48">
             <h3>Piel Real</h3>
             <p>Mejora tu foto o dale vida hiperrealista a la piel y ojos. Poros, pestanas y detalle extremo.</p>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" onclick="openTool('remove-bg')">
+          <div class="tool-card reveal" style="--card-accent: rgba(16,185,129,0.35); --card-accent-glow: rgba(16,185,129,0.12);" onclick="openTool('remove-bg')">
             <span class="tool-badge badge-ai">IA</span>
-            <span class="tool-icon">&#x2702;&#xFE0F;</span>
+            <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/2702-fe0f.png" alt="Remover Fondo" width="48" height="48">
             <h3>Remover Fondo</h3>
             <p>Elimina el fondo en un click. Perfecto para productos, retratos y diseno.</p>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" onclick="openTool('vectorize-ai')">
+          <div class="tool-card reveal" style="--card-accent: rgba(245,158,11,0.35); --card-accent-glow: rgba(245,158,11,0.12);" onclick="openTool('vectorize-ai')">
             <span class="tool-badge badge-ai">IA</span>
-            <span class="tool-icon">&#x1F58A;&#xFE0F;</span>
+            <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f58a-fe0f.png" alt="Vectorizar con IA" width="48" height="48">
             <h3>Vectorizar con IA</h3>
             <p>Convierte cualquier imagen en vector escalable. Resultados nivel profesional.</p>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
         </div>
 
@@ -2414,13 +2481,14 @@
           <p class="section-subtitle">Procesan en tu navegador. Nada sale de tu dispositivo.</p>
         </div>
 
-        <div style="max-width:400px;margin:0 auto;">
-          <div class="tool-card free reveal" onclick="openTool('converter')">
+        <div class="tools-grid" style="max-width:420px;margin:0 auto;">
+          <div class="tool-card free reveal" style="--card-accent: rgba(99,102,241,0.35); --card-accent-glow: rgba(99,102,241,0.12);" onclick="openTool('converter')">
             <span class="tool-badge badge-free">Gratis</span>
-            <span class="tool-icon">&#x1F504;</span>
+            <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f504.png" alt="Conversor Universal" width="48" height="48">
             <h3>Conversor Universal</h3>
             <p>Converti entre cualquier formato de imagen. Todo en tu navegador, nada sale de tu dispositivo.</p>
             <div class="formats">JPG . PNG . WebP . HEIC . AVIF . BMP . TIFF . PDF</div>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Gratis</span>
           </div>
         </div>
 
@@ -3074,13 +3142,14 @@
       });
     });
 
-    // Card GSAP hover effects
+    // Card GSAP hover effects (subtle scale on emoji)
     document.querySelectorAll('.tool-card').forEach(function(card) {
+      var img = card.querySelector('.tool-icon-img');
       card.addEventListener('mouseenter', function() {
-        gsap.to(card, { scale: 1.02, duration: 0.3, ease: 'power2.out' });
+        if (img) gsap.to(img, { scale: 1.1, duration: 0.35, ease: 'power2.out' });
       });
       card.addEventListener('mouseleave', function() {
-        gsap.to(card, { scale: 1, duration: 0.3, ease: 'power2.out' });
+        if (img) gsap.to(img, { scale: 1, duration: 0.35, ease: 'power2.out' });
       });
     });
 
