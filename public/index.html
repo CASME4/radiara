@@ -416,6 +416,10 @@
       z-index: 1;
     }
 
+    .hero-text-container {
+      will-change: transform, opacity;
+    }
+
     .hero-badge {
       display: inline-flex;
       align-items: center;
@@ -2333,23 +2337,25 @@
       </div>
       <section class="hero" id="hero">
       <div class="hero-content">
-        <div class="hero-badge">
-          <span class="badge-dot"></span>
-          Suite de imagen con IA
-        </div>
-        <h1>
-          <span class="hero-word">Restaura.</span>
-          <span class="hero-word">Mejora.</span>
-          <span class="hero-word gradient-word">Convierte.</span>
-        </h1>
-        <p class="hero-subtitle">Herramientas de imagen con inteligencia artificial. Restaura rostros, mejora productos, agrega textura de piel, y vectoriza.</p>
-        <div class="hero-actions">
-          <a href="#herramientas" class="hero-btn-primary">Empezar gratis</a>
-          <a href="#precios" class="hero-btn-secondary">Ver precios</a>
-        </div>
-        <div class="hero-counter" id="hero-counter">
-          <span class="badge-dot"></span>
-          <span><span class="counter-number" id="counter-number">0</span> imagenes procesadas</span>
+        <div class="hero-text-container">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            Suite de imagen con IA
+          </div>
+          <h1>
+            <span class="hero-word">Restaura.</span>
+            <span class="hero-word">Mejora.</span>
+            <span class="hero-word gradient-word">Convierte.</span>
+          </h1>
+          <p class="hero-subtitle">Herramientas de imagen con inteligencia artificial. Restaura rostros, mejora productos, agrega textura de piel, y vectoriza.</p>
+          <div class="hero-actions">
+            <a href="#herramientas" class="hero-btn-primary">Empezar gratis</a>
+            <a href="#precios" class="hero-btn-secondary">Ver precios</a>
+          </div>
+          <div class="hero-counter" id="hero-counter">
+            <span class="badge-dot"></span>
+            <span><span class="counter-number" id="counter-number">0</span> imagenes procesadas</span>
+          </div>
         </div>
       </div>
     </section>
@@ -2976,17 +2982,31 @@
       y: 150,
       ease: 'none',
       scrollTrigger: {
-        trigger: '#hero',
+        trigger: '.hero-wrapper',
         start: 'top top',
         end: 'bottom top',
         scrub: 1
       }
     });
 
-    // Navbar show on scroll
+    // Hero text fade/scale/move on scroll
+    gsap.to('.hero-text-container', {
+      opacity: 0,
+      y: -100,
+      scale: 0.85,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero-wrapper',
+        start: 'top top',
+        end: '60% top',
+        scrub: 1
+      }
+    });
+
+    // Navbar show on scroll — appears as hero fades
     ScrollTrigger.create({
-      trigger: '#herramientas',
-      start: 'top 80%',
+      trigger: '.hero-wrapper',
+      start: '40% top',
       onEnter: function() { document.getElementById('navbar').classList.add('visible'); },
       onLeaveBack: function() { document.getElementById('navbar').classList.remove('visible'); }
     });
