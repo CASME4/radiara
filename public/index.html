@@ -1375,54 +1375,49 @@
 
     .tool-center .center-loading.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-    .futuristic-spinner {
+    .radiara-spinner {
       position: relative;
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
       margin-bottom: 2rem;
     }
 
-    .futuristic-spinner .ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 2px solid transparent;
+    .radiara-spinner svg {
+      width: 80px;
+      height: 80px;
+      animation: spinner-rotate 2s linear infinite;
     }
 
-    .futuristic-spinner .ring-outer {
-      border-top-color: var(--accent);
-      border-right-color: rgba(255,68,68,0.3);
-      animation: spin-cw 1.4s linear infinite;
-      filter: drop-shadow(0 0 6px var(--accent));
+    .radiara-spinner .spinner-track {
+      fill: none;
+      stroke: rgba(255,255,255,0.08);
+      stroke-width: 4.5;
     }
 
-    .futuristic-spinner .ring-inner {
-      inset: 12px;
-      border-bottom-color: var(--purple);
-      border-left-color: rgba(168,85,247,0.3);
-      animation: spin-ccw 1s linear infinite;
-      filter: drop-shadow(0 0 6px var(--purple));
+    .radiara-spinner .spinner-arc {
+      fill: none;
+      stroke: url(#radiara-spinner-gradient);
+      stroke-width: 4.5;
+      stroke-linecap: round;
+      stroke-dasharray: 90 270;
+      stroke-dashoffset: 0;
+      animation: spinner-dash 2s ease-in-out infinite;
+      filter: drop-shadow(0 0 4px rgba(229,62,62,0.3));
     }
 
-    .futuristic-spinner .ring-dot {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 12px var(--accent);
-      animation: pulse-dot 1.5s ease-in-out infinite;
+    @keyframes spinner-rotate {
+      100% { transform: rotate(360deg); }
     }
 
-    @keyframes spin-cw { to { transform: rotate(360deg); } }
-    @keyframes spin-ccw { to { transform: rotate(-360deg); } }
+    @keyframes spinner-dash {
+      0% { stroke-dasharray: 8 272; stroke-dashoffset: 0; }
+      50% { stroke-dasharray: 120 160; stroke-dashoffset: -40; }
+      100% { stroke-dasharray: 8 272; stroke-dashoffset: -280; }
+    }
 
     .loading-progress {
       font-family: var(--mono);
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 700;
       color: var(--text);
       margin-bottom: 0.75rem;
@@ -1430,24 +1425,10 @@
     }
 
     .loading-status {
-      font-size: 0.85rem;
+      font-family: var(--sans);
+      font-size: 0.9rem;
       color: var(--text-secondary);
       margin-bottom: 1.5rem;
-    }
-
-    .loading-grid-bg {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 40px 40px;
-      animation: grid-drift 20s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes grid-drift {
-      to { background-position: 40px 40px; }
     }
 
     .tool-center .center-result {
@@ -2655,11 +2636,18 @@
         </div>
         <div class="center-content" id="ai-center-content" style="display:none;">
           <div class="center-loading" id="ai-loading">
-            <div class="loading-grid-bg"></div>
-            <div class="futuristic-spinner">
-              <div class="ring ring-outer"></div>
-              <div class="ring ring-inner"></div>
-              <div class="ring-dot"></div>
+            <div class="radiara-spinner">
+              <svg viewBox="0 0 80 80">
+                <defs>
+                  <linearGradient id="radiara-spinner-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#e53e3e" />
+                    <stop offset="50%" stop-color="#805ad5" />
+                    <stop offset="100%" stop-color="#4299e1" />
+                  </linearGradient>
+                </defs>
+                <circle class="spinner-track" cx="40" cy="40" r="36" />
+                <circle class="spinner-arc" cx="40" cy="40" r="36" />
+              </svg>
             </div>
             <div class="loading-progress" id="ai-loading-pct">0%</div>
             <p class="loading-status" id="ai-loading-text">Analizando imagen...</p>
