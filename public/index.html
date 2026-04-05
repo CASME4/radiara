@@ -1453,70 +1453,65 @@
 
     .tool-center .center-loading.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-    .radiara-spinner {
+    .ai-loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .ai-loader-wrapper {
       position: relative;
       width: 80px;
       height: 80px;
-      margin-bottom: 2rem;
     }
 
-    .radiara-spinner svg {
+    .ai-loader {
+      --r1: 154%;
+      --r2: 68.5%;
       width: 80px;
-      height: 80px;
-      animation: radiara-rotate 1.4s linear infinite;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background:
+        radial-gradient(var(--r1) var(--r2) at top, #0000 79.5%, #269af2 80%),
+        radial-gradient(var(--r1) var(--r2) at bottom, #269af2 79.5%, #0000 80%),
+        radial-gradient(var(--r1) var(--r2) at top, #0000 79.5%, #269af2 80%),
+        #1a1a2e;
+      background-size: 50.5% 220%;
+      background-position: -100% 0%, 0% 0%, 100% 0%;
+      background-repeat: no-repeat;
+      animation: loaderFill 2s infinite linear;
+      box-shadow: 0 0 30px rgba(38,154,242,0.3), 0 0 60px rgba(38,154,242,0.1), inset 0 0 20px rgba(38,154,242,0.1);
     }
 
-    .radiara-spinner .spinner-track {
-      fill: none;
-      stroke: rgba(255,255,255,0.08);
-      stroke-width: 4.5;
+    @keyframes loaderFill {
+      33%  { background-position: 0% 33%, 100% 33%, 200% 33%; }
+      66%  { background-position: -100% 66%, 0% 66%, 100% 66%; }
+      100% { background-position: 0% 100%, 100% 100%, 200% 100%; }
     }
 
-    .radiara-spinner .spinner-arc {
-      fill: none;
-      stroke: url(#radiara-spinner-gradient);
-      stroke-width: 4.5;
-      stroke-linecap: round;
-      /* circumference = 2 * π * 36 ≈ 226.2 */
-      stroke-dasharray: 226.2;
-      stroke-dashoffset: 56.5;
-      transform-origin: center;
-      animation: radiara-dash 1.4s ease-in-out infinite;
-      filter: drop-shadow(0 0 3px rgba(229,62,62,0.25));
-    }
-
-    @keyframes radiara-rotate {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    @keyframes radiara-dash {
-      0% {
-        stroke-dashoffset: 200;
-      }
-      50% {
-        stroke-dashoffset: 56.5;
-      }
-      100% {
-        stroke-dashoffset: 200;
-        transform: rotate(180deg);
-      }
-    }
-
-    .loading-progress {
+    .ai-loader-percent {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       font-family: var(--mono);
-      font-size: 2rem;
+      font-size: 18px;
       font-weight: 700;
-      color: var(--text);
-      margin-bottom: 0.75rem;
-      font-variant-numeric: tabular-nums;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(38,154,242,0.8), 0 0 20px rgba(38,154,242,0.4);
+      z-index: 2;
+      letter-spacing: -0.02em;
     }
 
-    .loading-status {
+    .ai-loader-status {
       font-family: var(--sans);
-      font-size: 0.9rem;
+      font-size: 13px;
       color: rgba(255,255,255,0.5);
-      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 500;
     }
 
     .tool-center .center-result {
@@ -1758,11 +1753,11 @@
     .loading { display: none; text-align: center; padding: 2rem; }
     .loading.active { display: block; }
 
-    .loading .radiara-spinner {
-      margin: 0 auto 1.5rem;
+    .loading .ai-loader-container {
+      padding: 1rem 0;
     }
 
-    .loading .loading-status-simple {
+    .loading .ai-loader-status {
       font-family: var(--sans);
       font-size: 0.9rem;
       color: rgba(255,255,255,0.5);
@@ -2655,20 +2650,13 @@
       </div>
       <button id="process-btn" class="process-btn" onclick="processImage()">Procesar</button>
       <div id="loading" class="loading">
-        <div class="radiara-spinner">
-          <svg viewBox="0 0 80 80">
-            <defs>
-              <linearGradient id="radiara-spinner-gradient-2" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#e53e3e" />
-                <stop offset="50%" stop-color="#805ad5" />
-                <stop offset="100%" stop-color="#4299e1" />
-              </linearGradient>
-            </defs>
-            <circle class="spinner-track" cx="40" cy="40" r="36" />
-            <circle class="spinner-arc" cx="40" cy="40" r="36" style="stroke: url(#radiara-spinner-gradient-2)" />
-          </svg>
+        <div class="ai-loader-container">
+          <div class="ai-loader-wrapper">
+            <div class="ai-loader"></div>
+            <div class="ai-loader-percent" id="loading-pct-simple">0%</div>
+          </div>
+          <div class="ai-loader-status" id="loading-text">Procesando imagen...</div>
         </div>
-        <p class="loading-status-simple" id="loading-text">Procesando imagen...</p>
       </div>
       <div id="result-container" class="result-container">
         <div id="result-label" class="result-label">Resultado</div>
@@ -2746,21 +2734,13 @@
         </div>
         <div class="center-content" id="ai-center-content" style="display:none;">
           <div class="center-loading" id="ai-loading">
-            <div class="radiara-spinner">
-              <svg viewBox="0 0 80 80">
-                <defs>
-                  <linearGradient id="radiara-spinner-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#e53e3e" />
-                    <stop offset="50%" stop-color="#805ad5" />
-                    <stop offset="100%" stop-color="#4299e1" />
-                  </linearGradient>
-                </defs>
-                <circle class="spinner-track" cx="40" cy="40" r="36" />
-                <circle class="spinner-arc" cx="40" cy="40" r="36" />
-              </svg>
+            <div class="ai-loader-container">
+              <div class="ai-loader-wrapper">
+                <div class="ai-loader"></div>
+                <div class="ai-loader-percent" id="ai-loading-pct">0%</div>
+              </div>
+              <div class="ai-loader-status" id="ai-loading-text">Procesando imagen...</div>
             </div>
-            <div class="loading-progress" id="ai-loading-pct">0%</div>
-            <p class="loading-status" id="ai-loading-text">Analizando imagen...</p>
           </div>
           <div class="center-result" id="ai-result">
             <div id="ai-result-label" class="result-label">Resultado</div>
@@ -3442,38 +3422,41 @@
         document.getElementById('ai-center-content').style.display = 'block';
         document.getElementById('ai-loading').classList.add('active');
         document.getElementById('ai-result').classList.remove('active');
+        var toolStatusMsgs = {
+          'remove-bg': 'Eliminando fondo...',
+          'improve-face': 'Restaurando rostro...',
+          'reconstruct-face': 'Reconstruyendo imagen...',
+          'product-hd': 'Mejorando resolucion...',
+          'skin-real': 'Procesando piel...',
+          'vectorize-ai': 'Vectorizando imagen...'
+        };
+        var initialStatus = toolStatusMsgs[currentTool] || 'Procesando imagen...';
         document.getElementById('ai-loading-pct').textContent = '0%';
-        document.getElementById('ai-loading-text').textContent = 'Analizando imagen...';
+        document.getElementById('ai-loading-text').textContent = initialStatus;
 
-        // GSAP progress: 0→30 fast, 30→80 slow
-        var pctObj = { val: 0 };
+        // Progress simulation: smooth curve 0→30→70→90→stuck
         var pctEl = document.getElementById('ai-loading-pct');
         var statusEl = document.getElementById('ai-loading-text');
-        var skinMode = currentTool === 'skin-real' ? (document.getElementById('skin-real-mode') || {}).value : '';
-        var aiMsgs = (currentTool === 'skin-real' && skinMode === 'hyperreal') ? [
-          { at: 0, text: 'Paso 1: Reconstruyendo textura microscopica con SUPIR...' },
-          { at: 45, text: 'Paso 2: Escalando a resolucion 8K...' },
-          { at: 80, text: 'Finalizando detalle extremo...' }
-        ] : currentTool === 'skin-real' ? [
-          { at: 0, text: 'Mejorando con IA profesional...' },
-          { at: 50, text: 'Preservando textura natural...' },
-          { at: 85, text: 'Casi listo...' }
-        ] : [
-          { at: 0, text: 'Analizando imagen...' },
-          { at: 15, text: 'Procesando con IA...' },
-          { at: 40, text: 'Mejorando detalles...' },
-          { at: 70, text: 'Casi listo...' }
-        ];
-        function updatePct() {
-          var v = Math.round(pctObj.val);
-          pctEl.textContent = v + '%';
-          for (var mi = aiMsgs.length - 1; mi >= 0; mi--) { if (v >= aiMsgs[mi].at) { statusEl.textContent = aiMsgs[mi].text; break; } }
-        }
-        progressTween = gsap.timeline();
-        progressTween.to(pctObj, { val: 30, duration: 5, ease: 'power2.out', onUpdate: updatePct });
-        progressTween.to(pctObj, { val: 60, duration: 10, ease: 'none', onUpdate: updatePct });
-        progressTween.to(pctObj, { val: 85, duration: 15, ease: 'none', onUpdate: updatePct });
-        progressTween.to(pctObj, { val: 99, duration: 60, ease: 'power1.in', onUpdate: updatePct });
+        var progressStart = Date.now();
+        var progressInterval = setInterval(function() {
+          var elapsed = (Date.now() - progressStart) / 1000;
+          var progress;
+          if (elapsed < 3) {
+            progress = (elapsed / 3) * 30;
+          } else if (elapsed < 10) {
+            progress = 30 + ((elapsed - 3) / 7) * 40;
+          } else if (elapsed < 25) {
+            progress = 70 + ((elapsed - 10) / 15) * 20;
+          } else {
+            progress = Math.min(90 + (elapsed - 25) * 0.05, 92);
+          }
+          pctEl.textContent = Math.floor(progress) + '%';
+          // Update status at milestones
+          if (progress >= 70) statusEl.textContent = 'Casi listo...';
+          else if (progress >= 40) statusEl.textContent = 'Mejorando detalles...';
+          else if (progress >= 15) statusEl.textContent = initialStatus;
+        }, 100);
+        var progressTween = { kill: function() { clearInterval(progressInterval); } };
       } else {
         document.getElementById('process-btn').classList.remove('visible');
         document.getElementById('loading').classList.add('active');
