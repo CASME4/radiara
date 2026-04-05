@@ -2455,35 +2455,35 @@
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f9ec.png" alt="Reconstruir Rostro" width="48" height="48">
             <h3>Reconstruir Rostro</h3>
             <p>Pedazos faltantes, rayones o manchas graves. La IA regenera lo que falta.</p>
-            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 3 creditos</span>
           </div>
           <div class="tool-card" style="--card-accent: rgba(59,130,246,0.35); --card-accent-glow: rgba(59,130,246,0.12);" onclick="openTool('product-hd')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f48e.png" alt="Producto HD" width="48" height="48">
             <h3>Producto HD</h3>
             <p>Nitidez profesional 4x para e-commerce. Perfumes, joyeria, bolsas, cualquier producto.</p>
-            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 1 credito</span>
           </div>
           <div class="tool-card" style="--card-accent: rgba(244,114,182,0.35); --card-accent-glow: rgba(244,114,182,0.12);" onclick="openTool('skin-real')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f90c.png" alt="Piel Real" width="48" height="48">
             <h3>Piel Real</h3>
             <p>Mejora tu foto o dale vida hiperrealista a la piel y ojos. Poros, pestanas y detalle extremo.</p>
-            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2-5 creditos</span>
           </div>
           <div class="tool-card" style="--card-accent: rgba(16,185,129,0.35); --card-accent-glow: rgba(16,185,129,0.12);" onclick="openTool('remove-bg')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/2702-fe0f.png" alt="Remover Fondo" width="48" height="48">
             <h3>Remover Fondo</h3>
             <p>Elimina el fondo en un click. Perfecto para productos, retratos y diseno.</p>
-            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 1 credito</span>
           </div>
           <div class="tool-card" style="--card-accent: rgba(245,158,11,0.35); --card-accent-glow: rgba(245,158,11,0.12);" onclick="openTool('vectorize-ai')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f58a-fe0f.png" alt="Vectorizar con IA" width="48" height="48">
             <h3>Vectorizar con IA</h3>
             <p>Convierte cualquier imagen en vector escalable. Resultados nivel profesional.</p>
-            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 1 credito</span>
           </div>
         </div>
 
@@ -2659,8 +2659,8 @@
       <div id="tool-controls" style="display:none"></div>
       <div id="upload-area" class="upload-area">
         <span class="upload-icon">&#x1F4C1;</span>
-        <h3>Arrastra tu imagen aca</h3>
-        <p>o hace clic para seleccionar — hasta 10MB</p>
+        <h3 id="upload-title">Arrastra tu imagen aca</h3>
+        <p id="upload-hint">o haz clic para seleccionar — hasta 10MB</p>
         <input type="file" id="file-input" accept="image/*">
       </div>
       <div id="preview-container" class="preview-container">
@@ -3312,6 +3312,8 @@
             '</div>' +
           '</div>';
         document.getElementById('file-input').accept = 'video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-matroska,audio/mpeg,audio/wav,audio/aac,audio/ogg,audio/flac,.mp4,.webm,.mov,.avi,.mkv,.mp3,.wav,.aac,.ogg,.flac';
+        document.getElementById('upload-title').textContent = 'Arrastra tu archivo aca';
+        document.getElementById('upload-hint').textContent = 'o haz clic para seleccionar — hasta 200MB';
       } else if (tool.converter) {
         document.getElementById('tool-controls').style.display = 'block';
         document.getElementById('tool-controls').innerHTML =
@@ -3334,6 +3336,11 @@
       } else {
         document.getElementById('tool-controls').style.display = 'none';
         document.getElementById('file-input').accept = 'image/*';
+      }
+
+      if (!tool.videoConverter) {
+        document.getElementById('upload-title').textContent = 'Arrastra tu imagen aca';
+        document.getElementById('upload-hint').textContent = 'o haz clic para seleccionar — hasta 10MB';
       }
 
       var btn = document.getElementById('process-btn');
