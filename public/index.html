@@ -14,6 +14,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -850,12 +852,22 @@
       margin-top: 1rem;
     }
 
+    .free-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
     @media (max-width: 1024px) {
       .tools-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 640px) {
       .tools-grid { grid-template-columns: 1fr; }
+      .free-tools-grid { grid-template-columns: 1fr; }
       .tool-card { padding: 1.5rem; min-height: auto; }
     }
 
@@ -2475,18 +2487,26 @@
           </div>
         </div>
 
-        <div class="section-header reveal" style="margin-top: 2rem;">
-          <span class="section-label green">Herramientas Gratis</span>
-          <p class="section-subtitle">Procesan en tu navegador. Nada sale de tu dispositivo.</p>
+        <div class="section-header reveal" style="margin-top: 60px;">
+          <span class="section-label green">Herramientas Gratuitas</span>
+          <p class="section-subtitle" style="font-size:16px;color:rgba(255,255,255,0.4);">Procesan en tu navegador. Nada sale de tu dispositivo.</p>
         </div>
 
-        <div class="tools-grid" style="max-width:420px;margin:0 auto;">
+        <div class="free-tools-grid">
           <div class="tool-card free" style="--card-accent: rgba(99,102,241,0.35); --card-accent-glow: rgba(99,102,241,0.12);" onclick="openTool('converter')">
             <span class="tool-badge badge-free">Gratis</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f504.png" alt="Conversor Universal" width="48" height="48">
             <h3>Conversor Universal</h3>
-            <p>Converti entre cualquier formato de imagen. Todo en tu navegador, nada sale de tu dispositivo.</p>
-            <div class="formats">JPG . PNG . WebP . HEIC . AVIF . BMP . TIFF . PDF</div>
+            <p>Convierte entre cualquier formato de imagen. Todo en tu navegador, nada sale de tu dispositivo.</p>
+            <div class="formats">JPG · PNG · WebP · HEIC · AVIF · BMP · TIFF · PDF</div>
+            <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Gratis</span>
+          </div>
+          <div class="tool-card free" style="--card-accent: rgba(16,185,129,0.35); --card-accent-glow: rgba(16,185,129,0.12);" onclick="openTool('video-converter')">
+            <span class="tool-badge badge-free">Gratis</span>
+            <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f3ac.png" alt="Conversor de Video" width="48" height="48">
+            <h3>Conversor de Video</h3>
+            <p>Convierte entre formatos de video y audio. Todo en tu navegador, nada sale de tu dispositivo.</p>
+            <div class="formats">MP4 · WebM · MOV · AVI · MP3 · WAV · AAC · GIF</div>
             <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Gratis</span>
           </div>
         </div>
@@ -3081,23 +3101,26 @@
     });
 
     // Tool cards stagger within each grid
-    document.querySelectorAll('.tools-grid').forEach(function(grid) {
+    document.querySelectorAll('.tools-grid, .free-tools-grid').forEach(function(grid) {
       var cards = grid.querySelectorAll('.tool-card');
       if (cards.length) {
-        gsap.fromTo(cards,
-          { opacity: 0, y: 40, scale: 0.97 },
-          {
-            opacity: 1, y: 0, scale: 1,
-            duration: 0.6,
-            ease: 'power3.out',
-            stagger: 0.1,
-            scrollTrigger: {
-              trigger: grid,
-              start: 'top 85%',
-              toggleActions: 'play none none none'
-            }
+        // Set initial state via GSAP (not CSS) so cards are visible if JS fails
+        gsap.set(cards, { opacity: 0, y: 40 });
+        gsap.to(cards, {
+          opacity: 1, y: 0,
+          duration: 0.6,
+          ease: 'power3.out',
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: grid,
+            start: 'top 90%',
+            toggleActions: 'play none none none'
           }
-        );
+        });
+        // Safety: ensure cards are visible after 3s even if ScrollTrigger fails
+        setTimeout(function() {
+          cards.forEach(function(c) { if (parseFloat(getComputedStyle(c).opacity) < 0.5) gsap.set(c, { opacity: 1, y: 0 }); });
+        }, 3000);
       }
     });
 
@@ -3195,6 +3218,7 @@
       'remove-bg': { title: 'Remover Fondo', subtitle: 'Elimina el fondo de cualquier imagen automaticamente.', endpoint: '/api/remove-bg', type: 'ai' },
       'vectorize-ai': { title: 'Vectorizar con IA', subtitle: 'Sube imagen y la IA la convierte en SVG vectorial profesional.', endpoint: '/api/vectorize-ai', type: 'ai' },
       'converter': { title: 'Conversor Universal', subtitle: 'Converti entre cualquier formato de imagen. Todo en tu navegador.', type: 'browser', converter: true },
+      'video-converter': { title: 'Conversor de Video', subtitle: 'Convierte entre formatos de video y audio. Todo en tu navegador.', type: 'browser', videoConverter: true },
     };
 
     var conversionMap = {
@@ -3278,7 +3302,17 @@
         document.getElementById('upload-area').style.display = 'block';
       }
 
-      if (tool.converter) {
+      if (tool.videoConverter) {
+        document.getElementById('tool-controls').style.display = 'block';
+        document.getElementById('tool-controls').innerHTML =
+          '<div class="controls-row">' +
+            '<div class="control-group">' +
+              '<label>Convertir a</label>' +
+              '<select id="convert-to"><option value="">Sube archivo primero</option></select>' +
+            '</div>' +
+          '</div>';
+        document.getElementById('file-input').accept = 'video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-matroska,audio/mpeg,audio/wav,audio/aac,audio/ogg,audio/flac,.mp4,.webm,.mov,.avi,.mkv,.mp3,.wav,.aac,.ogg,.flac';
+      } else if (tool.converter) {
         document.getElementById('tool-controls').style.display = 'block';
         document.getElementById('tool-controls').innerHTML =
           '<div class="controls-row">' +
@@ -3347,8 +3381,10 @@
     });
 
     function handleFile(file) {
-      if (file.size > 10 * 1024 * 1024) {
-        alert('La imagen es muy grande. Maximo 10MB.');
+      var isVideo = tools[currentTool] && tools[currentTool].videoConverter;
+      var maxSize = isVideo ? 200 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert(isVideo ? 'El archivo es muy grande. Maximo 200MB.' : 'La imagen es muy grande. Maximo 10MB.');
         return;
       }
       currentFile = file;
@@ -3361,16 +3397,45 @@
       if (tools[currentTool] && tools[currentTool].converter) {
         updateConvertOptions(file.type);
       }
+      if (isVideo) {
+        updateVideoConvertOptions(file);
+      }
 
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById('preview-img').src = e.target.result;
+      if (isVideo) {
+        // For video/audio, show a simple info preview instead of image
+        var previewImg = document.getElementById('preview-img');
+        previewImg.src = '';
+        previewImg.alt = file.name;
+        previewImg.style.display = 'none';
+        var infoDiv = document.getElementById('file-info');
+        // Try to get duration
+        var mediaEl = file.type.startsWith('audio') ? document.createElement('audio') : document.createElement('video');
+        mediaEl.preload = 'metadata';
+        mediaEl.onloadedmetadata = function() {
+          var dur = Math.round(mediaEl.duration);
+          var min = Math.floor(dur / 60);
+          var sec = dur % 60;
+          infoDiv.textContent = file.name + ' — ' + sizeStr + ' — ' + (min > 0 ? min + 'm ' : '') + sec + 's';
+          URL.revokeObjectURL(mediaEl.src);
+        };
+        mediaEl.src = URL.createObjectURL(file);
         document.getElementById('preview-container').classList.add('active');
         document.getElementById('upload-area').style.display = 'none';
         document.getElementById('process-btn').classList.add('visible');
         document.getElementById('result-container').classList.remove('active');
-      };
-      reader.readAsDataURL(file);
+      } else {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var previewImg = document.getElementById('preview-img');
+          previewImg.style.display = '';
+          previewImg.src = e.target.result;
+          document.getElementById('preview-container').classList.add('active');
+          document.getElementById('upload-area').style.display = 'none';
+          document.getElementById('process-btn').classList.add('visible');
+          document.getElementById('result-container').classList.remove('active');
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
     function changeImage() {
@@ -3397,6 +3462,21 @@
         opt.value = fmt;
         opt.textContent = fmt;
         if (fmt === 'WebP') opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function updateVideoConvertOptions(file) {
+      var select = document.getElementById('convert-to');
+      var isAudio = file.type.startsWith('audio');
+      var videoOpts = ['MP4', 'WebM', 'GIF', 'MP3', 'WAV', 'AAC', 'OGG'];
+      var audioOpts = ['MP3', 'WAV', 'AAC', 'OGG'];
+      var opts = isAudio ? audioOpts : videoOpts;
+      select.innerHTML = '';
+      opts.forEach(function(fmt) {
+        var opt = document.createElement('option');
+        opt.value = fmt;
+        opt.textContent = fmt;
         select.appendChild(opt);
       });
     }
@@ -3586,6 +3666,7 @@
 
     function processBrowser() {
       if (currentTool === 'converter') convertUniversal();
+      if (currentTool === 'video-converter') convertVideo();
     }
 
     // UNIVERSAL CONVERTER
@@ -3688,7 +3769,120 @@
       img.src = URL.createObjectURL(currentFile);
     }
 
-    // SVG vectorizer removed — now using Vectorizer.AI API
+    // VIDEO CONVERTER (FFmpeg.wasm)
+    var ffmpegLoaded = false;
+    var ffmpegInstance = null;
+
+    async function convertVideo() {
+      if (!currentFile) return;
+      var targetFormat = document.getElementById('convert-to').value;
+      if (!targetFormat) { alert('Selecciona formato de destino'); return; }
+
+      document.getElementById('loading').classList.add('active');
+      document.getElementById('process-btn').classList.remove('visible');
+      document.getElementById('result-container').classList.remove('active');
+
+      var pctEl = document.getElementById('loading-pct-simple');
+      var statusEl = document.getElementById('loading-text');
+
+      try {
+        // Load FFmpeg if not already loaded
+        if (!ffmpegLoaded) {
+          statusEl.textContent = 'Cargando motor de conversion...';
+          if (pctEl) pctEl.textContent = '';
+          var FFmpeg = FFmpegWASM.FFmpeg;
+          ffmpegInstance = new FFmpeg();
+          ffmpegInstance.on('progress', function(ev) {
+            var pct = Math.round((ev.progress || 0) * 100);
+            if (pct > 0 && pctEl) pctEl.textContent = pct + '%';
+            if (pct > 0) statusEl.textContent = 'Convirtiendo... ' + pct + '%';
+          });
+          await ffmpegInstance.load({
+            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
+          });
+          ffmpegLoaded = true;
+        }
+
+        statusEl.textContent = 'Convirtiendo...';
+        if (pctEl) pctEl.textContent = '0%';
+
+        var inputExt = currentFile.name.split('.').pop() || 'mp4';
+        var inputName = 'input.' + inputExt;
+        var outputExt = targetFormat.toLowerCase();
+        var outputName = 'output.' + outputExt;
+
+        var ffmpegArgs = { 'MP4': ['-i', inputName, '-c:v', 'libx264', '-c:a', 'aac', outputName],
+          'WebM': ['-i', inputName, '-c:v', 'libvpx-vp9', '-c:a', 'libopus', outputName],
+          'GIF': ['-i', inputName, '-vf', 'fps=10,scale=480:-1:flags=lanczos', '-loop', '0', outputName],
+          'MP3': ['-i', inputName, '-vn', '-c:a', 'libmp3lame', '-q:a', '2', outputName],
+          'WAV': ['-i', inputName, '-vn', outputName],
+          'AAC': ['-i', inputName, '-vn', '-c:a', 'aac', outputName],
+          'OGG': ['-i', inputName, '-vn', '-c:a', 'libvorbis', outputName]
+        };
+        var args = ffmpegArgs[targetFormat] || ['-i', inputName, outputName];
+
+        await ffmpegInstance.writeFile(inputName, await FFmpegUtil.fetchFile(currentFile));
+        await ffmpegInstance.exec(args);
+        var data = await ffmpegInstance.readFile(outputName);
+
+        var mimeMap = { 'MP4': 'video/mp4', 'WebM': 'video/webm', 'GIF': 'image/gif', 'MP3': 'audio/mpeg', 'WAV': 'audio/wav', 'AAC': 'audio/aac', 'OGG': 'audio/ogg' };
+        var blob = new Blob([data.buffer], { type: mimeMap[targetFormat] || 'application/octet-stream' });
+        var url = URL.createObjectURL(blob);
+
+        var originalKB = Math.round(currentFile.size / 1024);
+        var newKB = Math.round(blob.size / 1024);
+        var label = 'Resultado — ' + originalKB + 'KB -> ' + newKB + 'KB';
+
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('result-label').textContent = label;
+        document.getElementById('result-slider').style.display = 'none';
+        var singleImg = document.getElementById('result-img-single');
+        if (singleImg) singleImg.style.display = 'none';
+
+        // Show media player or GIF preview
+        var resultContainer = document.getElementById('result-container');
+        var existingPlayer = resultContainer.querySelector('.video-result-player');
+        if (existingPlayer) existingPlayer.remove();
+
+        if (targetFormat === 'GIF') {
+          var gifImg = document.createElement('img');
+          gifImg.src = url;
+          gifImg.style.cssText = 'max-width:100%;border-radius:12px;margin-bottom:1rem;';
+          gifImg.className = 'video-result-player';
+          resultContainer.insertBefore(gifImg, resultContainer.querySelector('.download-btn') || resultContainer.firstChild);
+        } else if (mimeMap[targetFormat] && mimeMap[targetFormat].startsWith('audio')) {
+          var audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = url;
+          audio.style.cssText = 'width:100%;margin-bottom:1rem;';
+          audio.className = 'video-result-player';
+          resultContainer.insertBefore(audio, resultContainer.querySelector('.download-btn') || resultContainer.firstChild);
+        } else {
+          var video = document.createElement('video');
+          video.controls = true;
+          video.src = url;
+          video.style.cssText = 'max-width:100%;border-radius:12px;margin-bottom:1rem;';
+          video.className = 'video-result-player';
+          resultContainer.insertBefore(video, resultContainer.querySelector('.download-btn') || resultContainer.firstChild);
+        }
+
+        var baseName = currentFile.name.replace(/\.[^.]+$/, '');
+        document.getElementById('download-btn').href = url;
+        document.getElementById('download-btn').download = 'radiara-' + baseName + '.' + outputExt;
+        resultContainer.classList.add('active');
+
+        // Cleanup ffmpeg files
+        try { await ffmpegInstance.deleteFile(inputName); } catch(e) {}
+        try { await ffmpegInstance.deleteFile(outputName); } catch(e) {}
+
+      } catch (err) {
+        console.error('Video conversion error:', err);
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('process-btn').classList.add('visible');
+        alert('Error al convertir: ' + err.message);
+      }
+    }
 
     // ==========================================
     // AUTH
