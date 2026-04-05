@@ -41,4 +41,8 @@ const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 server.listen(PORT, () => {
   console.log('RADIARA v1.2.0 corriendo en http://localhost:' + PORT);
+  console.log('ENV CHECK - REPLICATE_API_TOKEN:', process.env.REPLICATE_API_TOKEN ? `SET (${process.env.REPLICATE_API_TOKEN.substring(0,8)}...)` : 'NOT SET');
+  console.log('ENV CHECK - NODE_ENV:', process.env.NODE_ENV);
+  console.log('ENV CHECK - SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
+  console.log('ENV CHECK - SUPABASE_SERVICE_KEY:', process.env.SUPABASE_SERVICE_KEY ? 'SET' : 'NOT SET');
 });

@@ -61,6 +61,7 @@ async function resizeForModel(buffer, maxPixels) {
 
 // 1. Mejorar Rostro — CodeFormer solo (fotos borrosas/viejas normales)
 router.post('/improve-face', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+  console.log('[improve-face] Request recibido, file:', req.file ? req.file.originalname : 'NO FILE', 'size:', req.file?.size);
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
@@ -71,13 +72,14 @@ router.post('/improve-face', requireAuth, checkCredits, upload.single('image'), 
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('improve-face error:', err.message);
+    console.error('[improve-face] Error completo:', { message: err.message, status: err.response?.status, data: err.response?.data, stack: err.stack?.split('\n').slice(0,3).join('\n') });
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
   }
 });
 
 // 2. Reconstruir Rostro — Nano Banana (inpainting) + CodeFormer (fotos MUY danadas)
 router.post('/reconstruct-face', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+  console.log('[reconstruct-face] Request recibido, file:', req.file ? req.file.originalname : 'NO FILE', 'size:', req.file?.size);
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
@@ -102,13 +104,14 @@ router.post('/reconstruct-face', requireAuth, checkCredits, upload.single('image
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('reconstruct-face error:', err.message);
+    console.error('[reconstruct-face] Error completo:', { message: err.message, status: err.response?.status, data: err.response?.data, stack: err.stack?.split('\n').slice(0,3).join('\n') });
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
   }
 });
 
 // 3. Producto HD
 router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+  console.log('[product-hd] Request recibido, file:', req.file ? req.file.originalname : 'NO FILE', 'size:', req.file?.size);
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
@@ -119,17 +122,18 @@ router.post('/product-hd', requireAuth, checkCredits, upload.single('image'), as
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('product-hd error:', err.message);
+    console.error('[product-hd] Error completo:', { message: err.message, status: err.response?.status, data: err.response?.data, stack: err.stack?.split('\n').slice(0,3).join('\n') });
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
   }
 });
 
 // 4. Piel Real — Dos modos: enhance (Topaz/SwinIR) o hyperreal (SUPIR-v0F)
 router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+  console.log('[skin-real] Request recibido, file:', req.file ? req.file.originalname : 'NO FILE', 'size:', req.file?.size);
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const mode = req.body && req.body.mode ? req.body.mode : 'enhance';
-    console.log('skin-real mode:', mode);
+    console.log('[skin-real] mode:', mode);
 
     let finalResult;
 
@@ -252,7 +256,7 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
     const base64 = await replicateResultToBase64(finalResult);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('skin-real error:', err.message);
+    console.error('[skin-real] Error completo:', { message: err.message, status: err.response?.status, data: err.response?.data, stack: err.stack?.split('\n').slice(0,3).join('\n') });
     if (!res.headersSent) {
       res.status(500).json({ error: 'Error procesando imagen', details: err.message });
     }
@@ -262,6 +266,7 @@ router.post('/skin-real', requireAuth, checkCredits, upload.single('image'), asy
 
 // 5. Remover Fondo
 router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+  console.log('[remove-bg] Request recibido, file:', req.file ? req.file.originalname : 'NO FILE', 'size:', req.file?.size);
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const dataURI = toDataURI(req.file.buffer, req.file.mimetype);
@@ -272,7 +277,7 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
     const base64 = await replicateResultToBase64(output);
     res.json({ success: true, result: base64 });
   } catch (err) {
-    console.error('remove-bg error:', err.message);
+    console.error('[remove-bg] Error completo:', { message: err.message, status: err.response?.status, data: err.response?.data, stack: err.stack?.split('\n').slice(0,3).join('\n') });
     res.status(500).json({ error: 'Error procesando imagen', details: err.message });
   }
 });
@@ -281,6 +286,7 @@ router.post('/remove-bg', requireAuth, checkCredits, upload.single('image'), asy
 const { vectorize: vtraceVectorize, ColorMode, Hierarchical, PathSimplifyMode } = require('@neplex/vectorizer');
 
 router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), async (req, res) => {
+  console.log('[vectorize-ai] Request recibido, file:', req.file ? req.file.originalname : 'NO FILE', 'size:', req.file?.size);
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subio imagen' });
     const t1 = Date.now();
@@ -334,7 +340,7 @@ router.post('/vectorize-ai', requireAuth, checkCredits, upload.single('image'), 
     const svgBase64 = 'data:image/svg+xml;base64,' + Buffer.from(svgText).toString('base64');
     res.json({ success: true, result: svgBase64 });
   } catch (err) {
-    console.error('vectorize-ai error:', err.message);
+    console.error('[vectorize-ai] Error completo:', { message: err.message, status: err.response?.status, data: err.response?.data, stack: err.stack?.split('\n').slice(0,3).join('\n') });
     if (!res.headersSent) {
       res.status(500).json({ error: 'Error procesando imagen', details: err.message });
     }
