@@ -316,21 +316,26 @@
     .auth-submit:hover { background: #e03c3c; }
 
     /* ===== HERO ===== */
+    .hero-wrapper {
+      position: relative;
+      width: 100vw;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
     .hero {
       max-width: 1200px;
       margin: 0 auto;
       padding: 10rem 2rem 6rem;
       text-align: center;
       position: relative;
-      overflow: hidden;
+      z-index: 1;
     }
 
     .hero-glow {
       position: absolute;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
       width: 100%;
       height: 100%;
       background:
@@ -2176,7 +2181,7 @@
     }
 
     @media (max-width: 600px) {
-      .hero { padding: 5rem 1.5rem 4rem; }
+      .hero { padding: 5rem 1.5rem 4rem; min-height: auto; }
       .section-container { padding: 4rem 1.5rem; }
       .tools-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
@@ -2300,7 +2305,7 @@
     </div>
 
     <!-- HERO -->
-    <section class="hero" id="hero">
+    <div class="hero-wrapper">
       <div class="hero-glow" id="hero-glow"></div>
       <div class="hero-blob"></div>
       <div class="shooting-stars">
@@ -2313,6 +2318,7 @@
         <div class="shooting-star"></div>
         <div class="shooting-star"></div>
       </div>
+      <section class="hero" id="hero">
       <div class="hero-content">
         <div class="hero-badge">
           <span class="badge-dot"></span>
@@ -2334,6 +2340,7 @@
         </div>
       </div>
     </section>
+    </div>
 
     <!-- TOOLS -->
     <section class="tools-section" id="herramientas">
