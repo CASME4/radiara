@@ -97,6 +97,7 @@
       letter-spacing: -0.02em;
       color: var(--text);
       text-decoration: none;
+      opacity: 0;
     }
 
     .nav-logo span { color: var(--accent); }
@@ -411,6 +412,39 @@
       30% { opacity: 0.4; }
       70% { opacity: 0.2; }
       100% { transform: rotate(-45deg) translateX(-600px); opacity: 0; }
+    }
+
+    .hero-logo-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+      pointer-events: none;
+    }
+
+    .hero-logo-text {
+      font-family: var(--sans);
+      font-size: 12vw;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      mix-blend-mode: difference;
+      white-space: nowrap;
+      will-change: transform, font-size;
+    }
+
+    .hero-logo-text span {
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .hero-logo-text { font-size: 18vw; }
     }
 
     .hero-content {
@@ -2408,6 +2442,9 @@
         <div class="shooting-star"></div>
       </div>
       <section class="hero" id="hero">
+      <div class="hero-logo-container" id="heroLogoContainer">
+        <div class="hero-logo-text" id="heroLogo">RADIA<span>RA</span></div>
+      </div>
       <div class="hero-content">
         <div class="hero-text-container">
           <div class="hero-badge">
@@ -3082,6 +3119,60 @@
       onEnter: function() { document.getElementById('navbar').classList.add('visible'); },
       onLeaveBack: function() { document.getElementById('navbar').classList.remove('visible'); }
     });
+
+    // Hero logo → navbar logo animation
+    (function() {
+      var heroLogo = document.getElementById('heroLogo');
+      var heroContainer = document.getElementById('heroLogoContainer');
+      var navLogo = document.querySelector('.nav-logo');
+      if (!heroLogo || !heroContainer || !navLogo) return;
+
+      // Calculate target position once, recalculate on resize
+      var navRect;
+      function calcNavPos() {
+        navRect = navLogo.getBoundingClientRect();
+      }
+      calcNavPos();
+      window.addEventListener('resize', function() {
+        calcNavPos();
+        ScrollTrigger.refresh();
+      });
+
+      var logoTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: '.hero-wrapper',
+          start: 'top top',
+          end: '40% top',
+          scrub: 1,
+          onLeave: function() {
+            gsap.set(heroContainer, { autoAlpha: 0 });
+            gsap.set(navLogo, { opacity: 1 });
+          },
+          onEnterBack: function() {
+            gsap.set(heroContainer, { autoAlpha: 1 });
+            gsap.set(navLogo, { opacity: 0 });
+          }
+        }
+      });
+
+      // Shrink the logo text from huge to navbar size
+      var startSize = window.innerWidth <= 768 ? '18vw' : '12vw';
+      logoTl.fromTo(heroLogo,
+        { fontSize: startSize },
+        { fontSize: '1.15rem', ease: 'none' },
+      0);
+
+      // Move logo from center of viewport to top-left (navbar logo position)
+      // yPercent -50 centers it, animate to 0 to move to top; xPercent same idea
+      logoTl.fromTo(heroContainer,
+        { yPercent: 0 },
+        { yPercent: -46, ease: 'none' },
+      0);
+      logoTl.fromTo(heroContainer,
+        { xPercent: 0 },
+        { xPercent: -42, ease: 'none' },
+      0);
+    })();
 
     // Reveal animations for all .reveal elements
     gsap.utils.toArray('.reveal').forEach(function(el) {
