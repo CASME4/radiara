@@ -4,11 +4,14 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const apiRoutes = require('./routes/api');
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
@@ -44,5 +47,5 @@ server.listen(PORT, () => {
   console.log('ENV CHECK - REPLICATE_API_TOKEN:', process.env.REPLICATE_API_TOKEN ? `SET (${process.env.REPLICATE_API_TOKEN.substring(0,8)}...)` : 'NOT SET');
   console.log('ENV CHECK - NODE_ENV:', process.env.NODE_ENV);
   console.log('ENV CHECK - SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
-  console.log('ENV CHECK - SUPABASE_SERVICE_KEY:', process.env.SUPABASE_SERVICE_KEY ? 'SET' : 'NOT SET');
+  console.log('ENV CHECK - SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
 });

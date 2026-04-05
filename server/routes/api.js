@@ -2,7 +2,9 @@ const express = require('express');
 const multer = require('multer');
 const Replicate = require('replicate');
 const sharp = require('sharp');
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const { requireAuth, checkCredits } = require('../middleware/auth');
 

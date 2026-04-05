@@ -725,6 +725,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 24px;
+      width: 100%;
       margin-bottom: 3rem;
     }
 
@@ -734,6 +735,7 @@
       border-radius: var(--radius);
       padding: 2rem 2rem 1.75rem;
       min-height: 220px;
+      min-width: 0;
       cursor: pointer;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
@@ -1579,6 +1581,8 @@
       aspect-ratio: 4/3;
       object-fit: cover;
       display: block;
+      border-radius: 8px;
+      image-rendering: auto;
     }
 
     .tool-history .hist-item .hist-meta {
@@ -2432,42 +2436,42 @@
         </div>
 
         <div class="tools-grid" id="ai-tools-grid">
-          <div class="tool-card reveal" style="--card-accent: rgba(255,107,53,0.35); --card-accent-glow: rgba(255,107,53,0.12);" onclick="openTool('improve-face')">
+          <div class="tool-card" style="--card-accent: rgba(255,107,53,0.35); --card-accent-glow: rgba(255,107,53,0.12);" onclick="openTool('improve-face')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1fa84.png" alt="Mejorar Rostro" width="48" height="48">
             <h3>Mejorar Rostro</h3>
             <p>Fotos viejas o borrosas cobran vida. Restaura rostros con claridad impresionante.</p>
             <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" style="--card-accent: rgba(168,85,247,0.35); --card-accent-glow: rgba(168,85,247,0.12);" onclick="openTool('reconstruct-face')">
+          <div class="tool-card" style="--card-accent: rgba(168,85,247,0.35); --card-accent-glow: rgba(168,85,247,0.12);" onclick="openTool('reconstruct-face')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f9ec.png" alt="Reconstruir Rostro" width="48" height="48">
             <h3>Reconstruir Rostro</h3>
             <p>Pedazos faltantes, rayones o manchas graves. La IA regenera lo que falta.</p>
             <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" style="--card-accent: rgba(59,130,246,0.35); --card-accent-glow: rgba(59,130,246,0.12);" onclick="openTool('product-hd')">
+          <div class="tool-card" style="--card-accent: rgba(59,130,246,0.35); --card-accent-glow: rgba(59,130,246,0.12);" onclick="openTool('product-hd')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f48e.png" alt="Producto HD" width="48" height="48">
             <h3>Producto HD</h3>
             <p>Nitidez profesional 4x para e-commerce. Perfumes, joyeria, bolsas, cualquier producto.</p>
             <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" style="--card-accent: rgba(244,114,182,0.35); --card-accent-glow: rgba(244,114,182,0.12);" onclick="openTool('skin-real')">
+          <div class="tool-card" style="--card-accent: rgba(244,114,182,0.35); --card-accent-glow: rgba(244,114,182,0.12);" onclick="openTool('skin-real')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f90c.png" alt="Piel Real" width="48" height="48">
             <h3>Piel Real</h3>
             <p>Mejora tu foto o dale vida hiperrealista a la piel y ojos. Poros, pestanas y detalle extremo.</p>
             <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" style="--card-accent: rgba(16,185,129,0.35); --card-accent-glow: rgba(16,185,129,0.12);" onclick="openTool('remove-bg')">
+          <div class="tool-card" style="--card-accent: rgba(16,185,129,0.35); --card-accent-glow: rgba(16,185,129,0.12);" onclick="openTool('remove-bg')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/2702-fe0f.png" alt="Remover Fondo" width="48" height="48">
             <h3>Remover Fondo</h3>
             <p>Elimina el fondo en un click. Perfecto para productos, retratos y diseno.</p>
             <span class="tool-credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 2 creditos</span>
           </div>
-          <div class="tool-card reveal" style="--card-accent: rgba(245,158,11,0.35); --card-accent-glow: rgba(245,158,11,0.12);" onclick="openTool('vectorize-ai')">
+          <div class="tool-card" style="--card-accent: rgba(245,158,11,0.35); --card-accent-glow: rgba(245,158,11,0.12);" onclick="openTool('vectorize-ai')">
             <span class="tool-badge badge-ai">IA</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f58a-fe0f.png" alt="Vectorizar con IA" width="48" height="48">
             <h3>Vectorizar con IA</h3>
@@ -2482,7 +2486,7 @@
         </div>
 
         <div class="tools-grid" style="max-width:420px;margin:0 auto;">
-          <div class="tool-card free reveal" style="--card-accent: rgba(99,102,241,0.35); --card-accent-glow: rgba(99,102,241,0.12);" onclick="openTool('converter')">
+          <div class="tool-card free" style="--card-accent: rgba(99,102,241,0.35); --card-accent-glow: rgba(99,102,241,0.12);" onclick="openTool('converter')">
             <span class="tool-badge badge-free">Gratis</span>
             <img class="tool-icon-img" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f504.png" alt="Conversor Universal" width="48" height="48">
             <h3>Conversor Universal</h3>
@@ -3097,8 +3101,8 @@
     });
 
     // Tool cards stagger within each grid
-    ['#ai-tools-grid', '#free-tools-grid'].forEach(function(gridSel) {
-      var cards = document.querySelectorAll(gridSel + ' .tool-card');
+    document.querySelectorAll('.tools-grid').forEach(function(grid) {
+      var cards = grid.querySelectorAll('.tool-card');
       if (cards.length) {
         gsap.fromTo(cards,
           { opacity: 0, y: 40, scale: 0.97 },
@@ -3108,7 +3112,7 @@
             ease: 'power3.out',
             stagger: 0.1,
             scrollTrigger: {
-              trigger: gridSel,
+              trigger: grid,
               start: 'top 85%',
               toggleActions: 'play none none none'
             }
@@ -4213,12 +4217,13 @@
         var img = new Image();
         img.onload = function() {
           var canvas = document.createElement('canvas');
-          var scale = Math.min(150 / img.width, 150 / img.height, 1);
+          var thumbW = 300;
+          var scale = Math.min(thumbW / img.width, 1);
           canvas.width = Math.round(img.width * scale);
           canvas.height = Math.round(img.height * scale);
           var ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          var thumb = canvas.toDataURL('image/jpeg', 0.6);
+          var thumb = canvas.toDataURL('image/jpeg', 0.85);
 
           // Also create a smaller original thumbnail if available
           var origThumb = '';
@@ -4226,11 +4231,11 @@
             var oc = document.createElement('canvas');
             var oi = document.getElementById('ai-preview-img');
             if (oi && oi.naturalWidth) {
-              var os = Math.min(150 / oi.naturalWidth, 150 / oi.naturalHeight, 1);
+              var os = Math.min(thumbW / oi.naturalWidth, 1);
               oc.width = Math.round(oi.naturalWidth * os);
               oc.height = Math.round(oi.naturalHeight * os);
               oc.getContext('2d').drawImage(oi, 0, 0, oc.width, oc.height);
-              origThumb = oc.toDataURL('image/jpeg', 0.6);
+              origThumb = oc.toDataURL('image/jpeg', 0.85);
             }
           }
 
