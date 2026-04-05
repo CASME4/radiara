@@ -414,29 +414,19 @@
       100% { transform: rotate(-45deg) translateX(-600px); opacity: 0; }
     }
 
-    .hero-logo-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1001;
-      pointer-events: none;
-    }
-
     .hero-logo-text {
       font-family: var(--sans);
-      font-size: 12vw;
+      font-size: clamp(8rem, 12vw, 16rem);
       font-weight: 900;
       color: var(--text);
       letter-spacing: -0.03em;
-      line-height: 1;
+      line-height: 0.9;
       mix-blend-mode: difference;
       white-space: nowrap;
-      will-change: transform, font-size;
+      text-align: center;
+      margin: 0;
+      padding: 20px 0;
+      will-change: transform;
     }
 
     .hero-logo-text span {
@@ -444,7 +434,25 @@
     }
 
     @media (max-width: 768px) {
-      .hero-logo-text { font-size: 18vw; }
+      .hero-logo-text { font-size: clamp(4rem, 18vw, 8rem); }
+    }
+
+    .hero-tagline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 4rem);
+      font-weight: 700;
+      font-style: italic;
+      background: linear-gradient(135deg, #c084fc, #f472b6, #fb923c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-top: 20px;
+      margin-bottom: 2rem;
+      line-height: 1.2;
+    }
+
+    .hero-content-below {
+      will-change: transform, opacity;
     }
 
     .hero-content {
@@ -486,31 +494,7 @@
     }
 
     .hero h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(3rem, 7vw, 5.5rem);
-      font-weight: 700;
-      line-height: 1.0;
-      letter-spacing: -0.02em;
-      margin-bottom: 2rem;
-    }
-
-    .hero h1 .hero-word {
-      display: inline-block;
-      opacity: 0;
-    }
-
-    .hero h1 .accent-word { color: var(--accent); }
-
-    .hero h1 .gradient-word {
-      font-size: clamp(3.5rem, 9vw, 7rem);
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--accent), var(--purple), var(--blue));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: block;
-      line-height: 1.0;
-      padding-bottom: 0.1em;
+      margin-bottom: 0;
     }
 
     .hero-subtitle {
@@ -1504,58 +1488,42 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 20px;
+      padding: 40px;
     }
-
     .ai-loader-wrapper {
       position: relative;
-      width: 80px;
-      height: 80px;
+      width: 120px;
+      height: 120px;
     }
-
-    .ai-loader {
-      --r1: 154%;
-      --r2: 68.5%;
-      width: 80px;
-      aspect-ratio: 1;
-      border-radius: 50%;
-      background:
-        radial-gradient(var(--r1) var(--r2) at top, #0000 79.5%, #269af2 80%),
-        radial-gradient(var(--r1) var(--r2) at bottom, #269af2 79.5%, #0000 80%),
-        radial-gradient(var(--r1) var(--r2) at top, #0000 79.5%, #269af2 80%),
-        #1a1a2e;
-      background-size: 50.5% 220%;
-      background-position: -100% 0%, 0% 0%, 100% 0%;
-      background-repeat: no-repeat;
-      animation: loaderFill 2s infinite linear;
-      box-shadow: 0 0 30px rgba(38,154,242,0.3), 0 0 60px rgba(38,154,242,0.1), inset 0 0 20px rgba(38,154,242,0.1);
+    .ai-loader-ring {
+      width: 100%;
+      height: 100%;
+      animation: loaderPulse 2s ease-in-out infinite;
     }
-
-    @keyframes loaderFill {
-      33%  { background-position: 0% 33%, 100% 33%, 200% 33%; }
-      66%  { background-position: -100% 66%, 0% 66%, 100% 66%; }
-      100% { background-position: 0% 100%, 100% 100%, 200% 100%; }
+    @keyframes loaderPulse {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(38,154,242,0.4)) drop-shadow(0 0 30px rgba(168,85,247,0.2)); }
+      50% { filter: drop-shadow(0 0 25px rgba(38,154,242,0.6)) drop-shadow(0 0 45px rgba(168,85,247,0.35)); }
     }
-
+    .ai-loader-progress {
+      transition: stroke-dashoffset 0.3s ease-out;
+    }
     .ai-loader-percent {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-family: var(--mono);
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 700;
       color: #fff;
-      text-shadow: 0 0 10px rgba(38,154,242,0.8), 0 0 20px rgba(38,154,242,0.4);
-      z-index: 2;
-      letter-spacing: -0.02em;
+      text-shadow: 0 0 10px rgba(38,154,242,0.6), 0 0 30px rgba(168,85,247,0.3);
     }
-
     .ai-loader-status {
       font-family: var(--sans);
       font-size: 13px;
-      color: rgba(255,255,255,0.5);
-      letter-spacing: 0.05em;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.15em;
       text-transform: uppercase;
       font-weight: 500;
     }
@@ -1800,7 +1768,7 @@
     .loading.active { display: block; }
 
     .loading .ai-loader-container {
-      padding: 1rem 0;
+      padding: 2rem 0;
     }
 
     .loading .ai-loader-status {
@@ -2442,20 +2410,14 @@
         <div class="shooting-star"></div>
       </div>
       <section class="hero" id="hero">
-      <div class="hero-logo-container" id="heroLogoContainer">
-        <div class="hero-logo-text" id="heroLogo">RADIA<span>RA</span></div>
-      </div>
       <div class="hero-content">
-        <div class="hero-text-container">
-          <div class="hero-badge">
-            <span class="badge-dot"></span>
-            Suite de imagen con IA
-          </div>
-          <h1>
-            <span class="hero-word">Restaura.</span>
-            <span class="hero-word">Mejora.</span>
-            <span class="hero-word gradient-word">Convierte.</span>
-          </h1>
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Suite de imagen con IA
+        </div>
+        <h1 class="hero-logo-text" id="heroLogo">RADIA<span>RA</span></h1>
+        <div class="hero-content-below">
+          <div class="hero-tagline">Restaura. Mejora. Convierte.</div>
           <p class="hero-subtitle">Herramientas de imagen con inteligencia artificial. Restaura rostros, mejora productos, agrega textura de piel, y vectoriza.</p>
           <div class="hero-actions">
             <a href="#herramientas" class="hero-btn-primary">Empezar gratis</a>
@@ -2709,7 +2671,17 @@
       <div id="loading" class="loading">
         <div class="ai-loader-container">
           <div class="ai-loader-wrapper">
-            <div class="ai-loader"></div>
+            <svg class="ai-loader-ring" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="loaderGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#269af2"/>
+                  <stop offset="50%" style="stop-color:#a855f7"/>
+                  <stop offset="100%" style="stop-color:#f472b6"/>
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+              <circle class="ai-loader-progress" cx="50" cy="50" r="42" fill="none" stroke="url(#loaderGrad2)" stroke-width="6" stroke-linecap="round" stroke-dasharray="263.89" stroke-dashoffset="263.89" transform="rotate(-90 50 50)"/>
+            </svg>
             <div class="ai-loader-percent" id="loading-pct-simple">0%</div>
           </div>
           <div class="ai-loader-status" id="loading-text">Procesando imagen...</div>
@@ -2793,7 +2765,18 @@
           <div class="center-loading" id="ai-loading">
             <div class="ai-loader-container">
               <div class="ai-loader-wrapper">
-                <div class="ai-loader"></div>
+                <svg class="ai-loader-ring" viewBox="0 0 100 100">
+                  <defs>
+                    <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#269af2"/>
+                      <stop offset="50%" style="stop-color:#a855f7"/>
+                      <stop offset="100%" style="stop-color:#f472b6"/>
+                    </linearGradient>
+                  </defs>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+                  <circle class="ai-loader-progress" cx="50" cy="50" r="42" fill="none" stroke="url(#loaderGrad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="263.89" stroke-dashoffset="263.89" transform="rotate(-90 50 50)"/>
+                  <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(38,154,242,0.1)" stroke-width="1"/>
+                </svg>
                 <div class="ai-loader-percent" id="ai-loading-pct">0%</div>
               </div>
               <div class="ai-loader-status" id="ai-loading-text">Procesando imagen...</div>
@@ -3012,15 +2995,20 @@
 
     gsap.registerPlugin(ScrollTrigger);
 
-    // Hero word-by-word animation
+    // Hero entrance animations
     gsap.fromTo('.hero-badge',
       { opacity: 0, y: 20 },
       { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 0.2 }
     );
 
-    gsap.fromTo('.hero-word',
-      { opacity: 0, y: 40, rotateX: -15 },
-      { opacity: 1, y: 0, rotateX: 0, duration: 0.9, ease: 'power3.out', stagger: 0.15, delay: 0.5 }
+    gsap.fromTo('#heroLogo',
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out', delay: 0.4 }
+    );
+
+    gsap.fromTo('.hero-tagline',
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.8 }
     );
 
     gsap.fromTo('.hero-subtitle',
@@ -3098,81 +3086,50 @@
       }
     });
 
-    // Hero text fade/scale/move on scroll
-    gsap.to('.hero-text-container', {
-      opacity: 0,
-      y: -100,
-      scale: 0.85,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '.hero-wrapper',
-        start: 'top top',
-        end: '60% top',
-        scrub: 1
-      }
-    });
+    // Hero logo shrink + fade on scroll
+    (function() {
+      var heroLogo = document.getElementById('heroLogo');
+      var navLogo = document.querySelector('.nav-logo');
+      if (!heroLogo || !navLogo) return;
+
+      gsap.set(navLogo, { opacity: 0 });
+
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: '.hero-wrapper',
+          start: 'top top',
+          end: '35% top',
+          scrub: 1,
+          onLeave: function() {
+            gsap.set(heroLogo, { autoAlpha: 0 });
+            gsap.set(navLogo, { opacity: 1 });
+          },
+          onEnterBack: function() {
+            gsap.set(heroLogo, { autoAlpha: 1 });
+            gsap.set(navLogo, { opacity: 0 });
+          }
+        }
+      }).to(heroLogo, { scale: 0.08, opacity: 0.3, y: -200, ease: 'none' }, 0);
+
+      // Content below logo fades separately
+      gsap.to('.hero-content-below', {
+        opacity: 0, y: -50, ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero-wrapper',
+          start: '10% top',
+          end: '40% top',
+          scrub: 1
+        }
+      });
+    })();
 
     // Navbar show on scroll — appears as hero fades
     ScrollTrigger.create({
       trigger: '.hero-wrapper',
-      start: '40% top',
+      start: '35% top',
       onEnter: function() { document.getElementById('navbar').classList.add('visible'); },
       onLeaveBack: function() { document.getElementById('navbar').classList.remove('visible'); }
     });
-
-    // Hero logo → navbar logo animation
-    (function() {
-      var heroLogo = document.getElementById('heroLogo');
-      var heroContainer = document.getElementById('heroLogoContainer');
-      var navLogo = document.querySelector('.nav-logo');
-      if (!heroLogo || !heroContainer || !navLogo) return;
-
-      // Calculate target position once, recalculate on resize
-      var navRect;
-      function calcNavPos() {
-        navRect = navLogo.getBoundingClientRect();
-      }
-      calcNavPos();
-      window.addEventListener('resize', function() {
-        calcNavPos();
-        ScrollTrigger.refresh();
-      });
-
-      var logoTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: '.hero-wrapper',
-          start: 'top top',
-          end: '40% top',
-          scrub: 1,
-          onLeave: function() {
-            gsap.set(heroContainer, { autoAlpha: 0 });
-            gsap.set(navLogo, { opacity: 1 });
-          },
-          onEnterBack: function() {
-            gsap.set(heroContainer, { autoAlpha: 1 });
-            gsap.set(navLogo, { opacity: 0 });
-          }
-        }
-      });
-
-      // Shrink the logo text from huge to navbar size
-      var startSize = window.innerWidth <= 768 ? '18vw' : '12vw';
-      logoTl.fromTo(heroLogo,
-        { fontSize: startSize },
-        { fontSize: '1.15rem', ease: 'none' },
-      0);
-
-      // Move logo from center of viewport to top-left (navbar logo position)
-      // yPercent -50 centers it, animate to 0 to move to top; xPercent same idea
-      logoTl.fromTo(heroContainer,
-        { yPercent: 0 },
-        { yPercent: -46, ease: 'none' },
-      0);
-      logoTl.fromTo(heroContainer,
-        { xPercent: 0 },
-        { xPercent: -42, ease: 'none' },
-      0);
-    })();
 
     // Reveal animations for all .reveal elements
     gsap.utils.toArray('.reveal').forEach(function(el) {
@@ -3579,6 +3536,37 @@
       });
     }
 
+    // Loader progress utilities (SVG ring)
+    function updateLoaderProgress(percent, containerSel) {
+      var container = containerSel ? document.querySelector(containerSel) : document;
+      var circumference = 263.89;
+      var offset = circumference - (percent / 100) * circumference;
+      var circle = container.querySelector('.ai-loader-progress');
+      var pctText = container.querySelector('.ai-loader-percent');
+      if (circle) circle.style.strokeDashoffset = offset;
+      if (pctText) pctText.textContent = Math.floor(percent) + '%';
+    }
+
+    function completeLoaderProgress(containerSel) {
+      updateLoaderProgress(100, containerSel);
+      var container = containerSel ? document.querySelector(containerSel) : document;
+      var ring = container.querySelector('.ai-loader-ring');
+      var pct = container.querySelector('.ai-loader-percent');
+      var status = container.querySelector('.ai-loader-status');
+      if (ring) ring.style.filter = 'drop-shadow(0 0 30px rgba(16,185,129,0.6)) drop-shadow(0 0 50px rgba(16,185,129,0.3))';
+      if (pct) { pct.style.color = '#10B981'; pct.style.textShadow = '0 0 15px rgba(16,185,129,0.6)'; }
+      if (status) status.textContent = '¡Listo!';
+    }
+
+    function resetLoaderProgress(containerSel) {
+      updateLoaderProgress(0, containerSel);
+      var container = containerSel ? document.querySelector(containerSel) : document;
+      var ring = container.querySelector('.ai-loader-ring');
+      var pct = container.querySelector('.ai-loader-percent');
+      if (ring) ring.style.filter = '';
+      if (pct) { pct.style.color = '#ffffff'; pct.style.textShadow = '0 0 10px rgba(38,154,242,0.6), 0 0 30px rgba(168,85,247,0.3)'; }
+    }
+
     // Process
     async function processImage() {
       var tool = tools[currentTool];
@@ -3609,11 +3597,10 @@
           'vectorize-ai': 'Vectorizando imagen...'
         };
         var initialStatus = toolStatusMsgs[currentTool] || 'Procesando imagen...';
-        document.getElementById('ai-loading-pct').textContent = '0%';
         document.getElementById('ai-loading-text').textContent = initialStatus;
+        updateLoaderProgress(0, '#ai-loading');
 
         // Progress simulation: smooth curve 0→30→70→90→stuck
-        var pctEl = document.getElementById('ai-loading-pct');
         var statusEl = document.getElementById('ai-loading-text');
         var progressStart = Date.now();
         var progressInterval = setInterval(function() {
@@ -3628,8 +3615,7 @@
           } else {
             progress = Math.min(90 + (elapsed - 25) * 0.05, 92);
           }
-          pctEl.textContent = Math.floor(progress) + '%';
-          // Update status at milestones
+          updateLoaderProgress(progress, '#ai-loading');
           if (progress >= 70) statusEl.textContent = 'Casi listo...';
           else if (progress >= 40) statusEl.textContent = 'Mejorando detalles...';
           else if (progress >= 15) statusEl.textContent = initialStatus;
@@ -3677,10 +3663,10 @@
             gsap.to({ val: curVal }, {
               val: 100, duration: 0.8, ease: 'power2.out',
               onUpdate: function() {
-                document.getElementById('ai-loading-pct').textContent = Math.round(this.targets()[0].val) + '%';
+                updateLoaderProgress(Math.round(this.targets()[0].val), '#ai-loading');
               },
               onComplete: function() {
-                document.getElementById('ai-loading-text').textContent = 'Listo!';
+                completeLoaderProgress('#ai-loading');
                 setTimeout(resolve, 500);
               }
             });
