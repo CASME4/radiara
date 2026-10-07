@@ -27,7 +27,7 @@
 }
 .hsa-slot > .hsa-scene { height: 100%; }
 
-/* ---------- Tokens · día (valores por defecto) --------------------------- */
+/* ---------- Tokens globales · día ---------------------------------------- */
 .hsa-scene {
   --hsa-bg: #F4F1EA;
   --hsa-ink: #6B4E23;
@@ -36,77 +36,10 @@
   --hsa-halo: #FFFFFF;
   --hsa-halo-a: .85;
   --hsa-halo-b: .35;
-
-  /* Contra entrega */
-  --ce-shadow: #5A3A1E;
-  --ce-rim: #D9BC77;
-  --ce-rim-op: 0;
-  --ce-blazer-hi: #9C7A45;
-  --ce-blazer-mid: #6B4E23;
-  --ce-blazer-lo: #3E2B10;
-  --ce-stitch: #D2B47A;
-  --ce-cuff-hi: #FFFDF8;
-  --ce-cuff-lo: #E3DAC8;
-  --ce-cuff-line: #CFC4AE;
-  --ce-knit-hi: #F1E5CC;
-  --ce-knit-mid: #D3BE96;
-  --ce-knit-lo: #A68E64;
-  --ce-knit-line: #9C8659;
-  --ce-bill-hi: #DDEDDE;
-  --ce-bill-lo: #BCD7C1;
-  --ce-bill-light: #EDF5EC;
-  --ce-bill-ink: #3F6B4E;
-  --ce-bill-ink-soft: #7FA98A;
-  --ce-bill-edge: #6E9A79;
-
-  /* Transferencia */
-  --tr-stone-hi: #FFFDF8;
-  --tr-stone: #EFE7D8;
-  --tr-stone-lo: #D9CCB4;
-  --tr-roof: #6B4E23;
-  --tr-roof-hi: #8E6B3A;
-  --tr-line: #B9A684;
-  --tr-door: #6B4E23;
-  --tr-window: #F7EFDC;
-  --tr-route: #C9B48A;
-  --tr-glow: #E2C27E;
-  --tr-chip: #FFFCF5;
-  --tr-chip-edge: #D8C7A3;
-  --tr-shadow: #5A3A1E;
-  --tr-coin-hi: #F6E4B0;
-  --tr-coin: #D3B06A;
-  --tr-coin-lo: #A8843F;
-  --tr-coin-ink: #6B4E23;
-  --tr-rim-op: 0;
-
-  /* Tarjeta + POS */
-  --pos-body-hi: #4A3A2C;
-  --pos-body: #2E241C;
-  --pos-body-lo: #1B1511;
-  --pos-bezel: #14100D;
-  --pos-screen-hi: #FBF6EA;
-  --pos-screen: #EFE5CF;
-  --pos-screen-ink: #6B4E23;
-  --pos-key: #4C3D30;
-  --pos-key-hi: #66533F;
-  --pos-key-ink: #E9DCC2;
-  --pos-wave: #B8924A;
-  --pos-card-hi: #8A6A3A;
-  --pos-card: #6B4E23;
-  --pos-card-lo: #3F2D14;
-  --pos-card-line: #D9BC77;
-  --pos-chip-hi: #F3E2B4;
-  --pos-chip: #CFAE68;
-  --pos-chip-lo: #A88544;
-  --pos-shadow: #5A3A1E;
-  --pos-fk-1: #B87A62;
-  --pos-fk-2: #D6BE8A;
-  --pos-fk-3: #8FA68A;
 }
-
-/* ---------- Tokens · noche ----------------------------------------------
-   Aplica con data-hsa-theme="noche" en cualquier ancestro (o en el SVG).
-   Con data-hsa-theme="auto" sigue a prefers-color-scheme.               */
+/* ---------- Tokens globales · noche ---------------------------------------
+   data-hsa-theme="noche" en cualquier ancestro (o en el SVG); "auto" sigue
+   a prefers-color-scheme. Cada módulo de escena añade sus propios tokens.  */
 [data-hsa-theme="noche"] .hsa-scene,
 .hsa-scene[data-hsa-theme="noche"] {
   --hsa-bg: #0C0A09;
@@ -116,328 +49,1058 @@
   --hsa-halo: #D9BC77;
   --hsa-halo-a: .16;
   --hsa-halo-b: .05;
-
-  --ce-shadow: #000000;
-  --ce-rim-op: .55;
-  --ce-blazer-hi: #A9874F;
-  --ce-blazer-mid: #6F5228;
-  --ce-blazer-lo: #3A2810;
-  --ce-stitch: #D9BC77;
-  --ce-cuff-hi: #F2EDE2;
-  --ce-cuff-lo: #CFC6B4;
-  --ce-knit-hi: #E6D7B8;
-  --ce-knit-mid: #C7B18A;
-  --ce-knit-lo: #93805C;
-  --ce-bill-hi: #D2E5D4;
-  --ce-bill-lo: #AFCCB6;
-  --ce-bill-light: #E2EEE2;
-
-  --tr-stone-hi: #2A231D;
-  --tr-stone: #211B16;
-  --tr-stone-lo: #17130F;
-  --tr-roof: #D9BC77;
-  --tr-roof-hi: #F1DFB2;
-  --tr-line: #5C4D3A;
-  --tr-door: #D9BC77;
-  --tr-window: #3A3027;
-  --tr-route: #6E5C40;
-  --tr-glow: #D9BC77;
-  --tr-chip: #1C1713;
-  --tr-chip-edge: #8A7451;
-  --tr-shadow: #000000;
-  --tr-coin-lo: #9C7A3A;
-  --tr-coin-ink: #4A3518;
-  --tr-rim-op: .5;
-
-  --pos-body-hi: #3B3129;
-  --pos-body: #241D18;
-  --pos-body-lo: #120F0C;
-  --pos-bezel: #070605;
-  --pos-screen-hi: #2B241D;
-  --pos-screen: #1E1915;
-  --pos-screen-ink: #F2EDE2;
-  --pos-key: #3A3029;
-  --pos-key-hi: #4D4137;
-  --pos-key-ink: #F2EDE2;
-  --pos-wave: #D9BC77;
-  --pos-card-hi: #9C7A45;
-  --pos-card: #6F5228;
-  --pos-card-lo: #2E200D;
-  --pos-shadow: #000000;
 }
 @media (prefers-color-scheme: dark) {
   [data-hsa-theme="auto"] .hsa-scene {
-    --hsa-bg: #0C0A09; --hsa-ink: #F2EDE2; --hsa-gold: #D9BC77; --hsa-gold-hi: #F1DFB2;
-    --hsa-halo: #D9BC77; --hsa-halo-a: .16; --hsa-halo-b: .05;
-    --ce-shadow: #000000; --ce-rim-op: .55;
-    --ce-blazer-hi: #A9874F; --ce-blazer-mid: #6F5228; --ce-blazer-lo: #3A2810; --ce-stitch: #D9BC77;
-    --ce-cuff-hi: #F2EDE2; --ce-cuff-lo: #CFC6B4;
-    --ce-knit-hi: #E6D7B8; --ce-knit-mid: #C7B18A; --ce-knit-lo: #93805C;
-    --ce-bill-hi: #D2E5D4; --ce-bill-lo: #AFCCB6; --ce-bill-light: #E2EEE2;
-    --tr-stone-hi: #2A231D; --tr-stone: #211B16; --tr-stone-lo: #17130F;
-    --tr-roof: #D9BC77; --tr-roof-hi: #F1DFB2; --tr-line: #5C4D3A; --tr-door: #D9BC77;
-    --tr-window: #3A3027; --tr-route: #6E5C40; --tr-glow: #D9BC77;
-    --tr-chip: #1C1713; --tr-chip-edge: #8A7451; --tr-shadow: #000000;
-    --tr-coin-lo: #9C7A3A; --tr-coin-ink: #4A3518; --tr-rim-op: .5;
-    --pos-body-hi: #3B3129; --pos-body: #241D18; --pos-body-lo: #120F0C; --pos-bezel: #070605;
-    --pos-screen-hi: #2B241D; --pos-screen: #1E1915; --pos-screen-ink: #F2EDE2;
-    --pos-key: #3A3029; --pos-key-hi: #4D4137; --pos-key-ink: #F2EDE2; --pos-wave: #D9BC77;
-    --pos-card-hi: #9C7A45; --pos-card: #6F5228; --pos-card-lo: #2E200D; --pos-shadow: #000000;
+    --hsa-bg: #0C0A09;
+    --hsa-ink: #F2EDE2;
+    --hsa-gold: #D9BC77;
+    --hsa-gold-hi: #F1DFB2;
+    --hsa-halo: #D9BC77;
+    --hsa-halo-a: .16;
+    --hsa-halo-b: .05;
   }
 }
 
+/* @module contra-entrega:start */
 /* ==========================================================================
-   1 · CONTRA ENTREGA  (loop 6.4 s)
+   1 · CONTRA ENTREGA  (loop 5.4 s) · generado por variants/ce/tools/gen-motion.js
    Pose del marcado = contacto con el billete sujeto por ambas manos.
    Cada mano está dividida en dos capas (--back detrás del billete,
    --front delante: pulgar y manga) que comparten la MISMA animación,
-   así que se trasladan como una sola pieza rígida.
+   así que se trasladan como una sola pieza rígida. Dentro de --front,
+   .ce-thumb (pulgar + tenar) es una capa rígida que gira sobre la base
+   de la tenar (bajo el puño) y .ce-press es el hundimiento del papel.
+   Dos manos distintas (handgeo.js / handgeo-b.js), piel tokenizada por
+   mano (--ce-a-* entrega, --ce-b-* recibe; *-palm-* = piel palmar).
    ========================================================================== */
-.hsa-ce { --hsa-ce-dur: 6.4s; }
-.hsa-ce .ce-stage    { animation: ce-stage    var(--hsa-ce-dur) linear infinite both; }
-.hsa-ce .ce-giver    { animation: ce-giver    var(--hsa-ce-dur) linear infinite both; }
-.hsa-ce .ce-receiver { animation: ce-receiver var(--hsa-ce-dur) linear infinite both; }
-.hsa-ce .ce-bill     { animation: ce-bill     var(--hsa-ce-dur) linear infinite both; }
-.hsa-ce .ce-sheen    { animation: ce-sheen    var(--hsa-ce-dur) linear infinite both; }
-
-/* Aparece al inicio y se desvanece al final: el salto de reinicio ocurre a opacidad 0. */
-@keyframes ce-stage {
-  0%   { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .4, 1); }
-  9%   { opacity: 1; }
-  84%  { opacity: 1; animation-timing-function: cubic-bezier(.5, 0, .7, 1); }
-  97%  { opacity: 0; }
-  100% { opacity: 0; }
+/* Tokens · día */
+.hsa-ce {
+  --ce-shadow: #5A3A1E;
+  --ce-sh-c: .16;
+  --ce-sh-a: .3;
+  --ce-sh-b: .03;
+  --ce-rim: #D9BC77;
+  --ce-rim-op: 0;
+  --ce-hair-op: 1;
+  --ce-paper-lip: #FFFFFF;
+  --ce-a-hi: #F2CBA7;
+  --ce-a-mid: #E0A982;
+  --ce-a-lo: #BC8259;
+  --ce-a-palm-hi: #F4CDAB;
+  --ce-a-palm-mid: #E3AC86;
+  --ce-a-palm-lo: #C0865E;
+  --ce-a-line: #9A6440;
+  --ce-a-hair: #CC9C78;
+  --ce-a-edge: #B57C55;
+  --ce-a-crease: #A86C49;
+  --ce-a-nail: #EFCDB8;
+  --ce-a-nail-hi: #F8E4D6;
+  --ce-b-hi: #D3A077;
+  --ce-b-mid: #B9845B;
+  --ce-b-lo: #8E5E3C;
+  --ce-b-palm-hi: #DDB08A;
+  --ce-b-palm-mid: #C9976E;
+  --ce-b-palm-lo: #A06E4A;
+  --ce-b-line: #6A4128;
+  --ce-b-hair: #A57552;
+  --ce-b-edge: #875838;
+  --ce-b-crease: #7E5133;
+  --ce-b-nail: #D7AA8A;
+  --ce-b-nail-hi: #E9C9B0;
+  --ce-blazer-hi: #866534;
+  --ce-blazer-mid: #6B4E23;
+  --ce-blazer-lo: #57401F;
+  --ce-blazer-in: #3D2B15;
+  --ce-stitch: #A88B5C;
+  --ce-cuff-hi: #FFFDF8;
+  --ce-cuff-mid: #F3ECDF;
+  --ce-cuff-lo: #DCD1BC;
+  --ce-cuff-line: #CFC4AE;
+  --ce-gold: #B8924A;
+  --ce-gold-hi: #F1DDA6;
+  --ce-knit-hi: #E9DAB9;
+  --ce-knit-mid: #D9C6A0;
+  --ce-knit-lo: #B09A6E;
+  --ce-rib-dk: #A89470;
+  --ce-rib-lt: #FFF9EC;
+  --ce-bill-hi: #E3EBD8;
+  --ce-bill-mid: #DAE5D0;
+  --ce-bill-lo: #CFDDC6;
+  --ce-bill-light: #EEF3E6;
+  --ce-bill-ink: #3E6347;
+  --ce-bill-guil: #9DB79A;
+  --ce-bill-edge: #5E8A69;
+  --ce-bill-lip: #FFFFFF;
+}
+/* Tokens · noche: superficies elevadas, borde dorado en los contornos iluminados; mismos tonos, menos valor */
+[data-hsa-theme="noche"] .hsa-ce,
+.hsa-ce[data-hsa-theme="noche"] {
+  --ce-shadow: #000000;
+  --ce-sh-c: .5;
+  --ce-sh-a: .4;
+  --ce-sh-b: .015;
+  --ce-rim: #D9BC77;
+  --ce-rim-op: .6;
+  --ce-hair-op: 0;
+  --ce-paper-lip: #D3DCC6;
+  --ce-a-hi: #E2B48E;
+  --ce-a-mid: #C08D66;
+  --ce-a-lo: #A9744E;
+  --ce-a-palm-hi: #E4B792;
+  --ce-a-palm-mid: #C3906A;
+  --ce-a-palm-lo: #AC7851;
+  --ce-a-line: #7A4C30;
+  --ce-a-hair: #A9744E;
+  --ce-a-edge: #8A5838;
+  --ce-a-crease: #8A5838;
+  --ce-a-nail: #DDB59B;
+  --ce-a-nail-hi: #EBCDB8;
+  --ce-b-hi: #BE8D66;
+  --ce-b-mid: #A3734F;
+  --ce-b-lo: #7C5134;
+  --ce-b-palm-hi: #C89D79;
+  --ce-b-palm-mid: #B38662;
+  --ce-b-palm-lo: #8E6142;
+  --ce-b-line: #4E2F1B;
+  --ce-b-hair: #7C5134;
+  --ce-b-edge: #5E3B24;
+  --ce-b-crease: #63402A;
+  --ce-b-nail: #C29880;
+  --ce-b-nail-hi: #D5B29A;
+  --ce-blazer-hi: #7A5E38;
+  --ce-blazer-mid: #5E472A;
+  --ce-blazer-lo: #4A3720;
+  --ce-blazer-in: #1E160D;
+  --ce-stitch: #D9BC77;
+  --ce-cuff-hi: #EDE7DA;
+  --ce-cuff-mid: #DCD3C2;
+  --ce-cuff-lo: #BDB29C;
+  --ce-cuff-line: #A99F8A;
+  --ce-gold: #D9BC77;
+  --ce-gold-hi: #F1DFB2;
+  --ce-knit-hi: #B2A07C;
+  --ce-knit-mid: #918060;
+  --ce-knit-lo: #6A5B41;
+  --ce-rib-dk: #56492F;
+  --ce-rib-lt: #CDBE9A;
+  --ce-bill-hi: #BCC8AC;
+  --ce-bill-mid: #B0BEA0;
+  --ce-bill-lo: #9FAF90;
+  --ce-bill-light: #C6D0B8;
+  --ce-bill-ink: #2E4A32;
+  --ce-bill-guil: #84987A;
+  --ce-bill-edge: #74896A;
+  --ce-bill-lip: #D3DCC6;
+}
+@media (prefers-color-scheme: dark) {
+  [data-hsa-theme="auto"] .hsa-ce {
+    --ce-shadow: #000000;
+    --ce-sh-c: .5;
+    --ce-sh-a: .4;
+    --ce-sh-b: .015;
+    --ce-rim: #D9BC77;
+    --ce-rim-op: .6;
+    --ce-hair-op: 0;
+    --ce-paper-lip: #D3DCC6;
+    --ce-a-hi: #E2B48E;
+    --ce-a-mid: #C08D66;
+    --ce-a-lo: #A9744E;
+    --ce-a-palm-hi: #E4B792;
+    --ce-a-palm-mid: #C3906A;
+    --ce-a-palm-lo: #AC7851;
+    --ce-a-line: #7A4C30;
+    --ce-a-hair: #A9744E;
+    --ce-a-edge: #8A5838;
+    --ce-a-crease: #8A5838;
+    --ce-a-nail: #DDB59B;
+    --ce-a-nail-hi: #EBCDB8;
+    --ce-b-hi: #BE8D66;
+    --ce-b-mid: #A3734F;
+    --ce-b-lo: #7C5134;
+    --ce-b-palm-hi: #C89D79;
+    --ce-b-palm-mid: #B38662;
+    --ce-b-palm-lo: #8E6142;
+    --ce-b-line: #4E2F1B;
+    --ce-b-hair: #7C5134;
+    --ce-b-edge: #5E3B24;
+    --ce-b-crease: #63402A;
+    --ce-b-nail: #C29880;
+    --ce-b-nail-hi: #D5B29A;
+    --ce-blazer-hi: #7A5E38;
+    --ce-blazer-mid: #5E472A;
+    --ce-blazer-lo: #4A3720;
+    --ce-blazer-in: #1E160D;
+    --ce-stitch: #D9BC77;
+    --ce-cuff-hi: #EDE7DA;
+    --ce-cuff-mid: #DCD3C2;
+    --ce-cuff-lo: #BDB29C;
+    --ce-cuff-line: #A99F8A;
+    --ce-gold: #D9BC77;
+    --ce-gold-hi: #F1DFB2;
+    --ce-knit-hi: #B2A07C;
+    --ce-knit-mid: #918060;
+    --ce-knit-lo: #6A5B41;
+    --ce-rib-dk: #56492F;
+    --ce-rib-lt: #CDBE9A;
+    --ce-bill-hi: #BCC8AC;
+    --ce-bill-mid: #B0BEA0;
+    --ce-bill-lo: #9FAF90;
+    --ce-bill-light: #C6D0B8;
+    --ce-bill-ink: #2E4A32;
+    --ce-bill-guil: #84987A;
+    --ce-bill-edge: #74896A;
+    --ce-bill-lip: #D3DCC6;
+  }
+}
+.hsa-ce { --hsa-ce-dur: 5.4s; }
+/* ---------- Movimiento ------------------------------------------------------
+   Lazo de 5.4 s (1 % = 54 ms).
+   0-5.7 % reposo completo: quien entrega sostiene el billete, quien recibe espera con el pulgar abierto.
+   5.7-21.78 % quien entrega ofrece (868 ms, arco de 2.2 u; la muñeca se endereza 84 ms después).
+   8.81-25.41 % quien recibe responde 168 ms más tarde y llega 196 ms después; su pulgar se
+   cierra sobre el papel (15.56-25.41 %). 26.41-42 % contacto inmóvil (842 ms).
+   42-45.11 % tirón de 3.2 u: quien entrega cede .8 u y el billete se desliza bajo su pulgar.
+   45.11 % suelta (desaparece el hundimiento del papel); 45.11-50.3 % su pulgar se abre;
+   46.11-66.33 % se retira 31 u con un arco hacia abajo; 46.59-67.85 % quien recibe se lleva el billete 28 u.
+   69.59-83.52 % reposo final. Disolución del lazo: solo cambian el billete y los pulgares (las manos,
+   las mangas y el halo nunca cambian de opacidad; el billete solo falta ~110 ms): 84-87.59 % el billete A se
+   desvanece en la mano de quien recibe mientras su pulgar se abre (83.52-89 %); 88.52-92.04 % el billete B
+   (<use> del mismo dibujo, en la misma capa) aparece en la pinza abierta de quien entrega y su pulgar se
+   cierra sobre él (88-93 %). B viaja siempre con quien entrega: es el billete visible desde el cierre
+   del lazo hasta 33 %, cuando pasa a A en pleno contacto inmóvil (mismo CTM, mismo fotograma: invisible).
+   Todas las capas tienen el mismo estado calculado en 0 % y en 100 %.
+   Canales independientes por capa rígida (sin escalar ni deformar): translate (recorrido),
+   rotate (muñeca, transform-origin en el pivote) y transform (arco perpendicular).
+   El billete copia exactamente los canales de la mano que lo sostiene; su pivote cambia
+   de muñeca en 35 %, con ambos giros a 0. Pose del marcado = contacto (movimiento reducido).
+   --------------------------------------------------------------------------- */
+.hsa-ce .ce-giver    { transform-box: view-box; transform-origin: 66.25px 109.86px; }
+.hsa-ce .ce-receiver { transform-box: view-box; transform-origin: 251.89px 114.97px; }
+.hsa-ce .ce-bill     { transform-box: view-box; transform-origin: 66.25px 109.86px; }
+.hsa-ce .ce-bill-b   { transform-box: view-box; transform-origin: 66.25px 109.86px; }
+/* .ce-thumb vive dentro de la colocación de la mano: su origen va en unidades canónicas de la mano */
+.hsa-ce .ce-giver--front .ce-thumb    { transform-box: view-box; transform-origin: 13.8px 57.5px; }
+.hsa-ce .ce-receiver--front .ce-thumb { transform-box: view-box; transform-origin: 14.35px 57.5px; }
+.hsa-ce .ce-giver    { animation: ce-g-t var(--hsa-ce-dur) linear infinite both, ce-g-r var(--hsa-ce-dur) linear infinite both, ce-g-h var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-receiver { animation: ce-r-t var(--hsa-ce-dur) linear infinite both, ce-r-r var(--hsa-ce-dur) linear infinite both, ce-r-h var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-bill     { animation: ce-a-t var(--hsa-ce-dur) linear infinite both, ce-a-r var(--hsa-ce-dur) linear infinite both, ce-a-h var(--hsa-ce-dur) linear infinite both, ce-a-pivot var(--hsa-ce-dur) linear infinite both, ce-a-op var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-bill-b   { animation: ce-g-t var(--hsa-ce-dur) linear infinite both, ce-g-r var(--hsa-ce-dur) linear infinite both, ce-g-h var(--hsa-ce-dur) linear infinite both, ce-b-op var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-giver--front .ce-thumb    { animation: ce-gt-r var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-receiver--front .ce-thumb { animation: ce-rt-r var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-giver--front .ce-press    { animation: ce-gp-op var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-receiver--front .ce-press { animation: ce-rp-op var(--hsa-ce-dur) linear infinite both; }
+/* En pausa (manual o fuera de pantalla) o al imprimir nunca se congelan dos billetes a medio disolver: se
+   muestra A, que en cualquier instante está en una pinza (la de quien entrega fuera de su tramo propio).
+   !important gana a la animación sin reiniciarla, así que al reanudar sigue en fase con el resto. */
+.hsa-ce.hsa-paused .ce-bill { opacity: 1 !important; }
+.hsa-ce.hsa-paused .ce-bill-b { opacity: 0 !important; }
+@media print {
+  .hsa-ce .ce-bill { opacity: 1 !important; }
+  .hsa-ce .ce-bill-b { opacity: 0 !important; }
 }
 
-/* Mano que entrega (izquierda): llega con el billete, sostiene, suelta y se retira. */
-@keyframes ce-giver {
-  0%   { transform: translate(-29.2px, 6.75px); }
-  4%   { transform: translate(-29.2px, 6.75px); animation-timing-function: cubic-bezier(.45, .05, .25, 1); }
-  36%  { transform: translate(.58px, -.14px);   animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  41%  { transform: translate(0, 0);            animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  46%  { transform: translate(0, .45px);        animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  52%  { transform: translate(0, 0); }
-  57%  { transform: translate(0, 0);            animation-timing-function: cubic-bezier(.42, 0, .3, 1); }
-  82%  { transform: translate(-21.4px, 4.95px); animation-timing-function: cubic-bezier(.2, 0, .45, 1); }
-  100% { transform: translate(-30.2px, 6.98px); }
+/* Quien entrega · recorrido a lo largo del antebrazo; cede en el tirón y retrocede al soltar (también lo usa el billete B) */
+@keyframes ce-g-t {
+  0%, 5.7%       { translate: -29.48px 9.58px; animation-timing-function: cubic-bezier(.45, 0, .36, 1); }
+  21.78%, 42%    { translate: 0px 0px; animation-timing-function: cubic-bezier(.35, 0, .15, 1); }
+  45.11%         { translate: .75px .29px; animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  46.63%         { translate: 0px 0px; animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  66.33%, 100%   { translate: -29.48px 9.58px; }
 }
-
-/* Mano que recibe (derecha): pequeña anticipación, toma el billete y lo lleva hacia sí. */
-@keyframes ce-receiver {
-  0%   { transform: translate(29.2px, 6.75px); }
-  10%  { transform: translate(29.2px, 6.75px); animation-timing-function: cubic-bezier(.3, 0, .5, 1); }
-  15%  { transform: translate(30.8px, 7.1px);  animation-timing-function: cubic-bezier(.45, .05, .25, 1); }
-  41%  { transform: translate(0, 0);           animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  46%  { transform: translate(0, .45px);       animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  52%  { transform: translate(0, 0); }
-  55%  { transform: translate(0, 0);           animation-timing-function: cubic-bezier(.42, 0, .3, 1); }
-  80%  { transform: translate(23.4px, 5.4px);  animation-timing-function: cubic-bezier(.2, 0, .45, 1); }
-  100% { transform: translate(32.1px, 7.4px); }
+/* Quien entrega · muñeca inclinada en reposo, recta durante la entrega */
+@keyframes ce-g-r {
+  0%, 6.7%       { rotate: 2.6deg; animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
+  23.33%, 47.59% { rotate: 0deg; animation-timing-function: cubic-bezier(.45, 0, .45, 1); }
+  68.33%, 100%   { rotate: 2.6deg; }
 }
-
-/* Billete: copia exacta del movimiento de la mano que lo sostiene en cada tramo. */
-@keyframes ce-bill {
-  0%   { transform: translate(-29.2px, 6.75px); }
-  4%   { transform: translate(-29.2px, 6.75px); animation-timing-function: cubic-bezier(.45, .05, .25, 1); }
-  36%  { transform: translate(.58px, -.14px);   animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  41%  { transform: translate(0, 0);            animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  46%  { transform: translate(0, .45px);        animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  52%  { transform: translate(0, 0); }
-  55%  { transform: translate(0, 0);            animation-timing-function: cubic-bezier(.42, 0, .3, 1); }
-  80%  { transform: translate(23.4px, 5.4px);   animation-timing-function: cubic-bezier(.2, 0, .45, 1); }
-  100% { transform: translate(32.1px, 7.4px); }
+/* Quien entrega · arco perpendicular: sube al ofrecer, cae al retirarse vacía */
+@keyframes ce-g-h {
+  0%             { transform: translate(0px, 0px); }
+  5.7%           { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(.58, 0, .72, .99); }
+  12.6%          { transform: translate(-.68px, -2.09px); animation-timing-function: cubic-bezier(.22, .02, .38, 1); }
+  21.78%         { transform: translate(0px, 0px); }
+  46.11%         { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(.48, 0, .64, 1); }
+  53.19%         { transform: translate(.48px, 1.47px); animation-timing-function: cubic-bezier(.21, .01, .4, 1); }
+  66.33%         { transform: translate(0px, 0px); }
+  100%           { transform: translate(0px, 0px); }
 }
-
-/* Brillo suave que recorre el papel mientras cambia de mano. */
-@keyframes ce-sheen {
-  0%, 56% { transform: translateX(0); opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  62%     { opacity: 1; }
-  79%     { transform: translateX(150px); opacity: 0; }
-  100%    { transform: translateX(150px); opacity: 0; }
+/* Quien recibe · llegada, tirón y retirada con el billete */
+@keyframes ce-r-t {
+  0%, 8.81%      { translate: 26.14px 10.04px; animation-timing-function: cubic-bezier(.45, 0, .3, 1); }
+  25.41%, 42%    { translate: 0px 0px; animation-timing-function: cubic-bezier(.35, 0, .15, 1); }
+  45.11%, 46.59% { translate: 2.99px 1.15px; animation-timing-function: cubic-bezier(.33, 0, .28, 1); }
+  67.85%, 100%   { translate: 26.14px 10.04px; }
 }
+/* Quien recibe · llega inclinada y se endereza; al llevarse el billete vuelve a relajarse */
+@keyframes ce-r-r {
+  0%, 9.3%       { rotate: -2.8deg; animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
+  25.93%, 48.11% { rotate: 0deg; animation-timing-function: cubic-bezier(.45, 0, .45, 1); }
+  69.59%, 100%   { rotate: -2.8deg; }
+}
+/* Quien recibe · arcos de llegada y de retirada */
+@keyframes ce-r-h {
+  0%             { transform: translate(0px, 0px); }
+  8.81%          { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(.61, 0, .72, .99); }
+  15.55%         { transform: translate(.57px, -1.49px); animation-timing-function: cubic-bezier(.2, .02, .35, 1); }
+  25.41%         { transform: translate(0px, 0px); }
+  46.59%         { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(.52, 0, .66, 1); }
+  54.12%         { transform: translate(.5px, -1.31px); animation-timing-function: cubic-bezier(.21, .02, .38, 1); }
+  67.85%         { transform: translate(0px, 0px); }
+  100%           { transform: translate(0px, 0px); }
+}
+/* Billete A · = ce-g-t hasta el tirón, = ce-r-t desde el tirón; ya invisible, vuelve a ce-g-t */
+@keyframes ce-a-t {
+  0%, 5.7%       { translate: -29.48px 9.58px; animation-timing-function: cubic-bezier(.45, 0, .36, 1); }
+  21.78%, 42%    { translate: 0px 0px; animation-timing-function: cubic-bezier(.35, 0, .15, 1); }
+  45.11%, 46.59% { translate: 2.99px 1.15px; animation-timing-function: cubic-bezier(.33, 0, .28, 1); }
+  67.85%, 88%    { translate: 26.14px 10.04px; animation-timing-function: step-end; }
+  88.01%, 100%   { translate: -29.48px 9.58px; }
+}
+/* Billete A · = ce-g-r hasta el cambio de pivote, = ce-r-r después */
+@keyframes ce-a-r {
+  0%, 6.7%       { rotate: 2.6deg; animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
+  23.33%, 48.11% { rotate: 0deg; animation-timing-function: cubic-bezier(.45, 0, .45, 1); }
+  69.59%, 88%    { rotate: -2.8deg; animation-timing-function: step-end; }
+  88.01%, 100%   { rotate: 2.6deg; }
+}
+/* Billete A · arco de llegada (lo sostiene quien entrega) y de retirada (quien recibe) */
+@keyframes ce-a-h {
+  0%             { transform: translate(0px, 0px); }
+  5.7%           { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(.58, 0, .72, .99); }
+  12.6%          { transform: translate(-.68px, -2.09px); animation-timing-function: cubic-bezier(.22, .02, .38, 1); }
+  21.78%         { transform: translate(0px, 0px); }
+  46.59%         { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(.52, 0, .66, 1); }
+  54.12%         { transform: translate(.5px, -1.31px); animation-timing-function: cubic-bezier(.21, .02, .38, 1); }
+  67.85%         { transform: translate(0px, 0px); }
+  100%           { transform: translate(0px, 0px); }
+}
+/* Billete A · pivote: muñeca de quien entrega hasta 35 %, de quien recibe hasta volver (invisible) */
+@keyframes ce-a-pivot {
+  0%             { transform-origin: 66.25px 109.86px; animation-timing-function: step-end; }
+  35%            { transform-origin: 251.89px 114.97px; animation-timing-function: step-end; }
+  88.01%, 100%   { transform-origin: 66.25px 109.86px; }
+}
+/* Billete A · visible desde el relevo (33 %, mismo CTM que B) hasta que se desvanece en la mano de quien recibe */
+@keyframes ce-a-op {
+  0%, 33%        { opacity: 0; animation-timing-function: step-end; }
+  33.01%, 84%    { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, 1, 1); }
+  87.59%, 100%   { opacity: 0; }
+}
+/* Billete B · visible en la pinza de quien entrega: desde que aparece hasta el relevo del lazo siguiente */
+@keyframes ce-b-op {
+  0%, 33%        { opacity: 1; animation-timing-function: step-end; }
+  33.01%, 88.52% { opacity: 0; animation-timing-function: cubic-bezier(0, 0, .4, 1); }
+  92.04%, 100%   { opacity: 1; }
+}
+/* Pulgar de quien entrega · se abre al soltar; se cierra sobre el billete B */
+@keyframes ce-gt-r {
+  0%, 45.11%     { rotate: 0deg; animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  50.3%, 88%     { rotate: 6deg; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+  93%, 100%      { rotate: 0deg; }
+}
+/* Pulgar de quien recibe · abierto mientras espera, se cierra sobre el papel al llegar, se abre al disolverse A */
+@keyframes ce-rt-r {
+  0%, 15.56%     { rotate: 8deg; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+  25.41%, 83.52% { rotate: 0deg; animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  89%, 100%      { rotate: 8deg; }
+}
+/* Hundimiento del papel y sombra de contacto bajo el pulgar de quien entrega */
+@keyframes ce-gp-op {
+  0%, 45.11%     { opacity: 1; animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  46.59%, 91.48% { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  93%, 100%      { opacity: 1; }
+}
+/* Hundimiento del papel y sombra de contacto bajo el pulgar de quien recibe */
+@keyframes ce-rp-op {
+  0%, 24.91%     { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  26.41%, 84%    { opacity: 1; animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  86%, 100%      { opacity: 0; }
+}
+/* @module contra-entrega:end */
 
+/* @module transferencia:start */
 /* ==========================================================================
    2 · TRANSFERENCIA  (loop 5.6 s)
-   Pose del marcado = moneda Q en lo alto del recorrido, ruta iluminada
-   hasta la mitad. Las posiciones de tr-coin y tr-lit se muestrearon a
-   lo largo de la misma curva (longitud de arco), por eso coinciden.
-   Decorativa: no hay marca de "aprobado" ni texto de estado.
+   La moneda Q (r 7.5) descansa sobre el medallón del frontón y lo cubre por
+   completo; se hunde 2.4 u, despega en un solo arco (ápice y = 22, perfil de
+   alcance con velocidad máxima al 43 % del vuelo, inclinación ≤ 4°), sobrepasa
+   1.6 u el medallón del tambor y se asienta, reposa, se hunde en él (escala
+   1 → .9, aro y Q en registro exacto con los del medallón) mientras se
+   desvanece en 260 ms, y vuelve a surgir del origen como su espejo temporal.
+   Los medallones no se animan: solo los revela o cubre la moneda.
+   Estela tipo cometa (6 capas) sobre un sub-trazado que empieza por encima del
+   tejado; los puntos de la ruta bajo la estela se quitan con una máscara de
+   luminancia (#tr-route-mask), sin pintar nada del color del fondo.
+   Tiempos (ms): presión 420-600 · vuelo 600-2250 · asiento 2250-2474 ·
+   reposo destino 2474-3540 · fusión 3540-3800 · reaparición 3900-4160 ·
+   reposo origen 4160-6020 (envuelve).
+   Pose del marcado (= movimiento reducido): moneda a mitad del arco,
+   estela corta detrás, ruta punteada delante, sin brillos.
+   Decorativa: sin marca de "aprobado" ni texto de estado.
+   Los keyframes tr-coin, tr-lit, tr-trail-1..6, tr-coin-sh y tr-coin-cs los
+   genera build-transfer.js css() a partir de las constantes de la línea de
+   tiempo y el kit los reinyecta entre los marcadores de inicio (la regla de
+   keyframes tr-coin) y de final (la regla vacía de keyframes tr-pulse-origen,
+   que solo sirve de marcador). No editar esos porcentajes a mano.
    ========================================================================== */
-.hsa-tr { --hsa-tr-dur: 5.6s; }
-.hsa-tr .tr-coin       { animation: tr-coin var(--hsa-tr-dur) linear infinite both; }
-.hsa-tr .tr-trail      { animation: tr-coin var(--hsa-tr-dur) linear infinite both; }
-.hsa-tr .tr-trail--1   { animation-delay: .07s; }
-.hsa-tr .tr-trail--2   { animation-delay: .14s; }
-.hsa-tr .tr-trail--3   { animation-delay: .21s; }
-.hsa-tr .tr-route-lit  { animation: tr-lit var(--hsa-tr-dur) linear infinite both; }
-.hsa-tr .tr-pulse      { transform-box: fill-box; transform-origin: center; }
-.hsa-tr .tr-pulse--origen  { animation: tr-pulse-origen  var(--hsa-tr-dur) linear infinite both; }
-.hsa-tr .tr-pulse--destino { animation: tr-pulse-destino var(--hsa-tr-dur) linear infinite both; }
-.hsa-tr .tr-glow--a    { animation: tr-glow-origen  var(--hsa-tr-dur) linear infinite both; }
-.hsa-tr .tr-glow--b    { animation: tr-glow-destino var(--hsa-tr-dur) linear infinite both; }
+/* Tokens · día */
+.hsa-tr {
+  --tr-stone-hi: #FFFDF8;
+  --tr-stone: #EFE7D8;
+  --tr-stone-lo: #D9CCB4;
+  --tr-wall-hi: #E6DCC8;
+  --tr-wall: #DDD1BB;
+  --tr-wall-lo: #CDBFA5;
+  --tr-win-lo: #CDBFA5;
+  --tr-win: #DED3BE;
+  --tr-win-hi: #E9E0CF;
+  --tr-line: #B9A684;
+  --tr-dentil: #B9A684;
+  --tr-silhouette: #B09A70;
+  --tr-sil-a: 1;
+  --tr-roof: #9C7B47;
+  --tr-door-hi: #C9B48F;
+  --tr-door: #B49C74;
+  --tr-door-lo: #9E845B;
+  --tr-door-rim: 0;
+  --tr-door-rim-r: 0;
+  --tr-dome-hi: #FFFDF8;
+  --tr-dome: #F2EADB;
+  --tr-dome-lo: #D6C8AE;
+  --tr-dome-rim: #B8924A;
+  --tr-dome-rim-a: 0;
+  --tr-rib: #B8924A;
+  --tr-rib-op: .55;
+  --tr-med: #FBF6EA;
+  --tr-med-ink: #8E6B3A;
+  --tr-med-ring: 1;
+  --tr-route: #A88654;
+  --tr-route-a: .8;
+  --tr-trail: #C9A35A;
+  --tr-glow: #E2C27E;
+  --tr-halo-a: .34;
+  --tr-halo-b: .14;
+  --tr-shadow: #5A3A1E;
+  --tr-coin-hi: #F6E4B0;
+  --tr-coin: #D6AE5E;
+  --tr-coin-lo: #A8843F;
+  --tr-coin-ink: #6B4E23;
+  --tr-spec: .7;
+  --tr-spec-c: #FFFFFF;
+  --tr-ground: #6B4E23;
+  --tr-ground-a: .18;
+  --tr-rim-op: 0;
+  --tr-rim-mid: 0;
+}
+/* Tokens · noche: escalera de elevación cálida (piedra #2C251F → #463A30),
+   bordes de luz oro en las aristas que miran a la luz (arriba-izquierda),
+   cúpula de bronce con borde oro, puerta y ventanas como los huecos más
+   oscuros (cálidos, estáticos). El halo de fondo se atenúa solo en esta escena. */
+[data-hsa-theme="noche"] .hsa-tr,
+.hsa-tr[data-hsa-theme="noche"] {
+  --tr-stone-hi: #463A30;
+  --tr-stone: #3A3029;
+  --tr-stone-lo: #2C251F;
+  --tr-wall-hi: #30281F;
+  --tr-wall: #2B231D;
+  --tr-wall-lo: #251E19;
+  --tr-win-lo: #1E1915;
+  --tr-win: #241D17;
+  --tr-win-hi: #2A221B;
+  --tr-line: #6A5841;
+  --tr-dentil: #1E1915;
+  --tr-silhouette: #806C52;
+  --tr-sil-a: .8;
+  --tr-roof: #A88654;
+  --tr-door-hi: #33281E;
+  --tr-door: #2A2119;
+  --tr-door-lo: #211A14;
+  --tr-door-rim: .55;
+  --tr-door-rim-r: .3;
+  --tr-dome-hi: #463A30;
+  --tr-dome: #3A3029;
+  --tr-dome-lo: #2C251F;
+  --tr-dome-rim: #D9BC77;
+  --tr-dome-rim-a: .75;
+  --tr-rib: #D9BC77;
+  --tr-rib-op: .45;
+  --tr-med: #3A3029;
+  --tr-med-ink: #D0B272;
+  --tr-med-ring: .8;
+  --tr-route: #8C7650;
+  --tr-route-a: .8;
+  --tr-trail: #D9BC77;
+  --tr-glow: #D9BC77;
+  --tr-halo-a: .2;
+  --tr-halo-b: .085;
+  --tr-shadow: #000000;
+  --tr-coin-lo: #9C7A3A;
+  --tr-coin-ink: #4A3518;
+  --tr-spec: .55;
+  --tr-spec-c: #FFF3D6;
+  --tr-ground: #D9BC77;
+  --tr-ground-a: .22;
+  --tr-rim-op: .5;
+  --tr-rim-mid: .22;
+  --hsa-halo-a: .07;
+  --hsa-halo-b: .02;
+}
+@media (prefers-color-scheme: dark) {
+  [data-hsa-theme="auto"] .hsa-tr {
+    --tr-stone-hi: #463A30;
+    --tr-stone: #3A3029;
+    --tr-stone-lo: #2C251F;
+    --tr-wall-hi: #30281F;
+    --tr-wall: #2B231D;
+    --tr-wall-lo: #251E19;
+    --tr-win-lo: #1E1915;
+    --tr-win: #241D17;
+    --tr-win-hi: #2A221B;
+    --tr-line: #6A5841;
+    --tr-dentil: #1E1915;
+    --tr-silhouette: #806C52;
+    --tr-sil-a: .8;
+    --tr-roof: #A88654;
+    --tr-door-hi: #33281E;
+    --tr-door: #2A2119;
+    --tr-door-lo: #211A14;
+    --tr-door-rim: .55;
+    --tr-door-rim-r: .3;
+    --tr-dome-hi: #463A30;
+    --tr-dome: #3A3029;
+    --tr-dome-lo: #2C251F;
+    --tr-dome-rim: #D9BC77;
+    --tr-dome-rim-a: .75;
+    --tr-rib: #D9BC77;
+    --tr-rib-op: .45;
+    --tr-med: #3A3029;
+    --tr-med-ink: #D0B272;
+    --tr-med-ring: .8;
+    --tr-route: #8C7650;
+    --tr-route-a: .8;
+    --tr-trail: #D9BC77;
+    --tr-glow: #D9BC77;
+    --tr-halo-a: .2;
+    --tr-halo-b: .085;
+    --tr-shadow: #000000;
+    --tr-coin-lo: #9C7A3A;
+    --tr-coin-ink: #4A3518;
+    --tr-spec: .55;
+    --tr-spec-c: #FFF3D6;
+    --tr-ground: #D9BC77;
+    --tr-ground-a: .22;
+    --tr-rim-op: .5;
+    --tr-rim-mid: .22;
+    --hsa-halo-a: .07;
+    --hsa-halo-b: .02;
+  }
+}
+.hsa-tr { --hsa-tr-dur: 5.6s; --hsa-tr-delay: 0s; }
+.hsa-tr .tr-coin,
+.hsa-tr .tr-coin-sh,
+.hsa-tr .tr-coin-cs,
+.hsa-tr .tr-trail,
+.hsa-tr .tr-mask-path { animation-duration: var(--hsa-tr-dur); animation-delay: var(--hsa-tr-delay); animation-timing-function: linear; animation-iteration-count: infinite; animation-fill-mode: both; }
+.hsa-tr .tr-coin          { animation-name: tr-coin; }
+.hsa-tr .tr-coin-sh       { animation-name: tr-coin-sh; }
+.hsa-tr .tr-coin-cs       { animation-name: tr-coin-cs; }
+.hsa-tr .tr-trail--1      { animation-name: tr-lit, tr-trail-1; }
+.hsa-tr .tr-trail--2      { animation-name: tr-lit, tr-trail-2; }
+.hsa-tr .tr-trail--3      { animation-name: tr-lit, tr-trail-3; }
+.hsa-tr .tr-trail--4      { animation-name: tr-lit, tr-trail-4; }
+.hsa-tr .tr-trail--5      { animation-name: tr-lit, tr-trail-5; }
+.hsa-tr .tr-trail--6      { animation-name: tr-lit, tr-trail-6; }
+/* Máscara de la ruta: quita (no tapa) los puntos bajo la estela; usa la opacidad de la capa más longeva. */
+.hsa-tr .tr-mask-path     { animation-name: tr-lit, tr-trail-6; }
 
 @keyframes tr-coin {
-  0%, 9% { transform: translate(76px, 41.42000000000001px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  12% { transform: translate(76px, 43.62000000000001px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  14% { transform: translate(76px, 41.42px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  16% { transform: translate(76.32px, 41.25px) rotate(-1.18deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  18% { transform: translate(77.37px, 40.68px) rotate(-2.32deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  20% { transform: translate(79.29px, 39.67px) rotate(-3.38deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  22% { transform: translate(82.22px, 38.16px) rotate(-4.31deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  24% { transform: translate(86.28px, 36.14px) rotate(-5.05deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  26% { transform: translate(91.62px, 33.62px) rotate(-5.57deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  28% { transform: translate(98.36px, 30.66px) rotate(-5.81deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  30% { transform: translate(106.67px, 27.33px) rotate(-5.74deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  32% { transform: translate(116.67px, 23.82px) rotate(-5.32deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  34% { transform: translate(128.53px, 20.34px) rotate(-4.53deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  36% { transform: translate(142.38px, 17.22px) rotate(-3.38deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  38% { transform: translate(158.32px, 14.9px) rotate(-1.89deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  40% { transform: translate(174.4px, 13.92px) rotate(-0.33deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  42% { transform: translate(188.59px, 14.19px) rotate(1.01deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  44% { transform: translate(200.9px, 15.29px) rotate(2.06deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  46% { transform: translate(211.39px, 16.87px) rotate(2.8deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  48% { transform: translate(220.15px, 18.63px) rotate(3.21deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  50% { transform: translate(227.31px, 20.38px) rotate(3.33deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  52% { transform: translate(233px, 21.96px) rotate(3.18deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  54% { transform: translate(237.34px, 23.28px) rotate(2.8deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  56% { transform: translate(240.47px, 24.29px) rotate(2.25deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  58% { transform: translate(242.53px, 24.99px) rotate(1.57deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  60% { transform: translate(243.66px, 25.38px) rotate(0.8deg) scale(1); opacity: 1; animation-timing-function: linear; }
-  62% { transform: translate(244px, 25.5px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.3, 0, .5, 1); }
-  65% { transform: translate(244px, 26.9px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  68% { transform: translate(244px, 25.5px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.5, 0, .75, 1); }
-  77% { transform: translate(244px, 34.5px) rotate(0deg) scale(.6); opacity: 0; }
-  88% { transform: translate(76px, 36.42000000000001px) rotate(0deg) scale(.9); opacity: 0; animation-timing-function: cubic-bezier(.25, 0, .3, 1); }
-  100% { transform: translate(76px, 41.42000000000001px) rotate(0deg) scale(1); opacity: 1; }
+  0%, 7.5% { transform: translate(76px, 77.42px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  8.04% { transform: translate(75.97px, 77.5px) rotate(-0.13deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  8.57% { transform: translate(75.81px, 77.88px) rotate(-0.34deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  9.11% { transform: translate(75.54px, 78.53px) rotate(-0.43deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  9.64% { transform: translate(75.27px, 79.17px) rotate(-0.34deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  10.18% { transform: translate(75.11px, 79.56px) rotate(-0.13deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  10.71% { transform: translate(75.08px, 79.64px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  11.3% { transform: translate(75.11px, 79.55px) rotate(0.12deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  11.89% { transform: translate(75.27px, 79.17px) rotate(0.32deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  12.48% { transform: translate(75.6px, 78.39px) rotate(0.57deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  13.07% { transform: translate(76.11px, 77.15px) rotate(0.84deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  13.66% { transform: translate(76.86px, 75.43px) rotate(1.12deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  14.25% { transform: translate(77.87px, 73.24px) rotate(1.41deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  14.84% { transform: translate(79.19px, 70.59px) rotate(1.69deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  15.43% { transform: translate(80.87px, 67.5px) rotate(1.97deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  16.02% { transform: translate(82.93px, 64.03px) rotate(2.24deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  16.61% { transform: translate(85.41px, 60.23px) rotate(2.5deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  17.2% { transform: translate(88.36px, 56.17px) rotate(2.74deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  17.79% { transform: translate(91.8px, 51.92px) rotate(2.97deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  18.38% { transform: translate(95.77px, 47.58px) rotate(3.17deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  18.96% { transform: translate(100.28px, 43.26px) rotate(3.35deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  19.55% { transform: translate(105.34px, 39.05px) rotate(3.52deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  20.14% { transform: translate(110.95px, 35.08px) rotate(3.65deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  20.73% { transform: translate(117.08px, 31.48px) rotate(3.77deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  21.32% { transform: translate(123.68px, 28.35px) rotate(3.86deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  21.91% { transform: translate(130.69px, 25.78px) rotate(3.93deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  22.5% { transform: translate(138.02px, 23.86px) rotate(3.98deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  23.09% { transform: translate(145.55px, 22.61px) rotate(4deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  23.68% { transform: translate(153.19px, 22.04px) rotate(4deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  24.27% { transform: translate(160.79px, 22.49px) rotate(3.97deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  24.86% { transform: translate(168.02px, 24.71px) rotate(3.93deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  25.45% { transform: translate(174.76px, 27.89px) rotate(3.86deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  26.04% { transform: translate(181.07px, 31.57px) rotate(3.77deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  26.63% { transform: translate(187.02px, 35.49px) rotate(3.67deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  27.21% { transform: translate(192.65px, 39.49px) rotate(3.54deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  27.8% { transform: translate(197.97px, 43.48px) rotate(3.4deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  28.39% { transform: translate(203.01px, 47.38px) rotate(3.25deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  28.98% { transform: translate(207.77px, 51.13px) rotate(3.08deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  29.57% { transform: translate(212.26px, 54.68px) rotate(2.9deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  30.16% { transform: translate(216.46px, 58.02px) rotate(2.71deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  30.75% { transform: translate(220.39px, 61.1px) rotate(2.51deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  31.34% { transform: translate(224.04px, 63.91px) rotate(2.3deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  31.93% { transform: translate(227.39px, 66.45px) rotate(2.09deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  32.52% { transform: translate(230.46px, 68.7px) rotate(1.88deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  33.11% { transform: translate(233.23px, 70.66px) rotate(1.67deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  33.7% { transform: translate(235.69px, 72.35px) rotate(1.46deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  34.29% { transform: translate(237.86px, 73.77px) rotate(1.25deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  34.88% { transform: translate(239.72px, 74.94px) rotate(1.05deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  35.46% { transform: translate(241.29px, 75.89px) rotate(0.86deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  36.05% { transform: translate(242.57px, 76.63px) rotate(0.68deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  36.64% { transform: translate(243.57px, 77.19px) rotate(0.52deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  37.23% { transform: translate(244.32px, 77.59px) rotate(0.37deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  37.82% { transform: translate(244.84px, 77.87px) rotate(0.25deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  38.41% { transform: translate(245.16px, 78.05px) rotate(0.14deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  39% { transform: translate(245.33px, 78.14px) rotate(0.07deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  39.59% { transform: translate(245.4px, 78.17px) rotate(0.02deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  40.18% { transform: translate(245.41px, 78.18px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  40.68% { transform: translate(245.39px, 78.17px) rotate(-0.04deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  41.18% { transform: translate(245.26px, 78.1px) rotate(-0.13deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  41.68% { transform: translate(245.02px, 77.97px) rotate(-0.2deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  42.18% { transform: translate(244.7px, 77.8px) rotate(-0.23deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  42.68% { transform: translate(244.39px, 77.63px) rotate(-0.2deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  43.18% { transform: translate(244.15px, 77.5px) rotate(-0.13deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  43.68% { transform: translate(244.02px, 77.43px) rotate(-0.04deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  44.18%, 63.21% { transform: translate(244px, 77.42px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  63.79% { transform: translate(244px, 77.42px) rotate(0deg) scale(0.973); opacity: 0.992; animation-timing-function: linear; }
+  64.38% { transform: translate(244px, 77.42px) rotate(0deg) scale(0.950); opacity: 0.968; animation-timing-function: linear; }
+  64.96% { transform: translate(244px, 77.42px) rotate(0deg) scale(0.932); opacity: 0.927; animation-timing-function: linear; }
+  65.54% { transform: translate(244px, 77.42px) rotate(0deg) scale(0.919); opacity: 0.865; animation-timing-function: linear; }
+  66.12% { transform: translate(244px, 77.42px) rotate(0deg) scale(0.909); opacity: 0.779; animation-timing-function: linear; }
+  66.7% { transform: translate(244px, 77.42px) rotate(0deg) scale(0.904); opacity: 0.66; animation-timing-function: linear; }
+  67.28% { transform: translate(244px, 77.42px) rotate(0deg) scale(0.901); opacity: 0.483; animation-timing-function: linear; }
+  67.86% { transform: translate(244px, 77.42px) rotate(0deg) scale(0.9); opacity: 0; animation-timing-function: step-end; }
+  69.64% { transform: translate(76px, 77.42px) rotate(0deg) scale(0.9); opacity: 0; animation-timing-function: linear; }
+  70.22% { transform: translate(76px, 77.42px) rotate(0deg) scale(0.901); opacity: 0.483; animation-timing-function: linear; }
+  70.8% { transform: translate(76px, 77.42px) rotate(0deg) scale(0.904); opacity: 0.66; animation-timing-function: linear; }
+  71.38% { transform: translate(76px, 77.42px) rotate(0deg) scale(0.909); opacity: 0.779; animation-timing-function: linear; }
+  71.96% { transform: translate(76px, 77.42px) rotate(0deg) scale(0.919); opacity: 0.865; animation-timing-function: linear; }
+  72.54% { transform: translate(76px, 77.42px) rotate(0deg) scale(0.932); opacity: 0.927; animation-timing-function: linear; }
+  73.13% { transform: translate(76px, 77.42px) rotate(0deg) scale(0.950); opacity: 0.968; animation-timing-function: linear; }
+  73.71% { transform: translate(76px, 77.42px) rotate(0deg) scale(0.973); opacity: 0.992; animation-timing-function: linear; }
+  74.29%, 100% { transform: translate(76px, 77.42px) rotate(0deg) scale(1); opacity: 1; }
 }
 @keyframes tr-lit {
-  0%, 14% { stroke-dashoffset: 1; opacity: 1; }
-  16% { stroke-dashoffset: 0.9979; opacity: 1; animation-timing-function: linear; }
-  18% { stroke-dashoffset: 0.9911; opacity: 1; animation-timing-function: linear; }
-  20% { stroke-dashoffset: 0.9786; opacity: 1; animation-timing-function: linear; }
-  22% { stroke-dashoffset: 0.9597; opacity: 1; animation-timing-function: linear; }
-  24% { stroke-dashoffset: 0.9336; opacity: 1; animation-timing-function: linear; }
-  26% { stroke-dashoffset: 0.8997; opacity: 1; animation-timing-function: linear; }
-  28% { stroke-dashoffset: 0.8574; opacity: 1; animation-timing-function: linear; }
-  30% { stroke-dashoffset: 0.8060; opacity: 1; animation-timing-function: linear; }
-  32% { stroke-dashoffset: 0.7451; opacity: 1; animation-timing-function: linear; }
-  34% { stroke-dashoffset: 0.6741; opacity: 1; animation-timing-function: linear; }
-  36% { stroke-dashoffset: 0.5925; opacity: 1; animation-timing-function: linear; }
-  38% { stroke-dashoffset: 0.5000; opacity: 1; animation-timing-function: linear; }
-  40% { stroke-dashoffset: 0.4075; opacity: 1; animation-timing-function: linear; }
-  42% { stroke-dashoffset: 0.3259; opacity: 1; animation-timing-function: linear; }
-  44% { stroke-dashoffset: 0.2549; opacity: 1; animation-timing-function: linear; }
-  46% { stroke-dashoffset: 0.1940; opacity: 1; animation-timing-function: linear; }
-  48% { stroke-dashoffset: 0.1426; opacity: 1; animation-timing-function: linear; }
-  50% { stroke-dashoffset: 0.1003; opacity: 1; animation-timing-function: linear; }
-  52% { stroke-dashoffset: 0.0664; opacity: 1; animation-timing-function: linear; }
-  54% { stroke-dashoffset: 0.0403; opacity: 1; animation-timing-function: linear; }
-  56% { stroke-dashoffset: 0.0214; opacity: 1; animation-timing-function: linear; }
-  58% { stroke-dashoffset: 0.0089; opacity: 1; animation-timing-function: linear; }
-  60% { stroke-dashoffset: 0; opacity: 1; animation-timing-function: linear; }
-  62% { stroke-dashoffset: 0; opacity: 1; animation-timing-function: linear; }
-  70% { stroke-dashoffset: 0; opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  86% { stroke-dashoffset: 0; opacity: 0; }
-  87% { stroke-dashoffset: 1; opacity: 0; }
-  88%, 100% { stroke-dashoffset: 1; opacity: 1; }
+  0%, 10.71% { stroke-dashoffset: 242.44px; animation-timing-function: linear; }
+  11.3% { stroke-dashoffset: 242.44px; animation-timing-function: linear; }
+  11.89% { stroke-dashoffset: 242.44px; animation-timing-function: linear; }
+  12.48% { stroke-dashoffset: 242.44px; animation-timing-function: linear; }
+  13.07% { stroke-dashoffset: 242.15px; animation-timing-function: linear; }
+  13.66% { stroke-dashoffset: 240.28px; animation-timing-function: linear; }
+  14.25% { stroke-dashoffset: 237.86px; animation-timing-function: linear; }
+  14.84% { stroke-dashoffset: 234.9px; animation-timing-function: linear; }
+  15.43% { stroke-dashoffset: 231.39px; animation-timing-function: linear; }
+  16.02% { stroke-dashoffset: 227.35px; animation-timing-function: linear; }
+  16.61% { stroke-dashoffset: 222.81px; animation-timing-function: linear; }
+  17.2% { stroke-dashoffset: 217.79px; animation-timing-function: linear; }
+  17.79% { stroke-dashoffset: 212.32px; animation-timing-function: linear; }
+  18.38% { stroke-dashoffset: 206.44px; animation-timing-function: linear; }
+  18.96% { stroke-dashoffset: 200.19px; animation-timing-function: linear; }
+  19.55% { stroke-dashoffset: 193.61px; animation-timing-function: linear; }
+  20.14% { stroke-dashoffset: 186.74px; animation-timing-function: linear; }
+  20.73% { stroke-dashoffset: 179.63px; animation-timing-function: linear; }
+  21.32% { stroke-dashoffset: 172.31px; animation-timing-function: linear; }
+  21.91% { stroke-dashoffset: 164.84px; animation-timing-function: linear; }
+  22.5% { stroke-dashoffset: 157.27px; animation-timing-function: linear; }
+  23.09% { stroke-dashoffset: 149.63px; animation-timing-function: linear; }
+  23.68% { stroke-dashoffset: 141.97px; animation-timing-function: linear; }
+  24.27% { stroke-dashoffset: 134.33px; animation-timing-function: linear; }
+  24.86% { stroke-dashoffset: 126.77px; animation-timing-function: linear; }
+  25.45% { stroke-dashoffset: 119.31px; animation-timing-function: linear; }
+  26.04% { stroke-dashoffset: 112px; animation-timing-function: linear; }
+  26.63% { stroke-dashoffset: 104.87px; animation-timing-function: linear; }
+  27.21% { stroke-dashoffset: 97.97px; animation-timing-function: linear; }
+  27.8% { stroke-dashoffset: 91.31px; animation-timing-function: linear; }
+  28.39% { stroke-dashoffset: 84.94px; animation-timing-function: linear; }
+  28.98% { stroke-dashoffset: 78.89px; animation-timing-function: linear; }
+  29.57% { stroke-dashoffset: 73.16px; animation-timing-function: linear; }
+  30.16% { stroke-dashoffset: 67.8px; animation-timing-function: linear; }
+  30.75% { stroke-dashoffset: 62.8px; animation-timing-function: linear; }
+  31.34% { stroke-dashoffset: 58.2px; animation-timing-function: linear; }
+  31.93% { stroke-dashoffset: 53.99px; animation-timing-function: linear; }
+  32.52% { stroke-dashoffset: 50.19px; animation-timing-function: linear; }
+  33.11% { stroke-dashoffset: 46.79px; animation-timing-function: linear; }
+  33.7% { stroke-dashoffset: 43.8px; animation-timing-function: linear; }
+  34.29% { stroke-dashoffset: 41.21px; animation-timing-function: linear; }
+  34.88% { stroke-dashoffset: 39.01px; animation-timing-function: linear; }
+  35.46% { stroke-dashoffset: 37.18px; animation-timing-function: linear; }
+  36.05% { stroke-dashoffset: 35.71px; animation-timing-function: linear; }
+  36.64% { stroke-dashoffset: 34.56px; animation-timing-function: linear; }
+  37.23% { stroke-dashoffset: 33.71px; animation-timing-function: linear; }
+  37.82% { stroke-dashoffset: 33.12px; animation-timing-function: linear; }
+  38.41% { stroke-dashoffset: 32.75px; animation-timing-function: linear; }
+  39% { stroke-dashoffset: 32.55px; animation-timing-function: linear; }
+  39.59% { stroke-dashoffset: 32.48px; animation-timing-function: linear; }
+  40.68% { stroke-dashoffset: 32.49px; animation-timing-function: linear; }
+  41.18% { stroke-dashoffset: 32.63px; animation-timing-function: linear; }
+  41.68% { stroke-dashoffset: 32.91px; animation-timing-function: linear; }
+  42.18% { stroke-dashoffset: 33.27px; animation-timing-function: linear; }
+  42.68% { stroke-dashoffset: 33.63px; animation-timing-function: linear; }
+  43.18% { stroke-dashoffset: 33.9px; animation-timing-function: linear; }
+  43.68% { stroke-dashoffset: 34.04px; animation-timing-function: linear; }
+  40.18%, 67.86% { stroke-dashoffset: 32.47px; animation-timing-function: step-end; }
+  68.75%, 100% { stroke-dashoffset: 242.44px; }
 }
-@keyframes tr-pulse-origen {
-  0%, 11% { opacity: 0; transform: scale(.55); animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
-  14%     { opacity: .85; }
-  30%     { opacity: 0; transform: scale(1.4); }
-  100%    { opacity: 0; transform: scale(1.4); }
+@keyframes tr-trail-1 {
+  0%, 16.34% { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  19.55%, 21.32% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  27.8%, 100% { opacity: 0; }
 }
-@keyframes tr-pulse-destino {
-  0%, 62% { opacity: 0; transform: scale(.55); animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
-  66%     { opacity: .9; }
-  84%     { opacity: 0; transform: scale(1.45); }
-  100%    { opacity: 0; transform: scale(1.45); }
+@keyframes tr-trail-2 {
+  0%, 16.34% { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  18.67%, 23.09% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  29.57%, 100% { opacity: 0; }
 }
-@keyframes tr-glow-origen {
-  0%, 3%  { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  11%     { opacity: .85; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  30%     { opacity: 0; }
-  100%    { opacity: 0; }
+@keyframes tr-trail-3 {
+  0%, 16.34% { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  17.79%, 24.86% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  31.34%, 100% { opacity: 0; }
 }
-@keyframes tr-glow-destino {
-  0%, 63% { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  72%     { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  94%     { opacity: 0; }
-  100%    { opacity: 0; }
+@keyframes tr-trail-4 {
+  0%, 16.34% { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  17.77%, 26.63% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  33.11%, 100% { opacity: 0; }
 }
+@keyframes tr-trail-5 {
+  0%, 16.34% { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  17.77%, 28.39% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  34.88%, 100% { opacity: 0; }
+}
+@keyframes tr-trail-6 {
+  0%, 16.34% { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  17.77%, 30.16% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  36.64%, 100% { opacity: 0; }
+}
+@keyframes tr-coin-sh {
+  0%, 10.71% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  14.29%, 30.18% { opacity: .3; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  34.29%, 100% { opacity: 1; }
+}
+@keyframes tr-coin-cs {
+  0%, 10.71% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  13.57%, 37.32% { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  41.61%, 100% { opacity: 1; }
+}
+@keyframes tr-pulse-origen {} /* marcador final del bloque generado (vacío a propósito) */
+/* @module transferencia:end */
 
+/* @module tarjeta-pos:start */
 /* ==========================================================================
-   3 · TARJETA + POS  (loop 5.2 s)
-   Pose del marcado = tarjeta en lectura junto al lector, ondas y puntos
-   visibles. La tarjeta usa dos grupos anidados (eje X / eje Y + giro)
-   con curvas distintas: así el recorrido es un arco natural, no una recta.
-   Sin campos de tarjeta ni pantalla de "aprobado".
+   3 · TARJETA + POS  (loop 5.6 s)
+   Pose del marcado (= movimiento reducido): tarjeta champán en lectura sobre
+   el lector (READ x 164 · y 61 · -5°): su borde inferior queda 2-5 u por
+   encima del marco de pantalla, sin tocarlo ni taparlo; la sombra cae sobre
+   el marco y el borde superior del cristal. Ondas fijas a .6/.4/.25; pantalla
+   en reposo (Q + una regla, sin barras ni puntos).
+   La tarjeta usa dos grupos anidados (eje X / eje Y + giro) con curvas
+   distintas: y lidera a la ida y x a la vuelta, de modo que ambos tramos se
+   curvan hacia el mismo lado (arriba-izquierda).
+   Sus sombras (fondo; carcasa, oscura; pantalla, tenue y tostada) repiten las
+   mismas animaciones. Sin campos de tarjeta, sin estados ni "aprobado".
+   Los keyframes y la tabla de tiempos se generan con `node build-pos.js`.
    ========================================================================== */
-.hsa-pos { --hsa-pos-dur: 5.2s; }
-.hsa-pos .pos-card-x      { animation: pos-card-x var(--hsa-pos-dur) linear infinite both; }
-.hsa-pos .pos-card-y      { animation: pos-card-y var(--hsa-pos-dur) linear infinite both; }
-.hsa-pos .pos-card-sheen  { animation: pos-sheen  var(--hsa-pos-dur) linear infinite both; }
-.hsa-pos .pos-wave        { animation: pos-wave   var(--hsa-pos-dur) linear infinite both; }
-.hsa-pos .pos-wave--2     { animation-delay: .16s; }
-.hsa-pos .pos-wave--3     { animation-delay: .32s; }
-.hsa-pos .pos-dot         { animation: pos-dot    var(--hsa-pos-dur) linear infinite both; }
-.hsa-pos .pos-dot--2      { animation-delay: .18s; }
-.hsa-pos .pos-dot--3      { animation-delay: .36s; }
-.hsa-pos .pos-screen-glow { animation: pos-glow   var(--hsa-pos-dur) linear infinite both; }
-
-/* Eje X: avanza con aceleración y frenado suaves, mínima anticipación. */
-@keyframes pos-card-x {
-  0%, 9%  { transform: translateX(62px);    animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  14%     { transform: translateX(59px);    animation-timing-function: cubic-bezier(.5, 0, .25, 1); }
-  38%     { transform: translateX(138.4px); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  43%     { transform: translateX(137px); }
-  60%     { transform: translateX(137px);   animation-timing-function: cubic-bezier(.45, 0, .35, 1); }
-  86%     { transform: translateX(62px); }
-  100%    { transform: translateX(62px); }
+/* Tokens · día */
+.hsa-pos {
+  --pos-body-hi: #6A5440;
+  --pos-body: #4C3B2C;
+  --pos-body-lo: #33281F;
+  --pos-side: #2A2018;
+  --pos-bevel: #9A8268;
+  --pos-bevel-a: .7;
+  --pos-contour: #1F1813;
+  --pos-contour-a: .9;
+  --pos-mark-a: .7;
+  --pos-slot: #3A2E24;
+  --pos-bezel: #2A2019;
+  --pos-reader-hi: #57463A;
+  --pos-reader: #3A2E23;
+  --pos-screen-hi: #F6EFDF;
+  --pos-screen: #ECE2CB;
+  --pos-screen-lo: #DFD2B6;
+  --pos-screen-ink: #6B4E23;
+  --pos-screen-hl: #FFFFFF;
+  --pos-screen-hl-a: .6;
+  --pos-glow: #FFFDF4;
+  --pos-key: #5E4B3A;
+  --pos-key-hi: #7A6550;
+  --pos-key-hl: #9A8570;
+  --pos-key-ink: #B4A28A;
+  --pos-fk-1: #7E6650;
+  --pos-fk-2: #8C7058;
+  --pos-fk-3: #7E6650;
+  --pos-wave: #B8924A;
+  --pos-card-hi: #F0E2BE;
+  --pos-card: #E1C994;
+  --pos-card-lo: #C9A869;
+  --pos-card-edge: #A9884F;
+  --pos-card-detail: #8E6B3A;
+  --pos-card-rim: #FFFFFF;
+  --pos-card-rim-a: .7;
+  --pos-chip-hi: #E9D3A0;
+  --pos-chip: #D1B275;
+  --pos-chip-lo: #B8924A;
+  --pos-shadow: #5A3A1E;
+  --pos-shadow-on: #2A1B0E;
+  --pos-shadow-con: #14100D;
+  --pos-shadow-con-a: .38;
+  --pos-shadow-amb: #5A3A1E;
+  --pos-shadow-amb-a: .12;
+  --pos-bounce: #D9BC77;
+  --pos-bounce-a: 0;
+  --pos-ground: #6B4E23;
+  --pos-ground-a: .18;
+  --pos-shadow-scr: #6B4E23;
+  --pos-sheen: #FFFFFF;
+  --pos-card-spec-a: .16;
+  --pos-card-spec: #FFFFFF;
+  --pos-card-contour: #7E5E31;
+  --pos-key-gloss-a: .14;
+  --pos-key-gloss: #FFFFFF;
+  --pos-glow-b: .3;
+  --pos-glow-a: .75;
+  --pos-slot-b: #4A3B2E;
+  --pos-slot-a: #2E241C;
+  --pos-contour-lo: #1F1813;
+  --pos-contour-hi: #1F1813;
 }
-/* Eje Y + giro: sube antes de avanzar (arco), se alinea con el lector, se retira. */
+/* Tokens · noche (superficies elevadas en escalera cálida + bisel oro) */
+[data-hsa-theme="noche"] .hsa-pos,
+.hsa-pos[data-hsa-theme="noche"] {
+  --pos-body-hi: #5A4838;
+  --pos-body: #3A2E24;
+  --pos-body-lo: #241C15;
+  --pos-side: #2A211A;
+  --pos-bevel: #D9BC77;
+  --pos-bevel-a: .55;
+  --pos-contour: #120E0B;
+  --pos-contour-a: 1;
+  --pos-mark-a: .6;
+  --pos-slot: #2C251F;
+  --pos-bezel: #14100C;
+  --pos-reader-hi: #4A3C2F;
+  --pos-reader: #2C251F;
+  --pos-screen-hi: #5A4A38;
+  --pos-screen: #4C3F31;
+  --pos-screen-lo: #3E3328;
+  --pos-screen-ink: #F2EDE2;
+  --pos-screen-hl: #D9BC77;
+  --pos-screen-hl-a: .3;
+  --pos-glow: #D9BC77;
+  --pos-key: #3A3029;
+  --pos-key-hi: #54463A;
+  --pos-key-hl: #8A7458;
+  --pos-key-ink: #A8967E;
+  --pos-fk-1: #6A5444;
+  --pos-fk-2: #7A6250;
+  --pos-fk-3: #6A5444;
+  --pos-wave: #D9BC77;
+  --pos-card-hi: #D9C08A;
+  --pos-card: #C4A66C;
+  --pos-card-lo: #9A7A42;
+  --pos-card-edge: #74552A;
+  --pos-card-detail: #5A3F1C;
+  --pos-card-rim: #F1DFB2;
+  --pos-card-rim-a: .75;
+  --pos-chip-hi: #E2CB95;
+  --pos-chip: #BFA165;
+  --pos-chip-lo: #9C7C40;
+  --pos-shadow: #000000;
+  --pos-shadow-on: #000000;
+  --pos-shadow-con: #000000;
+  --pos-shadow-con-a: .5;
+  --pos-shadow-amb: #000000;
+  --pos-shadow-amb-a: .02;
+  --pos-bounce: #D9BC77;
+  --pos-bounce-a: .07;
+  --pos-ground: #D9BC77;
+  --pos-ground-a: .22;
+  --pos-shadow-scr: #000000;
+  --pos-sheen: #F1DFB2;
+  --pos-card-spec-a: .10;
+  --pos-card-spec: #F1DFB2;
+  --pos-card-contour: #5E4522;
+  --pos-key-gloss-a: .12;
+  --pos-key-gloss: #D9BC77;
+  --pos-glow-b: .1;
+  --pos-glow-a: .3;
+  --pos-slot-b: #2C251F;
+  --pos-slot-a: #120E0B;
+  --pos-contour-lo: #120E0B;
+  --pos-contour-hi: #6E5A46;
+}
+@media (prefers-color-scheme: dark) {
+  [data-hsa-theme="auto"] .hsa-pos {
+    --pos-body-hi: #5A4838;
+    --pos-body: #3A2E24;
+    --pos-body-lo: #241C15;
+    --pos-side: #2A211A;
+    --pos-bevel: #D9BC77;
+    --pos-bevel-a: .55;
+    --pos-contour: #120E0B;
+    --pos-contour-a: 1;
+    --pos-mark-a: .6;
+    --pos-slot: #2C251F;
+    --pos-bezel: #14100C;
+    --pos-reader-hi: #4A3C2F;
+    --pos-reader: #2C251F;
+    --pos-screen-hi: #5A4A38;
+    --pos-screen: #4C3F31;
+    --pos-screen-lo: #3E3328;
+    --pos-screen-ink: #F2EDE2;
+    --pos-screen-hl: #D9BC77;
+    --pos-screen-hl-a: .3;
+    --pos-glow: #D9BC77;
+    --pos-key: #3A3029;
+    --pos-key-hi: #54463A;
+    --pos-key-hl: #8A7458;
+    --pos-key-ink: #A8967E;
+    --pos-fk-1: #6A5444;
+    --pos-fk-2: #7A6250;
+    --pos-fk-3: #6A5444;
+    --pos-wave: #D9BC77;
+    --pos-card-hi: #D9C08A;
+    --pos-card: #C4A66C;
+    --pos-card-lo: #9A7A42;
+    --pos-card-edge: #74552A;
+    --pos-card-detail: #5A3F1C;
+    --pos-card-rim: #F1DFB2;
+    --pos-card-rim-a: .75;
+    --pos-chip-hi: #E2CB95;
+    --pos-chip: #BFA165;
+    --pos-chip-lo: #9C7C40;
+    --pos-shadow: #000000;
+    --pos-shadow-on: #000000;
+    --pos-shadow-con: #000000;
+    --pos-shadow-con-a: .5;
+    --pos-shadow-amb: #000000;
+    --pos-shadow-amb-a: .02;
+    --pos-bounce: #D9BC77;
+    --pos-bounce-a: .07;
+    --pos-ground: #D9BC77;
+    --pos-ground-a: .22;
+    --pos-shadow-scr: #000000;
+    --pos-sheen: #F1DFB2;
+    --pos-card-spec-a: .10;
+    --pos-card-spec: #F1DFB2;
+    --pos-card-contour: #5E4522;
+    --pos-key-gloss-a: .12;
+    --pos-key-gloss: #D9BC77;
+    --pos-glow-b: .1;
+    --pos-glow-a: .3;
+    --pos-slot-b: #2C251F;
+    --pos-slot-a: #120E0B;
+    --pos-contour-lo: #120E0B;
+    --pos-contour-hi: #6E5A46;
+  }
+}
+/* Un único reloj: --hsa-pos-delay desplaza todas las capas a la vez (sin retrasos propios). */
+.hsa-pos { --hsa-pos-dur: 5.6s; --hsa-pos-delay: 0s; }
+.hsa-pos .pos-card-x,
+.hsa-pos .pos-card-y,
+.hsa-pos .pos-shoff,
+.hsa-pos .pos-card-sheen,
+.hsa-pos .pos-wave,
+.hsa-pos .pos-screen-glow {
+  animation-duration: var(--hsa-pos-dur);
+  animation-delay: var(--hsa-pos-delay);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+.hsa-pos .pos-card-x      { animation-name: pos-card-x; }
+.hsa-pos .pos-card-y      { animation-name: pos-card-y; }
+.hsa-pos .pos-shoff--a    { animation-name: pos-shoff-a; }
+.hsa-pos .pos-shoff--b    { animation-name: pos-shoff-b; }
+.hsa-pos .pos-shoff--c    { animation-name: pos-shoff-c; }
+.hsa-pos .pos-card-sheen  { animation-name: pos-sheen; }
+.hsa-pos .pos-wave--1     { animation-name: pos-wave-1; }
+.hsa-pos .pos-wave--2     { animation-name: pos-wave-2; }
+.hsa-pos .pos-wave--3     { animation-name: pos-wave-3; }
+.hsa-pos .pos-screen-glow { animation-name: pos-glow; }
+
+/* @generated:keyframes:start */
+/* tiempos (s, bucle 5.6): windup 0.4 · go 0.66 · over 1.2 · arrive 1.52 · settled 1.7 · tapIn 2.02 · tapPeak 2.14 · tapBack 2.4 · readEnd 3.1 · depart 3.22 · lift 3.3 · homeX 4.02 · homeY 4.08
+   READ {"x":164,"y":61,"a":-5} · REST {"x":90,"y":112,"a":-12} · ondas hasta 2.9 · brillo hasta 2.92
+   aproximación 1.04 s (recorrido 0.86) · retirada 0.98 s (recorrido 0.8) · reposo quieto 1.92 s · escena quieta 2.42 s = 43.2 % */
+@keyframes pos-card-x {
+  0%, 7.14% { transform: translateX(90px); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  11.79% { transform: translateX(86.4px); animation-timing-function: cubic-bezier(.38, .04, .3, 1); }
+  27.14%, 36.07% { transform: translateX(164px); animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  38.21% { transform: translateX(164.3px); animation-timing-function: cubic-bezier(.2, 0, .2, 1); }
+  42.86%, 57.5% { transform: translateX(164px); animation-timing-function: cubic-bezier(.45, 0, .25, 1); }
+  71.79%, 100% { transform: translateX(90px); }
+}
 @keyframes pos-card-y {
-  0%, 9%  { transform: translateY(112px) rotate(-15deg);  animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  14%     { transform: translateY(113.6px) rotate(-17deg); animation-timing-function: cubic-bezier(.2, 0, .3, 1); }
-  37%     { transform: translateY(69.9px) rotate(-3.4deg); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  43%     { transform: translateY(70.5px) rotate(-4deg);   animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  51%     { transform: translateY(70.1px) rotate(-4deg);   animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  60%     { transform: translateY(70.5px) rotate(-4deg);   animation-timing-function: cubic-bezier(.6, 0, .55, 1); }
-  86%     { transform: translateY(112px) rotate(-15deg); }
-  100%    { transform: translateY(112px) rotate(-15deg); }
+  0%, 7.14% { transform: translateY(112px) rotate(-12deg) scale(1); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  11.79% { transform: translateY(114.6px) rotate(-14.2deg) scale(1); animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  21.43% { transform: translateY(59.2px) rotate(-3.8deg) scale(1); animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  30.36%, 36.07% { transform: translateY(61px) rotate(-5deg) scale(1); animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  38.21% { transform: translateY(61.8px) rotate(-4.4deg) scale(0.955); animation-timing-function: cubic-bezier(.2, 0, .2, 1); }
+  42.86%, 55.36% { transform: translateY(61px) rotate(-5deg) scale(1); animation-timing-function: cubic-bezier(.4, 0, .45, 1); }
+  58.93% { transform: translateY(59.5px) rotate(-3.6deg) scale(1); animation-timing-function: cubic-bezier(.6, 0, .4, 1); }
+  72.86%, 100% { transform: translateY(112px) rotate(-12deg) scale(1); }
+}
+@keyframes pos-shoff-a {
+  0%, 36.07% { transform: translate(2.2px, 3.8px); animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  38.21% { transform: translate(0.33px, 0.57px); animation-timing-function: cubic-bezier(.2, 0, .2, 1); }
+  42.86%, 100% { transform: translate(2.2px, 3.8px); }
+}
+@keyframes pos-shoff-b {
+  0%, 36.07% { transform: translate(3.2px, 5.5px); animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  38.21% { transform: translate(0.48px, 0.82px); animation-timing-function: cubic-bezier(.2, 0, .2, 1); }
+  42.86%, 100% { transform: translate(3.2px, 5.5px); }
+}
+@keyframes pos-shoff-c {
+  0%, 36.07% { transform: translate(0.7px, 1.2px); animation-timing-function: cubic-bezier(.3, 0, .6, 1); }
+  38.21% { transform: translate(0.1px, 0.18px); animation-timing-function: cubic-bezier(.2, 0, .2, 1); }
+  42.86%, 100% { transform: translate(0.7px, 1.2px); }
 }
 @keyframes pos-sheen {
-  0%, 30% { transform: translateX(0); opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  34%     { opacity: 1; }
-  48%     { transform: translateX(100px); opacity: 0; }
-  100%    { transform: translateX(100px); opacity: 0; }
+  0%, 16.07% { transform: translateX(0); opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  18.93% { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  28.57%, 100% { transform: translateX(104px); opacity: 0; }
 }
-/* Ondas de proximidad: dos pulsos discretos durante la pausa de lectura. */
-@keyframes pos-wave {
-  0%, 41% { opacity: 0; transform: translateX(1.6px); animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
-  44%     { opacity: 1; }
-  49%     { opacity: 0; transform: translateX(-1.6px); animation-timing-function: step-end; }
-  49.5%   { opacity: 0; transform: translateX(1.6px); animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
-  52.5%   { opacity: 1; }
-  58%     { opacity: 0; transform: translateX(-1.6px); }
-  100%    { opacity: 0; transform: translateX(-1.6px); }
+@keyframes pos-wave-1 {
+  0%, 38.57% { opacity: 0; animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
+  40.71% { opacity: 0.9; animation-timing-function: cubic-bezier(.45, 0, .6, 1); }
+  47.5%, 100% { opacity: 0; }
 }
-/* Puntos de lectura en pantalla (sin estado final). */
-@keyframes pos-dot {
-  0%, 42% { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  45%     { opacity: .75; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  49%     { opacity: .25; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  53%     { opacity: .75; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  60%     { opacity: 0; }
-  100%    { opacity: 0; }
+@keyframes pos-wave-2 {
+  0%, 40.71% { opacity: 0; animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
+  42.86% { opacity: 0.9; animation-timing-function: cubic-bezier(.45, 0, .6, 1); }
+  49.64%, 100% { opacity: 0; }
+}
+@keyframes pos-wave-3 {
+  0%, 42.86% { opacity: 0; animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
+  45% { opacity: 0.9; animation-timing-function: cubic-bezier(.45, 0, .6, 1); }
+  51.79%, 100% { opacity: 0; }
 }
 @keyframes pos-glow {
-  0%, 39% { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  45%     { opacity: 1; }
-  58%     { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  66%     { opacity: 0; }
-  100%    { opacity: 0; }
+  0%, 38.21% { opacity: 0; animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
+  42.68% { opacity: 0.6; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  45.36% { opacity: 0.6; animation-timing-function: cubic-bezier(.45, 0, .6, 1); }
+  52.14%, 100% { opacity: 0; }
 }
+/* @generated:keyframes:end */
+/* @module tarjeta-pos:end */
 
 /* ==========================================================================
    Control de reproducción

@@ -4,9 +4,9 @@ Tres ilustraciones vectoriales originales, decorativas y en bucle, para las opci
 
 | Archivo | Escena | Bucle | Pose estática (movimiento reducido) |
 |---|---|---|---|
-| `contra-entrega.svg` | Dos manos entregan y reciben un billete verde con Q | 6,4 s | Contacto: el billete sujeto por las dos manos |
+| `contra-entrega.svg` | Dos manos entregan y reciben un billete verde con Q | 5,4 s | Contacto: el billete sujeto por las dos manos |
 | `transferencia.svg` | Una moneda Q viaja en arco de un banco a otro | 5,6 s | Moneda en lo alto del recorrido, ruta iluminada hasta la mitad |
-| `tarjeta-pos.svg` | Una tarjeta se acerca al POS, pausa de lectura y se retira | 5,2 s | Tarjeta junto al lector, ondas y puntos de lectura visibles |
+| `tarjeta-pos.svg` | Una tarjeta se acerca al POS, pausa de lectura y se retira | 5,6 s | Tarjeta junto al lector, ondas y puntos de lectura visibles |
 
 Otros archivos:
 
@@ -128,30 +128,23 @@ Paleta base: día `#F4F1EA` / `#6B4E23`; noche `#0C0A09` / `#F2EDE2` / `#D9BC77`
 
 Todo el movimiento usa **solo `transform`, `opacity` y `stroke-dashoffset`**: no se animan dimensiones ni nada que provoque layout. Las clases van prefijadas (`hsa-`, `ce-`, `tr-`, `pos-`) para no chocar con el CSS del checkout. La duración de cada bucle es una variable (`--hsa-ce-dur`, `--hsa-tr-dur`, `--hsa-pos-dur`).
 
-### `contra-entrega.svg` — raíz `.hsa-scene.hsa-ce`
+### `contra-entrega.svg` — raíz `.hsa-scene.hsa-ce` (5,4 s)
 
-Orden de capas, de atrás hacia delante: `ce-backdrop` → `ce-giver--back` → `ce-receiver--back` → `ce-bill` → `ce-giver--front` → `ce-receiver--front`.
+Orden de capas: `ce-backdrop` → `ce-stage` { `ce-giver--back` → `ce-receiver--back` → `ce-bill` → `ce-bill-b` → `ce-giver--front` → `ce-receiver--front` }.
 
 | Grupo | Qué contiene | Animación |
 |---|---|---|
-| `.ce-backdrop` | Halo y línea de suelo | Estático |
-| `.ce-stage` | Todo el intercambio | `ce-stage`: aparece al inicio y se desvanece al final; el reinicio ocurre a opacidad 0 |
-| `.ce-giver--back` / `.ce-giver--front` | Mano que entrega (izquierda, manga café con puño marfil y botón dorado). **back** = palma y dedos (detrás del billete); **front** = pulgar, eminencia tenar y manga | `ce-giver` (la misma en las dos capas: se mueven como una sola pieza rígida) |
-| `.ce-receiver--back` / `.ce-receiver--front` | Mano que recibe (derecha, manga de punto con puño acanalado) | `ce-receiver` (igual en ambas capas) |
-| `.ce-bill` | Billete, su sombra y detalles | `ce-bill`: copia exacta del movimiento de la mano que lo sostiene en cada tramo |
-| `.ce-sheen` | Brillo recortado al billete | `ce-sheen`: recorre el papel durante la recepción |
+| `.ce-backdrop` | Halo (fuera del escenario; nunca cambia) | Estático |
+| `.ce-giver--back` / `--front` | Mano que entrega (manga café con puño marfil). *back* = palma y dedos detrás del billete; *front* = pulgar, tenar y manga | Mismas pistas `translate` + `rotate` (pivote en la muñeca) en ambas capas: pieza rígida |
+| `.ce-receiver--back` / `--front` | Mano que recibe (manga de punto) | Igual, con su propio pivote |
+| `.ce-thumb` | Subgrupo del pulgar dentro de cada capa *front* | Giro rígido de 6–8° para abrir/cerrar la pinza (sin deformar) |
+| `.ce-press` | Sombra de presión del pulgar sobre el papel | Opacidad |
+| `.ce-bill` | Billete A | Copia exacta de la mano que lo sostiene (comprobado: desviación 0 u) |
+| `.ce-bill-b` | Billete B (`<use>` del mismo dibujo) | Sigue siempre a la mano que entrega; sirve para el relevo del bucle |
 
-Fases (6,4 s):
+Fases: reposo → alcance de quien entrega (curva de alcance preciso con un ligero arco) → quien recibe llega ~170 ms después → contacto quieto (~0,84 s) → pequeño tirón → quien recibe se lleva el billete y quien entrega suelta y se retira → reposo → relevo. En el relevo, el billete se desvanece en la mano que recibe y el billete B aparece en la de quien entrega; el cambio A↔B en el contacto es idéntico píxel a píxel. Las manos tienen el mismo estado al 0 % y al 100 %, sin fundido de escena ni fotograma vacío. Movimiento reducido: pose de contacto con el billete A sujeto.
 
-| % | Fase |
-|---|---|
-| 0–9 | Inicio: aparece la escena; la mano izquierda ya sostiene el billete |
-| 4–41 | La mano que entrega avanza con un ligero sobrepaso y se asienta; la que recibe hace una pequeña anticipación hacia atrás (10–15 %) y llega |
-| 41–55 | Contacto: ambas sostienen el billete, con un leve asentamiento conjunto |
-| 55–82 | Recepción: la mano derecha lleva el billete hacia sí y la izquierda suelta y se retira; el billete sale de entre su pulgar y sus dedos sin dejar de estar sujeto |
-| 82–100 | Reinicio: ambas se alejan y la escena se desvanece; el cambio de posición ocurre a opacidad 0, sin saltos visibles |
-
-Ocultación: el pulgar (capa *front*) queda **por delante** del papel y los dedos (capa *back*) **detrás**. El billete siempre está entre las dos capas de cada mano.
+Geometría de la mano: proporciones a partir de datos antropométricos (ANSUR II: palma ≈ 0,60 de la mano, dedo medio ≈ 0,66 de la palma) y de las articulaciones del modelo MoBL. Cascada de longitudes, dedos que se tocan en la PIP, pulgar con MCP a 0,57 de la palma, uña ≈ 7×5,6 u, tres pliegues palmares y luz única arriba a la izquierda.
 
 ### `transferencia.svg` — raíz `.hsa-scene.hsa-tr`
 
@@ -161,7 +154,7 @@ Ocultación: el pulgar (capa *front*) queda **por delante** del papel y los dedo
 | `.tr-bank--origen` / `.tr-bank--destino` | Banco con frontón / banco con cúpula | Estáticos |
 | `.tr-glow--a` / `.tr-glow--b` | Luz cálida de ventanas y puerta | `tr-glow-origen` al salir, `tr-glow-destino` al llegar |
 | `.tr-route` | Ruta punteada | Estática |
-| `.tr-route-lit` | Ruta dorada (`pathLength="1"`) | `tr-lit`: se ilumina detrás de la moneda (`stroke-dashoffset`) y se desvanece |
+| `.tr-route-lit` / estela | Estela tipo cometa (varias capas con `pathLength`) | Avanza con la moneda (`stroke-dashoffset`) y desaparece al llegar; no es una barra de progreso |
 | `.tr-pulse--origen` / `--destino` | Anillos suaves | `tr-pulse-*` (escala + opacidad, `transform-box: fill-box`) |
 | `.tr-trail--1..3` | Estela de tres puntos | Misma animación que la moneda, con un retraso de 0,07 / 0,14 / 0,21 s |
 | `.tr-coin` | Moneda Q con canto estriado | `tr-coin`: reposo → pequeña anticipación → arco con aceleración y frenado → leve asentamiento → se deposita en la cúpula → reaparece en el origen |
@@ -180,7 +173,7 @@ Las posiciones de `tr-coin` y `tr-lit` se calcularon sobre la **misma curva** (u
 | `.pos-card-sheen` | Brillo recortado a la tarjeta | `pos-sheen` al acercarse |
 | `.pos-wave--1..3` | Ondas de proximidad | `pos-wave`: dos pulsos discretos durante la pausa |
 
-Fases (5,2 s): reposo (0–9 %) → anticipación (9–14 %) → acercamiento en arco (14–38 %) → asentamiento (38–43 %) → **lectura** (43–60 %) → retirada (60–86 %) → reposo (86–100 %). El fotograma final coincide con el inicial.
+Fases (5,6 s): reposo → acercamiento en arco (~0,9 s, X e Y con curvas distintas) → toque → **lectura** con ondas que se encienden de dentro hacia fuera (solo opacidad) → pequeño despegue → retirada más ligera que la llegada → reposo. La tarjeta es champán, solo con chip y emblema; las teclas de función son tonales (sin semáforo) y la pantalla muestra Q sin estado final.
 
 ---
 
@@ -192,22 +185,18 @@ Fases (5,2 s): reposo (0–9 %) → anticipación (9–14 %) → acercamiento en
 - **`prefers-reduced-motion: reduce`:** el CSS elimina todas las animaciones y queda la pose del marcado (ver la tabla del inicio). El efectivo muestra el billete sujeto por ambas manos.
 - **IDs únicos:** todos los `id` internos (degradados, recortes, máscara) se renombran al montar cada instancia. Así varias copias, incluso en temas distintos, no se pisan entre sí.
 - **CSP estricta:** cada color existe dos veces, como variable en `style` y como atributo de presentación de respaldo (`fill="#…"`). Si una política bloquea los `style` en línea, la escena se ve en colores de día y el movimiento sigue funcionando (se comprobó con `style-src 'self'`). Lo mismo sirve para abrir los `.svg` en un editor vectorial.
-- **Peso:** `contra-entrega.svg` 78 KB (≈12 KB gzip), `transferencia.svg` 29 KB, `tarjeta-pos.svg` 24 KB.
+- **Peso:** `contra-entrega.svg` 86 KB (≈21 KB gzip), `transferencia.svg` 34 KB, `tarjeta-pos.svg` 26 KB.
 
 ### Medición de fluidez (medida, no estimada)
 
 Medido con `requestAnimationFrame` durante 6–8 s en **Chromium 141 headless** (Playwright, sin GPU, en un contenedor Linux). La reducción de CPU se hizo con `Emulation.setCPUThrottlingRate` de DevTools. Son cifras de referencia de este entorno, no de un teléfono real.
 
-| Condición | Escenas animándose | FPS medio | p95 del fotograma |
-|---|---|---|---|
-| Escritorio 1280×800, DPR 2 | 6 (3 día + 3 noche) | 60,0 | 16,8 ms |
-| Móvil 390×844, DPR 3, CPU ×4 | 6 | 57,8 | 16,8 ms |
-| Móvil 390×844, DPR 3, CPU ×6 | 6 | 41,5 | 33,4 ms |
-| Móvil 390×844, DPR 3, CPU ×6 | 2 de la misma escena | efectivo 59,7 · transferencia 59,3 · tarjeta 60,0 | — |
-| Móvil 390×844, DPR 3, CPU ×10 | 2 de la misma escena | efectivo 49,3 · transferencia 50,7 · tarjeta 52,0 | — |
-| `preview.html` 390×844, DPR 3, CPU ×4 | 3 visibles (18 en el DOM) | 56,2 | 33,3 ms |
+| Condición | Escenas animándose | FPS medio |
+|---|---|---|
+| `preview.html` escritorio 1280×900, DPR 2 | 6 visibles (18 en el DOM) | 60 |
+| `preview.html` móvil 390×844, DPR 3, CPU ×4 | 3 visibles (18 en el DOM) | 46,1 |
 
-Las cifras varían ±2 fps entre ejecuciones. El efectivo es la escena más costosa (máscara de bordes y muchas capas con degradado). En el checkout real normalmente se ve una escena por método de pago, lo que corresponde a las filas de 1–2 escenas. No se midió en Safari ni Firefox ni en dispositivos físicos.
+La versión actual tiene más capas que la anterior (manos rehechas, sombras de contacto). En móvil, con la CPU reducida ×4 y 18 instancias en la página, baja a unos 46 fps. En el checkout real habrá normalmente una escena visible por método de pago. Las cifras varían ±2 fps entre ejecuciones. El efectivo es la escena más costosa (máscara de bordes y muchas capas con degradado). En el checkout real normalmente se ve una escena por método de pago, lo que corresponde a las filas de 1–2 escenas. No se midió en Safari ni Firefox ni en dispositivos físicos.
 
 ---
 
@@ -223,3 +212,12 @@ Las cifras varían ±2 fps entre ejecuciones. El efectivo es la escena más cost
 - No se tocaron el checkout, los pagos, las cuotas, el mapa ni el plugin de ubicación.
 - La carpeta de referencia (`/Volumes/MAC/…/carrito-checkout-2026-10-06/`) y `localhost:8773` no estaban disponibles en el entorno donde se crearon estas escenas. El estilo se ajustó a lo descrito en el encargo (paleta, acabado, gesto aprobado): conviene compararlo con la escena actual al integrarlo.
 - Verificado en Chromium: carga por `file://` y por HTTP, ausencia de IDs duplicados con 18 instancias, clic que atraviesa la escena, pausa con pestaña oculta y fuera de pantalla, movimiento reducido, CSP estricta, y sin scroll horizontal a 320, 390, 820 y 1440 px.
+
+## Investigación aplicada
+
+Para esta versión se revisaron skills públicas de GitHub y guías de Apple. Lo que se tomó:
+- `rshankras/claude-code-apple-skills` (animation-patterns, game-feel), `raintree-technology/apple-hig-skills`, `ebuntario/apple-hig`, `axiaoge2/Apple-Hig-Designer` y `anthropics/skills` (frontend-design): luz única, sombras de contacto y ambiente, modo noche que eleva superficies, y movimiento con propósito con alternativa de movimiento reducido.
+- `dylantarre/animation-principles`, `calesthio/openmontage` (svg-character-animation) y `affaan-m/everything-claude-code` (motion-patterns): curvas de alcance de mínimo tirón, arcos, solapamiento y tiempos asimétricos de llegada y salida.
+- HIG de Apple (Motion, Dark Mode, Tap to Pay) y WWDC «Designing Fluid Interfaces» / «Animate with springs»: muelles críticamente amortiguados, quietud en lugar de lentitud, ondas tipo *variable color* y ningún estado de éxito.
+
+Pendiente conocido: el relevo del billete dura unos 0,2 s y deja ver un instante los dedos a través del papel, y el empuje final de la tarjeta sobre el lector puede afinarse. Ambos están descritos en las notas de revisión y no impiden integrar.
