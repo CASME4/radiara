@@ -1,0 +1,456 @@
+/* ==========================================================================
+   Hesloy · escenas decorativas del checkout
+   contra-entrega.svg · transferencia.svg · tarjeta-pos.svg
+   Solo transform y opacity (sin animar dimensiones ni provocar layout).
+   ========================================================================== */
+
+/* ---------- Base -------------------------------------------------------- */
+.hsa-scene {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.hsa-scene * { pointer-events: none; }
+
+/* Contenedor opcional que reserva el alto antes de que llegue el SVG (16:9). */
+.hsa-slot {
+  display: block;
+  width: 100%;
+  aspect-ratio: 320 / 180;
+  pointer-events: none;
+}
+.hsa-slot > .hsa-scene { height: 100%; }
+
+/* ---------- Tokens · día (valores por defecto) --------------------------- */
+.hsa-scene {
+  --hsa-bg: #F4F1EA;
+  --hsa-ink: #6B4E23;
+  --hsa-gold: #B8924A;
+  --hsa-gold-hi: #E9D3A0;
+  --hsa-halo: #FFFFFF;
+  --hsa-halo-a: .85;
+  --hsa-halo-b: .35;
+
+  /* Contra entrega */
+  --ce-shadow: #5A3A1E;
+  --ce-rim: #D9BC77;
+  --ce-rim-op: 0;
+  --ce-blazer-hi: #9C7A45;
+  --ce-blazer-mid: #6B4E23;
+  --ce-blazer-lo: #3E2B10;
+  --ce-stitch: #D2B47A;
+  --ce-cuff-hi: #FFFDF8;
+  --ce-cuff-lo: #E3DAC8;
+  --ce-cuff-line: #CFC4AE;
+  --ce-knit-hi: #F1E5CC;
+  --ce-knit-mid: #D3BE96;
+  --ce-knit-lo: #A68E64;
+  --ce-knit-line: #9C8659;
+  --ce-bill-hi: #DDEDDE;
+  --ce-bill-lo: #BCD7C1;
+  --ce-bill-light: #EDF5EC;
+  --ce-bill-ink: #3F6B4E;
+  --ce-bill-ink-soft: #7FA98A;
+  --ce-bill-edge: #6E9A79;
+
+  /* Transferencia */
+  --tr-stone-hi: #FFFDF8;
+  --tr-stone: #EFE7D8;
+  --tr-stone-lo: #D9CCB4;
+  --tr-roof: #6B4E23;
+  --tr-roof-hi: #8E6B3A;
+  --tr-line: #B9A684;
+  --tr-door: #6B4E23;
+  --tr-window: #F7EFDC;
+  --tr-route: #C9B48A;
+  --tr-glow: #E2C27E;
+  --tr-chip: #FFFCF5;
+  --tr-chip-edge: #D8C7A3;
+  --tr-shadow: #5A3A1E;
+  --tr-coin-hi: #F6E4B0;
+  --tr-coin: #D3B06A;
+  --tr-coin-lo: #A8843F;
+  --tr-coin-ink: #6B4E23;
+  --tr-rim-op: 0;
+
+  /* Tarjeta + POS */
+  --pos-body-hi: #4A3A2C;
+  --pos-body: #2E241C;
+  --pos-body-lo: #1B1511;
+  --pos-bezel: #14100D;
+  --pos-screen-hi: #FBF6EA;
+  --pos-screen: #EFE5CF;
+  --pos-screen-ink: #6B4E23;
+  --pos-key: #4C3D30;
+  --pos-key-hi: #66533F;
+  --pos-key-ink: #E9DCC2;
+  --pos-wave: #B8924A;
+  --pos-card-hi: #8A6A3A;
+  --pos-card: #6B4E23;
+  --pos-card-lo: #3F2D14;
+  --pos-card-line: #D9BC77;
+  --pos-chip-hi: #F3E2B4;
+  --pos-chip: #CFAE68;
+  --pos-chip-lo: #A88544;
+  --pos-shadow: #5A3A1E;
+  --pos-fk-1: #B87A62;
+  --pos-fk-2: #D6BE8A;
+  --pos-fk-3: #8FA68A;
+}
+
+/* ---------- Tokens · noche ----------------------------------------------
+   Aplica con data-hsa-theme="noche" en cualquier ancestro (o en el SVG).
+   Con data-hsa-theme="auto" sigue a prefers-color-scheme.               */
+[data-hsa-theme="noche"] .hsa-scene,
+.hsa-scene[data-hsa-theme="noche"] {
+  --hsa-bg: #0C0A09;
+  --hsa-ink: #F2EDE2;
+  --hsa-gold: #D9BC77;
+  --hsa-gold-hi: #F1DFB2;
+  --hsa-halo: #D9BC77;
+  --hsa-halo-a: .16;
+  --hsa-halo-b: .05;
+
+  --ce-shadow: #000000;
+  --ce-rim-op: .55;
+  --ce-blazer-hi: #A9874F;
+  --ce-blazer-mid: #6F5228;
+  --ce-blazer-lo: #3A2810;
+  --ce-stitch: #D9BC77;
+  --ce-cuff-hi: #F2EDE2;
+  --ce-cuff-lo: #CFC6B4;
+  --ce-knit-hi: #E6D7B8;
+  --ce-knit-mid: #C7B18A;
+  --ce-knit-lo: #93805C;
+  --ce-bill-hi: #D2E5D4;
+  --ce-bill-lo: #AFCCB6;
+  --ce-bill-light: #E2EEE2;
+
+  --tr-stone-hi: #2A231D;
+  --tr-stone: #211B16;
+  --tr-stone-lo: #17130F;
+  --tr-roof: #D9BC77;
+  --tr-roof-hi: #F1DFB2;
+  --tr-line: #5C4D3A;
+  --tr-door: #D9BC77;
+  --tr-window: #3A3027;
+  --tr-route: #6E5C40;
+  --tr-glow: #D9BC77;
+  --tr-chip: #1C1713;
+  --tr-chip-edge: #8A7451;
+  --tr-shadow: #000000;
+  --tr-coin-lo: #9C7A3A;
+  --tr-coin-ink: #4A3518;
+  --tr-rim-op: .5;
+
+  --pos-body-hi: #3B3129;
+  --pos-body: #241D18;
+  --pos-body-lo: #120F0C;
+  --pos-bezel: #070605;
+  --pos-screen-hi: #2B241D;
+  --pos-screen: #1E1915;
+  --pos-screen-ink: #F2EDE2;
+  --pos-key: #3A3029;
+  --pos-key-hi: #4D4137;
+  --pos-key-ink: #F2EDE2;
+  --pos-wave: #D9BC77;
+  --pos-card-hi: #9C7A45;
+  --pos-card: #6F5228;
+  --pos-card-lo: #2E200D;
+  --pos-shadow: #000000;
+}
+@media (prefers-color-scheme: dark) {
+  [data-hsa-theme="auto"] .hsa-scene {
+    --hsa-bg: #0C0A09; --hsa-ink: #F2EDE2; --hsa-gold: #D9BC77; --hsa-gold-hi: #F1DFB2;
+    --hsa-halo: #D9BC77; --hsa-halo-a: .16; --hsa-halo-b: .05;
+    --ce-shadow: #000000; --ce-rim-op: .55;
+    --ce-blazer-hi: #A9874F; --ce-blazer-mid: #6F5228; --ce-blazer-lo: #3A2810; --ce-stitch: #D9BC77;
+    --ce-cuff-hi: #F2EDE2; --ce-cuff-lo: #CFC6B4;
+    --ce-knit-hi: #E6D7B8; --ce-knit-mid: #C7B18A; --ce-knit-lo: #93805C;
+    --ce-bill-hi: #D2E5D4; --ce-bill-lo: #AFCCB6; --ce-bill-light: #E2EEE2;
+    --tr-stone-hi: #2A231D; --tr-stone: #211B16; --tr-stone-lo: #17130F;
+    --tr-roof: #D9BC77; --tr-roof-hi: #F1DFB2; --tr-line: #5C4D3A; --tr-door: #D9BC77;
+    --tr-window: #3A3027; --tr-route: #6E5C40; --tr-glow: #D9BC77;
+    --tr-chip: #1C1713; --tr-chip-edge: #8A7451; --tr-shadow: #000000;
+    --tr-coin-lo: #9C7A3A; --tr-coin-ink: #4A3518; --tr-rim-op: .5;
+    --pos-body-hi: #3B3129; --pos-body: #241D18; --pos-body-lo: #120F0C; --pos-bezel: #070605;
+    --pos-screen-hi: #2B241D; --pos-screen: #1E1915; --pos-screen-ink: #F2EDE2;
+    --pos-key: #3A3029; --pos-key-hi: #4D4137; --pos-key-ink: #F2EDE2; --pos-wave: #D9BC77;
+    --pos-card-hi: #9C7A45; --pos-card: #6F5228; --pos-card-lo: #2E200D; --pos-shadow: #000000;
+  }
+}
+
+/* ==========================================================================
+   1 · CONTRA ENTREGA  (loop 6.4 s)
+   Pose del marcado = contacto con el billete sujeto por ambas manos.
+   Cada mano está dividida en dos capas (--back detrás del billete,
+   --front delante: pulgar y manga) que comparten la MISMA animación,
+   así que se trasladan como una sola pieza rígida.
+   ========================================================================== */
+.hsa-ce { --hsa-ce-dur: 6.4s; }
+.hsa-ce .ce-stage    { animation: ce-stage    var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-giver    { animation: ce-giver    var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-receiver { animation: ce-receiver var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-bill     { animation: ce-bill     var(--hsa-ce-dur) linear infinite both; }
+.hsa-ce .ce-sheen    { animation: ce-sheen    var(--hsa-ce-dur) linear infinite both; }
+
+/* Aparece al inicio y se desvanece al final: el salto de reinicio ocurre a opacidad 0. */
+@keyframes ce-stage {
+  0%   { opacity: 0; animation-timing-function: cubic-bezier(.3, 0, .4, 1); }
+  9%   { opacity: 1; }
+  84%  { opacity: 1; animation-timing-function: cubic-bezier(.5, 0, .7, 1); }
+  97%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* Mano que entrega (izquierda): llega con el billete, sostiene, suelta y se retira. */
+@keyframes ce-giver {
+  0%   { transform: translate(-29.2px, 6.75px); }
+  4%   { transform: translate(-29.2px, 6.75px); animation-timing-function: cubic-bezier(.45, .05, .25, 1); }
+  36%  { transform: translate(.58px, -.14px);   animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  41%  { transform: translate(0, 0);            animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  46%  { transform: translate(0, .45px);        animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  52%  { transform: translate(0, 0); }
+  57%  { transform: translate(0, 0);            animation-timing-function: cubic-bezier(.42, 0, .3, 1); }
+  82%  { transform: translate(-21.4px, 4.95px); animation-timing-function: cubic-bezier(.2, 0, .45, 1); }
+  100% { transform: translate(-30.2px, 6.98px); }
+}
+
+/* Mano que recibe (derecha): pequeña anticipación, toma el billete y lo lleva hacia sí. */
+@keyframes ce-receiver {
+  0%   { transform: translate(29.2px, 6.75px); }
+  10%  { transform: translate(29.2px, 6.75px); animation-timing-function: cubic-bezier(.3, 0, .5, 1); }
+  15%  { transform: translate(30.8px, 7.1px);  animation-timing-function: cubic-bezier(.45, .05, .25, 1); }
+  41%  { transform: translate(0, 0);           animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  46%  { transform: translate(0, .45px);       animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  52%  { transform: translate(0, 0); }
+  55%  { transform: translate(0, 0);           animation-timing-function: cubic-bezier(.42, 0, .3, 1); }
+  80%  { transform: translate(23.4px, 5.4px);  animation-timing-function: cubic-bezier(.2, 0, .45, 1); }
+  100% { transform: translate(32.1px, 7.4px); }
+}
+
+/* Billete: copia exacta del movimiento de la mano que lo sostiene en cada tramo. */
+@keyframes ce-bill {
+  0%   { transform: translate(-29.2px, 6.75px); }
+  4%   { transform: translate(-29.2px, 6.75px); animation-timing-function: cubic-bezier(.45, .05, .25, 1); }
+  36%  { transform: translate(.58px, -.14px);   animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  41%  { transform: translate(0, 0);            animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  46%  { transform: translate(0, .45px);        animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  52%  { transform: translate(0, 0); }
+  55%  { transform: translate(0, 0);            animation-timing-function: cubic-bezier(.42, 0, .3, 1); }
+  80%  { transform: translate(23.4px, 5.4px);   animation-timing-function: cubic-bezier(.2, 0, .45, 1); }
+  100% { transform: translate(32.1px, 7.4px); }
+}
+
+/* Brillo suave que recorre el papel mientras cambia de mano. */
+@keyframes ce-sheen {
+  0%, 56% { transform: translateX(0); opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  62%     { opacity: 1; }
+  79%     { transform: translateX(150px); opacity: 0; }
+  100%    { transform: translateX(150px); opacity: 0; }
+}
+
+/* ==========================================================================
+   2 · TRANSFERENCIA  (loop 5.6 s)
+   Pose del marcado = moneda Q en lo alto del recorrido, ruta iluminada
+   hasta la mitad. Las posiciones de tr-coin y tr-lit se muestrearon a
+   lo largo de la misma curva (longitud de arco), por eso coinciden.
+   Decorativa: no hay marca de "aprobado" ni texto de estado.
+   ========================================================================== */
+.hsa-tr { --hsa-tr-dur: 5.6s; }
+.hsa-tr .tr-coin       { animation: tr-coin var(--hsa-tr-dur) linear infinite both; }
+.hsa-tr .tr-trail      { animation: tr-coin var(--hsa-tr-dur) linear infinite both; }
+.hsa-tr .tr-trail--1   { animation-delay: .07s; }
+.hsa-tr .tr-trail--2   { animation-delay: .14s; }
+.hsa-tr .tr-trail--3   { animation-delay: .21s; }
+.hsa-tr .tr-route-lit  { animation: tr-lit var(--hsa-tr-dur) linear infinite both; }
+.hsa-tr .tr-pulse      { transform-box: fill-box; transform-origin: center; }
+.hsa-tr .tr-pulse--origen  { animation: tr-pulse-origen  var(--hsa-tr-dur) linear infinite both; }
+.hsa-tr .tr-pulse--destino { animation: tr-pulse-destino var(--hsa-tr-dur) linear infinite both; }
+.hsa-tr .tr-glow--a    { animation: tr-glow-origen  var(--hsa-tr-dur) linear infinite both; }
+.hsa-tr .tr-glow--b    { animation: tr-glow-destino var(--hsa-tr-dur) linear infinite both; }
+
+@keyframes tr-coin {
+  0%, 9% { transform: translate(76px, 41.42000000000001px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  12% { transform: translate(76px, 43.62000000000001px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  14% { transform: translate(76px, 41.42px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  16% { transform: translate(76.32px, 41.25px) rotate(-1.18deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  18% { transform: translate(77.37px, 40.68px) rotate(-2.32deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  20% { transform: translate(79.29px, 39.67px) rotate(-3.38deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  22% { transform: translate(82.22px, 38.16px) rotate(-4.31deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  24% { transform: translate(86.28px, 36.14px) rotate(-5.05deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  26% { transform: translate(91.62px, 33.62px) rotate(-5.57deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  28% { transform: translate(98.36px, 30.66px) rotate(-5.81deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  30% { transform: translate(106.67px, 27.33px) rotate(-5.74deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  32% { transform: translate(116.67px, 23.82px) rotate(-5.32deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  34% { transform: translate(128.53px, 20.34px) rotate(-4.53deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  36% { transform: translate(142.38px, 17.22px) rotate(-3.38deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  38% { transform: translate(158.32px, 14.9px) rotate(-1.89deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  40% { transform: translate(174.4px, 13.92px) rotate(-0.33deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  42% { transform: translate(188.59px, 14.19px) rotate(1.01deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  44% { transform: translate(200.9px, 15.29px) rotate(2.06deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  46% { transform: translate(211.39px, 16.87px) rotate(2.8deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  48% { transform: translate(220.15px, 18.63px) rotate(3.21deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  50% { transform: translate(227.31px, 20.38px) rotate(3.33deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  52% { transform: translate(233px, 21.96px) rotate(3.18deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  54% { transform: translate(237.34px, 23.28px) rotate(2.8deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  56% { transform: translate(240.47px, 24.29px) rotate(2.25deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  58% { transform: translate(242.53px, 24.99px) rotate(1.57deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  60% { transform: translate(243.66px, 25.38px) rotate(0.8deg) scale(1); opacity: 1; animation-timing-function: linear; }
+  62% { transform: translate(244px, 25.5px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.3, 0, .5, 1); }
+  65% { transform: translate(244px, 26.9px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  68% { transform: translate(244px, 25.5px) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.5, 0, .75, 1); }
+  77% { transform: translate(244px, 34.5px) rotate(0deg) scale(.6); opacity: 0; }
+  88% { transform: translate(76px, 36.42000000000001px) rotate(0deg) scale(.9); opacity: 0; animation-timing-function: cubic-bezier(.25, 0, .3, 1); }
+  100% { transform: translate(76px, 41.42000000000001px) rotate(0deg) scale(1); opacity: 1; }
+}
+@keyframes tr-lit {
+  0%, 14% { stroke-dashoffset: 1; opacity: 1; }
+  16% { stroke-dashoffset: 0.9979; opacity: 1; animation-timing-function: linear; }
+  18% { stroke-dashoffset: 0.9911; opacity: 1; animation-timing-function: linear; }
+  20% { stroke-dashoffset: 0.9786; opacity: 1; animation-timing-function: linear; }
+  22% { stroke-dashoffset: 0.9597; opacity: 1; animation-timing-function: linear; }
+  24% { stroke-dashoffset: 0.9336; opacity: 1; animation-timing-function: linear; }
+  26% { stroke-dashoffset: 0.8997; opacity: 1; animation-timing-function: linear; }
+  28% { stroke-dashoffset: 0.8574; opacity: 1; animation-timing-function: linear; }
+  30% { stroke-dashoffset: 0.8060; opacity: 1; animation-timing-function: linear; }
+  32% { stroke-dashoffset: 0.7451; opacity: 1; animation-timing-function: linear; }
+  34% { stroke-dashoffset: 0.6741; opacity: 1; animation-timing-function: linear; }
+  36% { stroke-dashoffset: 0.5925; opacity: 1; animation-timing-function: linear; }
+  38% { stroke-dashoffset: 0.5000; opacity: 1; animation-timing-function: linear; }
+  40% { stroke-dashoffset: 0.4075; opacity: 1; animation-timing-function: linear; }
+  42% { stroke-dashoffset: 0.3259; opacity: 1; animation-timing-function: linear; }
+  44% { stroke-dashoffset: 0.2549; opacity: 1; animation-timing-function: linear; }
+  46% { stroke-dashoffset: 0.1940; opacity: 1; animation-timing-function: linear; }
+  48% { stroke-dashoffset: 0.1426; opacity: 1; animation-timing-function: linear; }
+  50% { stroke-dashoffset: 0.1003; opacity: 1; animation-timing-function: linear; }
+  52% { stroke-dashoffset: 0.0664; opacity: 1; animation-timing-function: linear; }
+  54% { stroke-dashoffset: 0.0403; opacity: 1; animation-timing-function: linear; }
+  56% { stroke-dashoffset: 0.0214; opacity: 1; animation-timing-function: linear; }
+  58% { stroke-dashoffset: 0.0089; opacity: 1; animation-timing-function: linear; }
+  60% { stroke-dashoffset: 0; opacity: 1; animation-timing-function: linear; }
+  62% { stroke-dashoffset: 0; opacity: 1; animation-timing-function: linear; }
+  70% { stroke-dashoffset: 0; opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  86% { stroke-dashoffset: 0; opacity: 0; }
+  87% { stroke-dashoffset: 1; opacity: 0; }
+  88%, 100% { stroke-dashoffset: 1; opacity: 1; }
+}
+@keyframes tr-pulse-origen {
+  0%, 11% { opacity: 0; transform: scale(.55); animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
+  14%     { opacity: .85; }
+  30%     { opacity: 0; transform: scale(1.4); }
+  100%    { opacity: 0; transform: scale(1.4); }
+}
+@keyframes tr-pulse-destino {
+  0%, 62% { opacity: 0; transform: scale(.55); animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
+  66%     { opacity: .9; }
+  84%     { opacity: 0; transform: scale(1.45); }
+  100%    { opacity: 0; transform: scale(1.45); }
+}
+@keyframes tr-glow-origen {
+  0%, 3%  { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  11%     { opacity: .85; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  30%     { opacity: 0; }
+  100%    { opacity: 0; }
+}
+@keyframes tr-glow-destino {
+  0%, 63% { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  72%     { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  94%     { opacity: 0; }
+  100%    { opacity: 0; }
+}
+
+/* ==========================================================================
+   3 · TARJETA + POS  (loop 5.2 s)
+   Pose del marcado = tarjeta en lectura junto al lector, ondas y puntos
+   visibles. La tarjeta usa dos grupos anidados (eje X / eje Y + giro)
+   con curvas distintas: así el recorrido es un arco natural, no una recta.
+   Sin campos de tarjeta ni pantalla de "aprobado".
+   ========================================================================== */
+.hsa-pos { --hsa-pos-dur: 5.2s; }
+.hsa-pos .pos-card-x      { animation: pos-card-x var(--hsa-pos-dur) linear infinite both; }
+.hsa-pos .pos-card-y      { animation: pos-card-y var(--hsa-pos-dur) linear infinite both; }
+.hsa-pos .pos-card-sheen  { animation: pos-sheen  var(--hsa-pos-dur) linear infinite both; }
+.hsa-pos .pos-wave        { animation: pos-wave   var(--hsa-pos-dur) linear infinite both; }
+.hsa-pos .pos-wave--2     { animation-delay: .16s; }
+.hsa-pos .pos-wave--3     { animation-delay: .32s; }
+.hsa-pos .pos-dot         { animation: pos-dot    var(--hsa-pos-dur) linear infinite both; }
+.hsa-pos .pos-dot--2      { animation-delay: .18s; }
+.hsa-pos .pos-dot--3      { animation-delay: .36s; }
+.hsa-pos .pos-screen-glow { animation: pos-glow   var(--hsa-pos-dur) linear infinite both; }
+
+/* Eje X: avanza con aceleración y frenado suaves, mínima anticipación. */
+@keyframes pos-card-x {
+  0%, 9%  { transform: translateX(62px);    animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  14%     { transform: translateX(59px);    animation-timing-function: cubic-bezier(.5, 0, .25, 1); }
+  38%     { transform: translateX(138.4px); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  43%     { transform: translateX(137px); }
+  60%     { transform: translateX(137px);   animation-timing-function: cubic-bezier(.45, 0, .35, 1); }
+  86%     { transform: translateX(62px); }
+  100%    { transform: translateX(62px); }
+}
+/* Eje Y + giro: sube antes de avanzar (arco), se alinea con el lector, se retira. */
+@keyframes pos-card-y {
+  0%, 9%  { transform: translateY(112px) rotate(-15deg);  animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  14%     { transform: translateY(113.6px) rotate(-17deg); animation-timing-function: cubic-bezier(.2, 0, .3, 1); }
+  37%     { transform: translateY(69.9px) rotate(-3.4deg); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  43%     { transform: translateY(70.5px) rotate(-4deg);   animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  51%     { transform: translateY(70.1px) rotate(-4deg);   animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  60%     { transform: translateY(70.5px) rotate(-4deg);   animation-timing-function: cubic-bezier(.6, 0, .55, 1); }
+  86%     { transform: translateY(112px) rotate(-15deg); }
+  100%    { transform: translateY(112px) rotate(-15deg); }
+}
+@keyframes pos-sheen {
+  0%, 30% { transform: translateX(0); opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  34%     { opacity: 1; }
+  48%     { transform: translateX(100px); opacity: 0; }
+  100%    { transform: translateX(100px); opacity: 0; }
+}
+/* Ondas de proximidad: dos pulsos discretos durante la pausa de lectura. */
+@keyframes pos-wave {
+  0%, 41% { opacity: 0; transform: translateX(1.6px); animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
+  44%     { opacity: 1; }
+  49%     { opacity: 0; transform: translateX(-1.6px); animation-timing-function: step-end; }
+  49.5%   { opacity: 0; transform: translateX(1.6px); animation-timing-function: cubic-bezier(.2, 0, .4, 1); }
+  52.5%   { opacity: 1; }
+  58%     { opacity: 0; transform: translateX(-1.6px); }
+  100%    { opacity: 0; transform: translateX(-1.6px); }
+}
+/* Puntos de lectura en pantalla (sin estado final). */
+@keyframes pos-dot {
+  0%, 42% { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  45%     { opacity: .75; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  49%     { opacity: .25; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  53%     { opacity: .75; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  60%     { opacity: 0; }
+  100%    { opacity: 0; }
+}
+@keyframes pos-glow {
+  0%, 39% { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  45%     { opacity: 1; }
+  58%     { opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  66%     { opacity: 0; }
+  100%    { opacity: 0; }
+}
+
+/* ==========================================================================
+   Control de reproducción
+   ========================================================================== */
+/* Fuera de pantalla, pestaña oculta o pausa manual (lo gestiona animations.js). */
+.hsa-scene.hsa-paused,
+.hsa-scene.hsa-paused * { animation-play-state: paused !important; }
+/* Fuera de pantalla tampoco se pinta; el espacio en el layout se conserva. */
+.hsa-scene.hsa-offscreen { visibility: hidden; }
+@media print { .hsa-scene.hsa-offscreen { visibility: visible; } }
+
+/* Movimiento reducido: pose estática del marcado (contacto / ruta / lectura). */
+@media (prefers-reduced-motion: reduce) {
+  .hsa-scene,
+  .hsa-scene * { animation: none !important; }
+}
